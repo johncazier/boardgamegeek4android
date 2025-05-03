@@ -22,9 +22,9 @@ class NewLogPlayActivity : ComponentActivity() {
     }
 
     companion object {
-        fun start(context: Context, gameId: Int, gameName: String) {
+        fun start(context: Context, gameId: Int, gameName: String, imageUrl: String) {
             context.startActivity<NewLogPlayActivity>(
-                "route" to NewLogPlayRoute(gameId, gameName)
+                "route" to NewLogPlayRoute(gameId, gameName, imageUrl)
             )
         }
     }

@@ -8,7 +8,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class NewLogPlayViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     val route = savedStateHandle.get<NewLogPlayRoute>("route")!!
@@ -17,4 +17,13 @@ class NewLogPlayViewModel @Inject constructor(
 
     val gameName = route.gameName
 
+    val gameImageUrl = route.gameImageUrl
+
+    fun cancel() {
+        //todo
+    }
+
+    fun save() {
+        //todo
+    }
 }
