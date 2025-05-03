@@ -140,7 +140,7 @@ class GameActivity : HeroTabActivity(), CollectionStatusDialogFragment.Listener 
             }
             R.id.menu_log_play -> LogPlayActivity.logPlay(this, gameId, gameName, heroImageUrl.ifBlank { thumbnailUrl.ifBlank { imageUrl } }, arePlayersCustomSorted)
             R.id.menu_log_play_wizard -> NewPlayActivity.start(this, gameId, gameName)
-            R.id.menu_new_log_play -> NewLogPlayActivity.start(this, gameId, gameName)
+            R.id.menu_new_log_play -> NewLogPlayActivity.start(this, gameId, gameName, heroImageUrl.ifBlank { thumbnailUrl.ifBlank { imageUrl } })
             R.id.menu_view_image -> ImageActivity.start(this, heroImageUrl)
             R.id.menu_users -> GameUsersDialogFragment.launch(this)
             R.id.menu_view -> linkToBgg("boardgame", gameId)

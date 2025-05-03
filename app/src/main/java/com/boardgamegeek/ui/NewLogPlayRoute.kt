@@ -6,5 +6,6 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class NewLogPlayRoute(
     val gameId: Int,
-    val gameName: String
+    val gameName: String,
+    val gameImageUrl: String
 ): Parcelable
