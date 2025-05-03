@@ -22,13 +22,9 @@ class NewLogPlayActivity : ComponentActivity() {
     }
 
     companion object {
-        const val KEY_GAME_ID = "GAME_ID"
-        const val KEY_GAME_NAME = "GAME_NAME"
-
         fun start(context: Context, gameId: Int, gameName: String) {
             context.startActivity<NewLogPlayActivity>(
-                KEY_GAME_ID to gameId,
-                KEY_GAME_NAME to gameName,
+                "route" to NewLogPlayRoute(gameId, gameName)
             )
         }
     }
