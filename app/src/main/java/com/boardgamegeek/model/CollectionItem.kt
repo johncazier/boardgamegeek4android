@@ -165,7 +165,7 @@ data class CollectionItem(
     // + number of months played * 4
     // change hours played to actual
 
-    val friendlessShouldPlay = if (rating < 7) 0.0 else lastPlayDate?.let { rating.pow(4) + it.howManyDaysOld() } ?: 0.0
+    val friendlessShouldPlay = if (rating < 7) 0.0 else lastPlayDate?.let { rating.pow(3.1) + it.howManyDaysOld() } ?: 0.0
     //Ideas to include unplayed or unrated games
     //- use average rating if unrated
     //- use an arbitrary date if unplayed, like the Jan 1, 1970, first day played of all time, or that minus a day

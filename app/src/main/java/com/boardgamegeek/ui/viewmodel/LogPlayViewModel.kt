@@ -149,21 +149,25 @@ class LogPlayViewModel @Inject constructor(
 
             _game.postValue(gameId to gameName)
             val game = gameRepository.loadGame(gameId)
-            val gameSupportsCustomSort = game?.customPlayerSort ?: true
+            val gameSupportsCustomSort = game?.customPlayerSort != false
 
             if (internalId == INVALID_ID.toLong()) {
                 _internalId.value = INVALID_ID.toLong()
                 _dateInMillis.postValue(today())
-                val recentlyPlayed = (prefs[KEY_LAST_PLAY_TIME, 0L] ?: 0L).howManyHoursOld() < 12
-                if (recentlyPlayed) {
-                    _location.postValue(prefs[KEY_LAST_PLAY_LOCATION, ""].orEmpty())
-                    val players = prefs.getLastPlayPlayers()
-                    val seatedPlayers: List<PlayPlayer> = if (gameSupportsCustomSort)
-                        players.map { PlayPlayer(name = it.name, username = it.username) }
-                    else
-                        assignSeats(players.map { PlayPlayer(name = it.name, username = it.username) })
-                    _players.postValue(seatedPlayers)
-                }
+                val recentlyPlayed = (prefs[KEY_LAST_PLAY_TIME, 0L] ?: 0L).howManyHoursOld() < 1
+                val players = prefs.getLastPlayPlayers()
+
+                val initialPlayers = if (recentlyPlayed || players.isEmpty()) players else listOf(players.first())
+
+                _location.postValue(prefs[KEY_LAST_PLAY_LOCATION, ""].orEmpty())
+
+                val seatedPlayers: List<PlayPlayer> = if (gameSupportsCustomSort)
+                    initialPlayers.map { PlayPlayer(name = it.name, username = it.username) }
+                else
+                    assignSeats(initialPlayers.map { PlayPlayer(name = it.name, username = it.username) })
+
+                _players.postValue(seatedPlayers)
+
                 originalPlay = buildPlay().copy()
             } else {
                 playRepository.loadPlay(internalId)?.let { play ->

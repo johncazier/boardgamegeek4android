@@ -41,7 +41,7 @@ android {
     defaultConfig {
         applicationId "com.boardgamegeek"
 
-        minSdkVersion 21
+        minSdkVersion 26
         targetSdk 35
         multiDexEnabled true
 
@@ -169,7 +169,7 @@ dependencies {
 
     implementation 'org.jsoup:jsoup:1.18.1'
 
-    debugImplementation "com.squareup.leakcanary:leakcanary-android:2.14"
+//    debugImplementation "com.squareup.leakcanary:leakcanary-android:2.14"
 }
 
 kapt {
