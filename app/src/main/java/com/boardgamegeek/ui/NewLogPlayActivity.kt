@@ -4,23 +4,26 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.Text
+import androidx.activity.viewModels
 import com.boardgamegeek.extensions.startActivity
+import com.boardgamegeek.ui.viewmodel.NewLogPlayViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class NewLogPlayActivity : ComponentActivity() {
 
+    private val viewModel: NewLogPlayViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Text("Test - gameId: ${intent.getIntExtra(KEY_GAME_ID, 0)}, name: ${intent.getStringExtra(KEY_GAME_NAME)}")
+            NewLogPlayScreen(viewModel)
         }
     }
 
     companion object {
-        private const val KEY_GAME_ID = "GAME_ID"
-        private const val KEY_GAME_NAME = "GAME_NAME"
+        const val KEY_GAME_ID = "GAME_ID"
+        const val KEY_GAME_NAME = "GAME_NAME"
 
         fun start(context: Context, gameId: Int, gameName: String) {
             context.startActivity<NewLogPlayActivity>(
