@@ -542,6 +542,9 @@ class CollectionFragment : Fragment(), ActionMode.Callback {
             R.id.menu_log_play_wizard -> {
                 items.firstOrNull()?.let { NewPlayActivity.start(requireContext(), it.gameId, it.gameName) }
             }
+            R.id.menu_new_log_play -> {
+                items.firstOrNull()?.let { NewLogPlayActivity.start(requireContext(), it.gameId, it.gameName) }
+            }
             R.id.menu_share -> {
                 val shareMethod = "Collection"
                 if (items.size == 1) {
