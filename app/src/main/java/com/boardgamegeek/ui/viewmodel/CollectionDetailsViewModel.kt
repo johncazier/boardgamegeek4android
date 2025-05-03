@@ -22,6 +22,8 @@ import com.boardgamegeek.repository.PlayRepository
 import com.boardgamegeek.repository.StatsHelper.Companion.calculateCorrelationCoefficient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Calendar
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
@@ -386,7 +388,7 @@ class CollectionDetailsViewModel @Inject constructor(
         liveData {
             val list = it.asSequence()
                 .filterBaseGames()
-                .filter { it.lastPlayDate != null && it.lastPlayDate > 0L }
+                .filter { it.lastPlayDate != null && it.lastPlayDate > LocalDateTime.now().atZone(ZoneId.systemDefault()).minusDays(30).toInstant().toEpochMilli() }
                 .sortedByDescending { it.lastPlayDate }
                 .toList()
             emit(
@@ -400,7 +402,7 @@ class CollectionDetailsViewModel @Inject constructor(
             val list = it.asSequence()
                 .filterOwned()
                 .filterBaseGames()
-                .filter { it.friendlessShouldPlay > 10_000.0 }
+                .filter { it.rating >= 8 && it.friendlessShouldPlay > 1270 }
                 .toList()
             emit(
                 list.sortedByDescending { it.friendlessShouldPlay }.take(ITEM_LIMIT) to list.sumOf { it.quantity }
@@ -656,7 +658,7 @@ class CollectionDetailsViewModel @Inject constructor(
     }
 
     companion object {
-        const val ITEM_LIMIT = 5
+        const val ITEM_LIMIT = 30
         const val WORK_NAME = "CollectionViewModel"
     }
 }
