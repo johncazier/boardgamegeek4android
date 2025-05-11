@@ -17,11 +17,14 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.boardgamegeek.ui.components.DateField
+import com.boardgamegeek.ui.navigation.HandleViewModelActions
 import com.boardgamegeek.ui.viewmodel.NewLogPlayViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewLogPlayScreen(viewModel: NewLogPlayViewModel) {
+
+    HandleViewModelActions(viewModel)
 
     Scaffold(
         topBar = {
@@ -45,32 +48,43 @@ fun NewLogPlayScreen(viewModel: NewLogPlayViewModel) {
             modifier = Modifier
                 .padding(padding)
         ) {
-            Box {
-                AsyncImage(
-                    model = viewModel.gameImageUrl,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp)
-                        .background(Color.Black),
-                    contentScale = ContentScale.FillWidth,
-                    alpha = .5f
-                )
+            GameImage(viewModel)
 
-                Text(
-                    modifier = Modifier.align(Alignment.Center),
-                    text = viewModel.gameName,
-                    color = Color.White,
-                    fontSize = 18.sp
-                )
-            }
-
-            Column {
-
-                val selectedDate by viewModel.selectedDateFlow.collectAsStateWithLifecycle()
-
-                DateField(selectedDate) { viewModel.updateSelectedDate(it) }
-            }
+            GameDate(viewModel)
         }
+    }
+}
+
+@Composable
+private fun GameDate(viewModel: NewLogPlayViewModel) {
+    Column {
+
+        val selectedDate by viewModel.selectedDateFlow.collectAsStateWithLifecycle()
+
+        DateField(selectedDate) { viewModel.updateSelectedDate(it) }
+    }
+}
+
+@Composable
+private fun GameImage(viewModel: NewLogPlayViewModel) {
+
+    Box {
+        AsyncImage(
+            model = viewModel.gameImageUrl,
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .background(Color.Black),
+            contentScale = ContentScale.FillWidth,
+            alpha = .5f
+        )
+
+        Text(
+            modifier = Modifier.align(Alignment.Center),
+            text = viewModel.gameName,
+            color = Color.White,
+            fontSize = 18.sp
+        )
     }
 }

@@ -1,8 +1,8 @@
 package com.boardgamegeek.ui.viewmodel
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import com.boardgamegeek.ui.NewLogPlayRoute
+import com.boardgamegeek.ui.navigation.ActionViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import java.time.LocalDate
@@ -11,7 +11,7 @@ import javax.inject.Inject
 @HiltViewModel
 class NewLogPlayViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
-) : ViewModel() {
+) : ActionViewModel() {
 
     val route = savedStateHandle.get<NewLogPlayRoute>("route")!!
 
@@ -28,10 +28,11 @@ class NewLogPlayViewModel @Inject constructor(
     }
 
     fun cancel() {
-        //todo
+        leave()
     }
 
     fun save() {
         //todo
+        leave()
     }
 }
