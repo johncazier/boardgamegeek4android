@@ -72,10 +72,7 @@ class CollectionPlayFragment : Fragment() {
 
         binding.friendlessShouldPlayWidget.setAdapter(
             CollectionShelf.CollectionItemAdapter(
-                { item: CollectionItem ->
-                    playGame(item)
-                },
-                { item ->
+                bindBadge = { item ->
                     rating(item.rating)
                 }
             )
@@ -87,10 +84,7 @@ class CollectionPlayFragment : Fragment() {
 
         binding.wantToPlayWidget.setAdapter(
             CollectionShelf.CollectionItemAdapter(
-                { item: CollectionItem ->
-                    playGame(item)
-                },
-                { item ->
+                bindBadge = { item ->
                     rating(item.averageRating)
                 }
             )
@@ -102,10 +96,7 @@ class CollectionPlayFragment : Fragment() {
 
         binding.recentlyPlayedWidget.setAdapter(
             CollectionShelf.CollectionItemAdapter(
-                { item: CollectionItem ->
-                    playGame(item)
-                },
-                { item ->
+                bindBadge = { item ->
                     rating(item.averageRating)
                 }
             )
@@ -117,10 +108,7 @@ class CollectionPlayFragment : Fragment() {
 
         binding.shelfOfOpportunityWidget.setAdapter(
             CollectionShelf.CollectionItemAdapter(
-                { item: CollectionItem ->
-                    playGame(item)
-                },
-                { item ->
+                bindBadge = { item ->
                     rating(item.averageRating)
                 }
             )
@@ -133,10 +121,7 @@ class CollectionPlayFragment : Fragment() {
 
         binding.shelfOfNewOpportunityWidget.setAdapter(
             CollectionShelf.CollectionItemAdapter(
-                { item: CollectionItem ->
-                    playGame(item)
-                },
-                { item ->
+                bindBadge = { item ->
                     item.acquisitionDate.formatDateTime(context, flags = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_ABBREV_ALL) to Color.WHITE
                 }
             )
