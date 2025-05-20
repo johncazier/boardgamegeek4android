@@ -35,7 +35,7 @@ class NewLogPlayViewModel @Inject constructor(
     val availablePlayersFlow: StateFlow<List<Player>> = playRepository.loadPlayersFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val selectedPlayerIdsFlow = MutableStateFlow<List<String>>(emptyList())
+    val selectedPlayerIdsFlow = savedStateHandle.getMutableStateFlow("selectedPlayerIds", arrayListOf<String>())
 
     val playerMapFlow = MutableStateFlow<Map<String, NewPlayPlayer>>(emptyMap())
 
@@ -45,7 +45,7 @@ class NewLogPlayViewModel @Inject constructor(
                 .filter { player -> selectedIds.contains(player.id) }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val commentsFlow = MutableStateFlow<String>("")
+    val commentsFlow = savedStateHandle.getMutableStateFlow("comments", "")
 
     private val prefs: SharedPreferences by lazy { application.preferences() }
 
@@ -58,7 +58,7 @@ class NewLogPlayViewModel @Inject constructor(
 
             val initialPlayers = if (recentlyPlayed || players.isEmpty()) players else listOf(players.first())
 
-            selectedPlayerIdsFlow.value = initialPlayers.map { it.id }
+            selectedPlayerIdsFlow.value = ArrayList(initialPlayers.map { it.id })
 
             loadedPlayers = true
         }
@@ -78,7 +78,7 @@ class NewLogPlayViewModel @Inject constructor(
     }
 
     fun onPlayersSelected(playerIds: List<String>) {
-        selectedPlayerIdsFlow.value = playerIds
+        selectedPlayerIdsFlow.value = ArrayList(playerIds)
     }
 
     fun updatePlayerScore(player: Player, score: String) {
