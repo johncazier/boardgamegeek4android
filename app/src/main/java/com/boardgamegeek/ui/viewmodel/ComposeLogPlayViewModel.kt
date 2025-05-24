@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.model.NewPlayPlayer
 import com.boardgamegeek.model.Player
+import com.boardgamegeek.repository.GameRepository
 import com.boardgamegeek.repository.PlayRepository
 import com.boardgamegeek.ui.ComposeLogPlayRoute
 import com.boardgamegeek.ui.navigation.ActionViewModel
@@ -20,6 +21,7 @@ class ComposeLogPlayViewModel @Inject constructor(
     application: Application,
     private val savedStateHandle: SavedStateHandle,
     private val playRepository: PlayRepository,
+    private val gameRepository: GameRepository,
 ) : ActionViewModel() {
 
     val route = savedStateHandle.get<ComposeLogPlayRoute>("route")!!
@@ -51,14 +53,23 @@ class ComposeLogPlayViewModel @Inject constructor(
 
     private var loadedPlayers = false
 
+    val expansionsFlow = gameRepository.getExpansionsFlow(gameId)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val selectedExpansionIdsFlow = savedStateHandle.getMutableStateFlow("selectedExpansionIds", arrayListOf<Int>())
+
     init {
+        loadPlayers()
+    }
+
+    private fun loadPlayers() {
         if (!loadedPlayers) {
             val recentlyPlayed = (prefs[KEY_LAST_PLAY_TIME, 0L] ?: 0L).howManyHoursOld() < 1
             val players = prefs.getLastPlayPlayers()
 
             val initialPlayers = if (recentlyPlayed || players.isEmpty()) players else listOf(players.first())
 
-            selectedPlayerIdsFlow.value = ArrayList(initialPlayers.map { it.id })
+            selectedPlayerIdsFlow.value = initialPlayers.map { it.id }.toArrayList()
 
             loadedPlayers = true
         }
@@ -78,7 +89,7 @@ class ComposeLogPlayViewModel @Inject constructor(
     }
 
     fun onPlayersSelected(playerIds: List<String>) {
-        selectedPlayerIdsFlow.value = ArrayList(playerIds)
+        selectedPlayerIdsFlow.value = playerIds.toArrayList()
     }
 
     fun updatePlayerScore(player: Player, score: String) {
@@ -89,5 +100,13 @@ class ComposeLogPlayViewModel @Inject constructor(
     fun onPlayerWinChanged(player: Player, win: Boolean) {
         val updatedPlayer = (playerMapFlow.value[player.id] ?: NewPlayPlayer(player)).copy(isWin = win)
         playerMapFlow.value = playerMapFlow.value + (player.id to updatedPlayer)
+    }
+
+    fun onExpansionChecked(expansionId: Int, checked: Boolean) {
+        if (checked) {
+            selectedExpansionIdsFlow.value = selectedExpansionIdsFlow.value.plus(expansionId).distinct().toArrayList()
+        } else {
+            selectedExpansionIdsFlow.value = selectedExpansionIdsFlow.value.filter { it != expansionId }.toArrayList()
+        }
     }
 }
