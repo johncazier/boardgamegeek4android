@@ -19,7 +19,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
@@ -65,6 +64,8 @@ fun ComposeLogPlayScreen(viewModel: ComposeLogPlayViewModel) {
             GameComments(viewModel)
 
             GamePlayers(viewModel)
+
+            GameExpansions(viewModel)
         }
     }
 }
@@ -106,17 +107,22 @@ private fun GamePlayers(viewModel: ComposeLogPlayViewModel) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 val playerInfo = playerMap[player.id] ?: NewPlayPlayer(player)
 
-                Text(text = "${index + 1}.", fontSize = 20.sp, modifier = Modifier.padding(start = 16.dp, end = 8.dp))
+                Text(
+                    text = "${index + 1}.",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(start = 16.dp, end = 8.dp)
+                )
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = player.name, fontSize = 18.sp)
+                    Text(text = player.name, style = MaterialTheme.typography.bodyLarge)
 
                     if (!player.username.isBlank()) {
-                        Text(text = player.username, fontSize = 14.sp)
+                        Text(text = player.username, style = MaterialTheme.typography.bodySmall)
                     }
                 }
 
@@ -248,7 +254,39 @@ private fun GameImage(viewModel: ComposeLogPlayViewModel) {
             modifier = Modifier.align(Alignment.Center),
             text = viewModel.gameName,
             color = Color.White,
-            fontSize = 20.sp
+            style = MaterialTheme.typography.titleLarge,
         )
+    }
+}
+
+@Composable
+private fun GameExpansions(viewModel: ComposeLogPlayViewModel) {
+
+    Text(text = stringResource(R.string.expansions), style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 16.dp, start = 16.dp))
+
+    val expansions by viewModel.expansionsFlow.collectAsStateWithLifecycle()
+
+    val selectedExpansionIds by viewModel.selectedExpansionIdsFlow.collectAsStateWithLifecycle()
+
+    LazyColumn {
+
+        items(expansions) { expansion ->
+
+            val selected = selectedExpansionIds.contains(expansion.id)
+
+            Row(
+                modifier = Modifier
+                    .clickable { viewModel.onExpansionChecked(expansion.id, !selected) }
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = selected,
+                    onCheckedChange = { viewModel.onExpansionChecked(expansion.id, it) }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(expansion.name)
+            }
+        }
     }
 }
