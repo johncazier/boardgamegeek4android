@@ -222,9 +222,9 @@ class HotnessFragment : Fragment(), ActionMode.Callback {
                     NewPlayActivity.start(requireContext(), game.id, game.name)
                 }
             }
-            R.id.menu_new_log_play -> {
+            R.id.menu_compose_log_play -> {
                 selectedGames.firstOrNull()?.let { game ->
-                    NewLogPlayActivity.start(requireContext(), game.id, game.name, game.thumbnailUrl)
+                    ComposeLogPlayActivity.start(requireContext(), game.id, game.name, game.thumbnailUrl)
                 }
             }
             R.id.menu_share -> {

@@ -28,11 +28,11 @@ import com.boardgamegeek.model.NewPlayPlayer
 import com.boardgamegeek.model.Player
 import com.boardgamegeek.ui.components.DateField
 import com.boardgamegeek.ui.navigation.HandleViewModelActions
-import com.boardgamegeek.ui.viewmodel.NewLogPlayViewModel
+import com.boardgamegeek.ui.viewmodel.ComposeLogPlayViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewLogPlayScreen(viewModel: NewLogPlayViewModel) {
+fun ComposeLogPlayScreen(viewModel: ComposeLogPlayViewModel) {
 
     HandleViewModelActions(viewModel)
 
@@ -70,7 +70,7 @@ fun NewLogPlayScreen(viewModel: NewLogPlayViewModel) {
 }
 
 @Composable
-private fun GameComments(viewModel: NewLogPlayViewModel) {
+private fun GameComments(viewModel: ComposeLogPlayViewModel) {
 
     val comments = viewModel.commentsFlow.collectAsStateWithLifecycle()
 
@@ -85,7 +85,7 @@ private fun GameComments(viewModel: NewLogPlayViewModel) {
 }
 
 @Composable
-private fun GamePlayers(viewModel: NewLogPlayViewModel) {
+private fun GamePlayers(viewModel: ComposeLogPlayViewModel) {
 
     val players by viewModel.availablePlayersFlow.collectAsStateWithLifecycle()
 
@@ -220,7 +220,7 @@ fun PlayerSelectionDialog(
 }
 
 @Composable
-private fun GameDate(viewModel: NewLogPlayViewModel) {
+private fun GameDate(viewModel: ComposeLogPlayViewModel) {
     Column {
 
         val selectedDate by viewModel.selectedDateFlow.collectAsStateWithLifecycle()
@@ -230,7 +230,7 @@ private fun GameDate(viewModel: NewLogPlayViewModel) {
 }
 
 @Composable
-private fun GameImage(viewModel: NewLogPlayViewModel) {
+private fun GameImage(viewModel: ComposeLogPlayViewModel) {
 
     Box {
         AsyncImage(
