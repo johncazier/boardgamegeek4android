@@ -8,7 +8,7 @@ import com.boardgamegeek.extensions.*
 import com.boardgamegeek.model.NewPlayPlayer
 import com.boardgamegeek.model.Player
 import com.boardgamegeek.repository.PlayRepository
-import com.boardgamegeek.ui.NewLogPlayRoute
+import com.boardgamegeek.ui.ComposeLogPlayRoute
 import com.boardgamegeek.ui.navigation.ActionViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -16,13 +16,13 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
-class NewLogPlayViewModel @Inject constructor(
+class ComposeLogPlayViewModel @Inject constructor(
     application: Application,
     private val savedStateHandle: SavedStateHandle,
     private val playRepository: PlayRepository,
 ) : ActionViewModel() {
 
-    val route = savedStateHandle.get<NewLogPlayRoute>("route")!!
+    val route = savedStateHandle.get<ComposeLogPlayRoute>("route")!!
 
     val gameId = route.gameId
 

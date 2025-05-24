@@ -4,7 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class NewLogPlayRoute(
+data class ComposeLogPlayRoute(
     val gameId: Int,
     val gameName: String,
     val gameImageUrl: String

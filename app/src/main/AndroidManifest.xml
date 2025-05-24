@@ -33,7 +33,7 @@
 		tools:ignore="GoogleAppIndexingWarning"
 		tools:targetApi="tiramisu">
 		<activity
-			android:name=".ui.NewLogPlayActivity"
+			android:name=".ui.ComposeLogPlayActivity"
 			android:label="@string/title_new_play"
 			android:windowSoftInputMode="adjustResize" />
 		<activity
