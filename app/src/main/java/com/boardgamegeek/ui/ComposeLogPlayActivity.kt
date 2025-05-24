@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import com.boardgamegeek.extensions.startActivity
+import com.boardgamegeek.ui.theme.AppTheme
 import com.boardgamegeek.ui.viewmodel.ComposeLogPlayViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -17,7 +18,9 @@ class ComposeLogPlayActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            ComposeLogPlayScreen(viewModel)
+            AppTheme {
+                ComposeLogPlayScreen(viewModel)
+            }
         }
     }
 

@@ -64,7 +64,7 @@ fun DateField(
 
         Text(
             text = selectedDate.formatMedium(),
-            fontSize = 18.sp
+            style = MaterialTheme.typography.bodyLarge
         )
     }
 }

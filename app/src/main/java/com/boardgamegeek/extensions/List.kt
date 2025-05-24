@@ -20,3 +20,7 @@ fun <E> List<E>?.formatList(and: String = "&", comma: String = ","): String {
         }
     }
 }
+
+fun <T> List<T>.toArrayList(): ArrayList<T> {
+    return ArrayList<T>(this)
+}
