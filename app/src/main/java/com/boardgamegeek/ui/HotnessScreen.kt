@@ -1,5 +1,6 @@
 package com.boardgamegeek.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -25,10 +27,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.auth.Authenticator
+import com.boardgamegeek.extensions.BggColors
 import com.boardgamegeek.extensions.asYear
 import com.boardgamegeek.extensions.notifyLoggedPlay
+import com.boardgamegeek.extensions.toColor
 import com.boardgamegeek.model.HotGame
 import com.boardgamegeek.ui.viewmodel.HotnessViewModel
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -208,7 +213,7 @@ fun HotGameItem(
                 text = game.rank.toString(),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier
-                    .weight(0.15f) // Give it some weight
+                    .width(40.dp)
                     .padding(end = 8.dp),
                 textAlign = TextAlign.Center
             )
@@ -217,14 +222,14 @@ fun HotGameItem(
                 model = game.thumbnailUrl,
                 contentDescription = game.name,
                 modifier = Modifier
-                    .size(60.dp) // Adjust size as needed
+                    .size(60.dp)
                     .padding(end = 8.dp),
                 contentScale = ContentScale.Crop,
                 placeholder = painterResource(id = R.drawable.ic_launcher_foreground), // Replace with your placeholder
                 error = painterResource(id = R.drawable.ic_launcher_foreground) // Replace with your error drawable
             )
             Column(
-                modifier = Modifier.weight(0.85f) // Give more weight to text content
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = game.name,
@@ -235,6 +240,21 @@ fun HotGameItem(
                     text = game.yearPublished.asYear(context), // Assuming asYear is a simple Int -> String function
                     style = MaterialTheme.typography.bodyMedium
                 )
+            }
+
+            val rating = game.rating
+
+            if (rating != null) {
+                Box(modifier = Modifier
+                    .padding(start = 8.dp)
+                    .background(color = Color(rating.toColor(BggColors.ratingColors)))
+                ) {
+                    Text(
+                        text = String.format(Locale.getDefault(), "%.2f", rating),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
+                    )
+                }
             }
         }
     }
