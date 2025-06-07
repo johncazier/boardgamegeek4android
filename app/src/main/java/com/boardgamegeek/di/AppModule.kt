@@ -62,7 +62,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideHotnessRepository(@Named("noAuth") api: BggService) = HotnessRepository(api)
+    fun provideHotnessRepository(@Named("noAuth") api: BggService, gameRepository: GameRepository) = HotnessRepository(api, gameRepository)
 
     @Provides
     @Singleton

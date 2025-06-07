@@ -5,7 +5,8 @@ data class HotGame(
     val id: Int = 0,
     val name: String = "",
     val thumbnailUrl: String = "",
-    val yearPublished: Int = YEAR_UNKNOWN
+    val yearPublished: Int = YEAR_UNKNOWN,
+    val rating: Double? = null
 ) {
     companion object {
         const val YEAR_UNKNOWN = Game.YEAR_UNKNOWN

@@ -8,14 +8,22 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
-class HotnessRepository(private val api: BggService) {
-
+class HotnessRepository(
+    private val api: BggService,
+    private val gameRepository: GameRepository,
+) {
     fun getHotnessFlow(): Flow<List<HotGame>> = flow {
         // Perform the API call
         val response = api.getHotness(BggService.HotnessType.BOARDGAME)
 
         // Map the response to your domain model
-        val hotGames = response.games?.map { it.mapToModel() }.orEmpty()
+        val hotGames = response.games?.map {
+            val hotGame = it.mapToModel()
+
+            val game = gameRepository.loadGame(hotGame.id)
+
+            hotGame.copy(rating = game?.rating)
+        }.orEmpty()
 
         // Emit the result
         emit(hotGames)
