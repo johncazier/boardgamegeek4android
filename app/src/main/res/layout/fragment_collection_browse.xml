@@ -44,5 +44,6 @@
 			android:layout_height="wrap_content"
 			app:headerLabel="@string/title_hawt"
 			app:helpText="@string/info_hawt" />
- 	</LinearLayout>
+
+	</LinearLayout>
 </ScrollView>
