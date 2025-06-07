@@ -35,7 +35,7 @@ class ComposeLogPlayViewModel @Inject constructor(
     val selectedDateFlow: StateFlow<LocalDate> = savedStateHandle.getStateFlow("selectedDate", LocalDate.now())
 
     val availablePlayersFlow: StateFlow<List<Player>> = playRepository.loadPlayersFlow()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .stateInWhileSubscribed(viewModelScope, emptyList())
 
     val selectedPlayerIdsFlow = savedStateHandle.getMutableStateFlow("selectedPlayerIds", arrayListOf<String>())
 
@@ -45,7 +45,7 @@ class ComposeLogPlayViewModel @Inject constructor(
         combine(availablePlayersFlow, selectedPlayerIdsFlow) { availablePlayers, selectedIds ->
             availablePlayers
                 .filter { player -> selectedIds.contains(player.id) }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        }.stateInWhileSubscribed(viewModelScope, emptyList())
 
     val commentsFlow = savedStateHandle.getMutableStateFlow("comments", "")
 
@@ -54,7 +54,7 @@ class ComposeLogPlayViewModel @Inject constructor(
     private var loadedPlayers = false
 
     val expansionsFlow = gameRepository.getExpansionsFlow(gameId)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .stateInWhileSubscribed(viewModelScope, emptyList())
 
     val selectedExpansionIdsFlow = savedStateHandle.getMutableStateFlow("selectedExpansionIds", arrayListOf<Int>())
 

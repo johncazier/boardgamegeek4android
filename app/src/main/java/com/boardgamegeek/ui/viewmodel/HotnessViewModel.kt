@@ -1,46 +1,30 @@
 package com.boardgamegeek.ui.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.liveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.boardgamegeek.model.HotGame
+import com.boardgamegeek.extensions.stateInWhileSubscribed
 import com.boardgamegeek.model.PlayUploadResult
-import com.boardgamegeek.model.RefreshableResource
-import com.boardgamegeek.livedata.Event
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.repository.HotnessRepository
 import com.boardgamegeek.repository.PlayRepository
+import com.boardgamegeek.ui.navigation.ActionViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HotnessViewModel @Inject constructor(
-    application: Application,
-    private val hotnessRepository: HotnessRepository,
+    private val savedStateHandle: SavedStateHandle,
+    hotnessRepository: HotnessRepository,
     private val playRepository: PlayRepository,
-) : AndroidViewModel(application) {
-    private val _errorMessage = MediatorLiveData<Event<String>>()
-    val errorMessage: LiveData<Event<String>>
-        get() = _errorMessage
+) : ActionViewModel() {
 
-    private val _loggedPlayResult = MutableLiveData<Event<PlayUploadResult>>()
-    val loggedPlayResult: LiveData<Event<PlayUploadResult>>
-        get() = _loggedPlayResult
+    val errorMessageFlow = savedStateHandle.getMutableStateFlow<String?>("errorMessage", null)
 
-    val hotGames: LiveData<RefreshableResource<List<HotGame>>> = liveData {
-        try {
-            emit(RefreshableResource.refreshing(latestValue?.data))
-            val games = hotnessRepository.getHotness()
-            emit(RefreshableResource.success(games))
-        } catch (e: Exception) {
-            emit(RefreshableResource.error(e, application))
-        }
-    }
+    val loggedPlayResultFlow = MutableStateFlow<PlayUploadResult?>(null)
+
+    val hotGamesFlow = hotnessRepository.getHotnessFlow().stateInWhileSubscribed(viewModelScope, null)
 
     fun logQuickPlay(gameId: Int, gameName: String) {
         viewModelScope.launch {
@@ -50,13 +34,13 @@ class HotnessViewModel @Inject constructor(
             else {
                 result.getOrNull()?.let {
                     if (it.play.playId != BggContract.INVALID_ID)
-                        _loggedPlayResult.value = Event(it)
+                        loggedPlayResultFlow.value = it
                 }
             }
         }
     }
 
     private fun postError(exception: Throwable?) {
-        _errorMessage.value = Event(exception?.message.orEmpty())
+        errorMessageFlow.value = exception?.message.orEmpty()
     }
 }

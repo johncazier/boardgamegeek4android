@@ -4,11 +4,20 @@ import com.boardgamegeek.model.HotGame
 import com.boardgamegeek.io.BggService
 import com.boardgamegeek.mappers.mapToModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 
 class HotnessRepository(private val api: BggService) {
-    suspend fun getHotness(): List<HotGame> = withContext(Dispatchers.IO) {
+
+    fun getHotnessFlow(): Flow<List<HotGame>> = flow {
+        // Perform the API call
         val response = api.getHotness(BggService.HotnessType.BOARDGAME)
-        response.games?.map { it.mapToModel() }.orEmpty()
-    }
+
+        // Map the response to your domain model
+        val hotGames = response.games?.map { it.mapToModel() }.orEmpty()
+
+        // Emit the result
+        emit(hotGames)
+    }.flowOn(Dispatchers.IO) // Ensure the upstream operations (API call) run on the IO dispatcher
 }
