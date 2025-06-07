@@ -7,26 +7,57 @@ import androidx.activity.viewModels
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.linkBgg
 import com.boardgamegeek.extensions.shareGame
 import com.boardgamegeek.extensions.shareGames
 import com.boardgamegeek.extensions.startActivity
+import com.boardgamegeek.ui.compose.AppBottomNavigationBar
+import com.boardgamegeek.ui.navigation.BottomNavItem
 import com.boardgamegeek.ui.theme.AppTheme
 import com.boardgamegeek.ui.viewmodel.HotnessViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Locale
 
 @AndroidEntryPoint
 class HotnessActivity : ComponentActivity() {
 
     private val viewModel: HotnessViewModel by viewModels()
 
+    private var currentScreenRoute: String = BottomNavItem.Hotness.route
+
+    private fun navigateToScreen(route: String) {
+        if (route == currentScreenRoute && this::class.java.simpleName.startsWith(route.capitalize(Locale.getDefault()))) {
+            // Already on this screen, do nothing or maybe refresh
+            return
+        }
+
+        when (route) {
+            BottomNavItem.Collection.route -> startActivity<CollectionActivity>() // Or CollectionDetailsActivity
+            BottomNavItem.Hotness.route -> {
+                // Check if already HotnessActivity to prevent re-launching itself
+                if (this::class.java != HotnessActivity::class.java) {
+                    startActivity<HotnessActivity>()
+                }
+            }
+            BottomNavItem.TopGames.route -> startActivity<TopGamesActivity>()
+            BottomNavItem.GeekLists.route -> startActivity<GeekListsActivity>()
+        }
+    }
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             AppTheme {
+                var selectedRoute by remember { mutableStateOf(currentScreenRoute) }
+
                 Scaffold(
                     topBar = {
                         TopAppBar(
@@ -46,6 +77,15 @@ class HotnessActivity : ComponentActivity() {
                                 titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                                 actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                             )
+                        )
+                    },
+                    bottomBar = {
+                        AppBottomNavigationBar(
+                            currentRoute = selectedRoute,
+                            onItemSelected = { route ->
+                                selectedRoute = route // Update Compose state
+                                navigateToScreen(route) // Call your existing navigation logic
+                            }
                         )
                     }
                 ) { paddingValues ->
