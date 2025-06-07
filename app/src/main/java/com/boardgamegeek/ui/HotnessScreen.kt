@@ -29,6 +29,7 @@ import com.boardgamegeek.R
 import com.boardgamegeek.auth.Authenticator
 import com.boardgamegeek.extensions.BggColors
 import com.boardgamegeek.extensions.asYear
+import com.boardgamegeek.extensions.getTextColor
 import com.boardgamegeek.extensions.notifyLoggedPlay
 import com.boardgamegeek.extensions.toColor
 import com.boardgamegeek.model.HotGame
@@ -245,12 +246,14 @@ fun HotGameItem(
             val rating = game.rating
 
             if (rating != null) {
+                val ratingColorInt = rating.toColor(BggColors.ratingColors)
                 Box(modifier = Modifier
                     .padding(start = 8.dp)
-                    .background(color = Color(rating.toColor(BggColors.ratingColors)))
+                    .background(color = Color(ratingColorInt))
                 ) {
                     Text(
                         text = String.format(Locale.getDefault(), "%.2f", rating),
+                        color = Color(ratingColorInt.getTextColor()),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
                     )
