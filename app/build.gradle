@@ -32,7 +32,7 @@ repositories {
 android {
     namespace 'com.boardgamegeek'
 
-    compileSdk 35
+    compileSdk 36
 
     buildFeatures {
         viewBinding true
@@ -44,7 +44,7 @@ android {
         applicationId "com.boardgamegeek"
 
         minSdkVersion 28
-        targetSdk 35
+        targetSdk 36
         multiDexEnabled true
 
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
@@ -92,7 +92,7 @@ dependencies {
     implementation "com.google.dagger:hilt-android:$hilt_version"
     ksp "com.google.dagger:hilt-compiler:$hilt_version"
 
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
 
     implementation 'androidx.core:core-ktx:1.16.0'
 
@@ -142,9 +142,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics'
     implementation 'com.google.firebase:firebase-analytics'
 
-    implementation 'com.google.code.gson:gson:2.11.0'
+    implementation 'com.google.code.gson:gson:2.13.1'
 
-    def retrofit_version = '2.11.0'
+    def retrofit_version = '3.0.0'
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
     implementation("com.squareup.retrofit2:converter-simplexml:$retrofit_version") {
@@ -178,10 +178,10 @@ dependencies {
     implementation "com.facebook.stetho:stetho:$stetho_version"
     implementation "com.facebook.stetho:stetho-okhttp3:$stetho_version"
 
-    implementation 'org.jsoup:jsoup:1.18.1'
+    implementation 'org.jsoup:jsoup:1.20.1'
 
-    implementation("io.coil-kt.coil3:coil-compose:3.1.0")
-    implementation("io.coil-kt.coil3:coil-network-okhttp:3.1.0")
+    implementation("io.coil-kt.coil3:coil-compose:3.2.0")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.2.0")
 }
 
 kapt {
