@@ -120,7 +120,7 @@ class GameActivity : HeroTabActivity(), CollectionStatusDialogFragment.Listener 
         when (item.itemId) {
             android.R.id.home -> {
                 val upIntent = when {
-                    Authenticator.isSignedIn(this) -> intentFor<CollectionActivity>()
+                    Authenticator.isSignedIn(this) -> intentFor<LegacyCollectionActivity>()
                     else -> intentFor<HotnessActivity>()
                 }
                 if (shouldUpRecreateTask()) {

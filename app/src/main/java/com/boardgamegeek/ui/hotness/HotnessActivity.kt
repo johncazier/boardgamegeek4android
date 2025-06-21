@@ -1,5 +1,6 @@
 package com.boardgamegeek.ui.hotness
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,51 +10,26 @@ import com.boardgamegeek.R
 import com.boardgamegeek.extensions.linkBgg
 import com.boardgamegeek.extensions.shareGame
 import com.boardgamegeek.extensions.shareGames
-import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.ui.*
 import com.boardgamegeek.ui.navigation.BottomNavItem
-import com.boardgamegeek.ui.viewmodel.HotnessViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.Locale
 
 @AndroidEntryPoint
 class HotnessActivity : ComponentActivity() {
 
     private val viewModel: HotnessViewModel by viewModels()
 
-    private var currentScreenRoute: String = BottomNavItem.Hotness.route
-
-    private fun navigateToScreen(route: String) {
-        if (route == currentScreenRoute && this::class.java.simpleName.startsWith(route.capitalize(Locale.getDefault()))) {
-            // Already on this screen, do nothing or maybe refresh
-            return
-        }
-
-        when (route) {
-            BottomNavItem.Collection.route -> startActivity<CollectionActivity>() // Or CollectionDetailsActivity
-            BottomNavItem.Hotness.route -> {
-                // Check if already HotnessActivity to prevent re-launching itself
-                if (this::class.java != HotnessActivity::class.java) {
-                    startActivity<HotnessActivity>()
-                }
-            }
-            BottomNavItem.TopGames.route -> startActivity<TopGamesActivity>()
-            BottomNavItem.GeekLists.route -> startActivity<GeekListsActivity>()
-        }
-    }
+    private val activityScreenRoute: String = BottomNavItem.Hotness.route
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            AppScreen(
-                topBarTitle = stringResource(id = R.string.title_hotness),
-                initialSelectedRoute = currentScreenRoute,
-                onNavigate = { route ->
-                    navigateToScreen(route)
-                },
+            AppScreen(topBarTitle = stringResource(id = R.string.title_hotness),
+                currentScreenRouteFromActivity = activityScreenRoute, // Pass the Activity's route
                 onSearchClick = {
-                    startActivity<SearchResultsActivity>()
+                    // Search still uses the Activity's context if needed for startActivity
+                    startActivity(Intent(this, SearchResultsActivity::class.java))
                 }
             ) { paddingValues ->
                 HotnessScreen(
