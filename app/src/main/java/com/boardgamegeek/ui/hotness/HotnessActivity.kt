@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.hotness
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -17,6 +17,14 @@ import com.boardgamegeek.extensions.linkBgg
 import com.boardgamegeek.extensions.shareGame
 import com.boardgamegeek.extensions.shareGames
 import com.boardgamegeek.extensions.startActivity
+import com.boardgamegeek.ui.CollectionActivity
+import com.boardgamegeek.ui.ComposeLogPlayActivity
+import com.boardgamegeek.ui.GameActivity
+import com.boardgamegeek.ui.GeekListsActivity
+import com.boardgamegeek.ui.LogPlayActivity
+import com.boardgamegeek.ui.NewPlayActivity
+import com.boardgamegeek.ui.SearchResultsActivity
+import com.boardgamegeek.ui.TopGamesActivity
 import com.boardgamegeek.ui.compose.AppBottomNavigationBar
 import com.boardgamegeek.ui.navigation.BottomNavItem
 import com.boardgamegeek.ui.theme.AppTheme
@@ -93,16 +101,16 @@ class HotnessActivity : ComponentActivity() {
                         viewModel = viewModel,
                         paddingValues = paddingValues,
                         onGameClick = { gameId, gameName, thumbnailUrl ->
-                            GameActivity.start(this, gameId, gameName, thumbnailUrl ?: "")
+                            GameActivity.Companion.start(this, gameId, gameName, thumbnailUrl ?: "")
                         },
                         onLogPlayForm = { gameId, gameName, thumbnailUrl ->
-                            LogPlayActivity.logPlay(this, gameId, gameName, thumbnailUrl ?: "")
+                            LogPlayActivity.Companion.logPlay(this, gameId, gameName, thumbnailUrl ?: "")
                         },
                         onLogPlayWizard = { gameId, gameName ->
-                            NewPlayActivity.start(this, gameId, gameName)
+                            NewPlayActivity.Companion.start(this, gameId, gameName)
                         },
                         onComposeLogPlay = { gameId, gameName, thumbnailUrl ->
-                            ComposeLogPlayActivity.start(this, gameId, gameName, thumbnailUrl ?: "")
+                            ComposeLogPlayActivity.Companion.start(this, gameId, gameName, thumbnailUrl ?: "")
                         },
                         onShareGame = { gameId, gameName, shareMethod ->
                             this.shareGame(gameId, gameName, shareMethod)

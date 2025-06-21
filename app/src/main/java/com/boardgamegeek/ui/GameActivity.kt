@@ -21,6 +21,7 @@ import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.adapter.GamePagerAdapter
 import com.boardgamegeek.ui.dialog.CollectionStatusDialogFragment
 import com.boardgamegeek.ui.dialog.GameUsersDialogFragment
+import com.boardgamegeek.ui.hotness.HotnessActivity
 import com.boardgamegeek.ui.viewmodel.GameViewModel
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
