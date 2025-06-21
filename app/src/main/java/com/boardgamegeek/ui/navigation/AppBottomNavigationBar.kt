@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui.compose
+package com.boardgamegeek.ui.navigation
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -6,7 +6,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.boardgamegeek.ui.navigation.BottomNavItem
 
 @Composable
 fun AppBottomNavigationBar(
