@@ -107,7 +107,7 @@ abstract class DrawerActivity : BaseActivity() {
     private fun selectItem(menuItemId: Int) {
         if (menuItemId != navigationItemId) {
             when (menuItemId) {
-                R.id.collection -> startActivity<CollectionActivity>()
+                R.id.collection -> startActivity<LegacyCollectionActivity>()
                 R.id.collection_details -> startActivity<CollectionDetailsActivity>()
                 R.id.search -> startActivity<SearchResultsActivity>()
                 R.id.hotness -> startActivity<HotnessActivity>()

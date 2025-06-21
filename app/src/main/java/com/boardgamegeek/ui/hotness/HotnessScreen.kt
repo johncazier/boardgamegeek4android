@@ -28,13 +28,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.auth.Authenticator
-import com.boardgamegeek.extensions.BggColors
-import com.boardgamegeek.extensions.asYear
-import com.boardgamegeek.extensions.getTextColor
-import com.boardgamegeek.extensions.notifyLoggedPlay
-import com.boardgamegeek.extensions.toColor
+import com.boardgamegeek.extensions.*
 import com.boardgamegeek.model.HotGame
-import com.boardgamegeek.ui.viewmodel.HotnessViewModel
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -246,7 +241,7 @@ fun HotGameItem(
 
             val rating = game.rating
 
-            if (rating != null) {
+            if (rating != null && rating > 0f) {
                 val ratingColorInt = rating.toColor(BggColors.ratingColors)
                 Box(modifier = Modifier
                     .padding(start = 8.dp)

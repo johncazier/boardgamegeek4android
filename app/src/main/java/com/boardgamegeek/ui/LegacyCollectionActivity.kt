@@ -25,7 +25,7 @@ import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class CollectionActivity : TopLevelSinglePaneActivity() {
+class LegacyCollectionActivity : TopLevelSinglePaneActivity() {
     private var viewId: Int = CollectionViewPrefs.DEFAULT_DEFAULT_ID
     private var isCreatingShortcut = false
     private var changingGamePlayId: Long = BggContract.INVALID_ID.toLong()
@@ -148,16 +148,16 @@ class CollectionActivity : TopLevelSinglePaneActivity() {
         }
     }
 
-    companion object {
+    companion object Companion {
         private const val KEY_VIEW_ID = "VIEW_ID"
         private const val KEY_CHANGING_GAME_PLAY_ID = "KEY_CHANGING_GAME_PLAY_ID"
 
         fun startForGameChange(context: Context, playId: Long) {
-            context.startActivity<CollectionActivity>(KEY_CHANGING_GAME_PLAY_ID to playId)
+            context.startActivity<LegacyCollectionActivity>(KEY_CHANGING_GAME_PLAY_ID to playId)
         }
 
         fun createShortcutInfo(context: Context, viewId: Int, viewName: String): ShortcutInfoCompat {
-            val intent = context.intentFor<CollectionActivity>(KEY_VIEW_ID to viewId)
+            val intent = context.intentFor<LegacyCollectionActivity>(KEY_VIEW_ID to viewId)
                 .clearTask()
                 .newTask()
                 .apply { action = Intent.ACTION_VIEW }

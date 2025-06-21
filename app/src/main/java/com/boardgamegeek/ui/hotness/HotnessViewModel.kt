@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui.viewmodel
+package com.boardgamegeek.ui.hotness
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HotnessViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     hotnessRepository: HotnessRepository,
     private val playRepository: PlayRepository,
 ) : ActionViewModel() {
@@ -33,7 +33,7 @@ class HotnessViewModel @Inject constructor(
                 postError(result.exceptionOrNull())
             else {
                 result.getOrNull()?.let {
-                    if (it.play.playId != BggContract.INVALID_ID)
+                    if (it.play.playId != BggContract.Companion.INVALID_ID)
                         loggedPlayResultFlow.value = it
                 }
             }

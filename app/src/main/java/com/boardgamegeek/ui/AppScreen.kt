@@ -1,5 +1,9 @@
 package com.boardgamegeek.ui
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
@@ -7,25 +11,74 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
+import com.boardgamegeek.ui.collection.CollectionActivity
+import com.boardgamegeek.ui.hotness.HotnessActivity
 import com.boardgamegeek.ui.navigation.AppBottomNavigationBar
+import com.boardgamegeek.ui.navigation.BottomNavItem
 import com.boardgamegeek.ui.theme.AppTheme
+import java.util.Locale
+
+// Helper extension function for starting activities from Context
+inline fun <reified T : Activity> Context.startActivity(noinline init: (Intent.() -> Unit)? = null) {
+    val intent = Intent(this, T::class.java)
+    if (init != null) {
+        intent.init()
+    }
+    startActivity(intent)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppScreen(
     modifier: Modifier = Modifier,
     topBarTitle: String,
-    initialSelectedRoute: String,
-    onNavigate: (route: String) -> Unit,
+    currentScreenRouteFromActivity: String,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     onSearchClick: () -> Unit,
-    topBarActions: @Composable RowScope.() -> Unit = {}, // Default to no extra actions
+    topBarActions: @Composable RowScope.() -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
-    AppTheme {
-        var selectedRoute by remember { mutableStateOf(initialSelectedRoute) }
+    val context = LocalContext.current
 
+    var selectedRoute by remember { mutableStateOf(currentScreenRouteFromActivity) }
+
+    val navigateToScreen = remember<(String) -> Unit> {
+        { route ->
+            // Prevent navigation if already on the target screen AND the current activity matches the route
+            val currentActivityNameSimple = (context as? ComponentActivity)?.javaClass?.simpleName ?: ""
+
+            val routeCapitalized = route.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+
+            if (selectedRoute == route && currentActivityNameSimple.startsWith(routeCapitalized)) {
+                // Already on this screen and current activity corresponds to it
+                return@remember
+            }
+
+            // Update the selectedRoute for the BottomNav immediately
+            selectedRoute = route
+
+            when (route) {
+                BottomNavItem.Collection.route -> {
+                    if ((context as? ComponentActivity)?.javaClass != CollectionActivity::class.java) {
+                        context.startActivity<CollectionActivity>()
+                    }
+                }
+                BottomNavItem.Hotness.route -> {
+                    if ((context as? ComponentActivity)?.javaClass != HotnessActivity::class.java) {
+                        context.startActivity<HotnessActivity>()
+                    }
+                }
+                BottomNavItem.TopGames.route -> context.startActivity<TopGamesActivity>()
+                BottomNavItem.GeekLists.route -> context.startActivity<GeekListsActivity>()
+                // Add other navigation cases as needed
+            }
+        }
+    }
+
+    AppTheme {
         Scaffold(
             modifier = modifier,
             topBar = {
@@ -38,7 +91,7 @@ fun AppScreen(
                                 contentDescription = stringResource(R.string.menu_search)
                             )
                         }
-                        topBarActions() // Allow additional actions
+                        topBarActions()
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -51,11 +104,11 @@ fun AppScreen(
                 AppBottomNavigationBar(
                     currentRoute = selectedRoute,
                     onItemSelected = { route ->
-                        selectedRoute = route
-                        onNavigate(route)
+                        navigateToScreen(route)
                     }
                 )
-            }
+            },
+            snackbarHost = { SnackbarHost(snackbarHostState) }
         ) { paddingValues ->
             content(paddingValues)
         }
