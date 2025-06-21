@@ -1,5 +1,6 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.hotness
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
@@ -182,7 +183,7 @@ fun HotnessScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HotGameItem(
     game: HotGame,
@@ -252,7 +253,7 @@ fun HotGameItem(
                     .background(color = Color(ratingColorInt))
                 ) {
                     Text(
-                        text = String.format(Locale.getDefault(), "%.2f", rating),
+                        text = String.format(Locale.getDefault(), "%.1f", rating),
                         color = Color(ratingColorInt.getTextColor()),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
@@ -269,12 +270,14 @@ fun HotGameItem(
 fun HotnessActionModeBar(
     selectedCount: Int,
     onCloseActionMode: () -> Unit,
-    onActionItemClicked: (itemId: Int) -> Unit
+    onActionItemClicked: (itemId: Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val isSignedIn = remember { Authenticator.isSignedIn(context) } // Check auth status
 
     TopAppBar(
+        modifier = modifier,
         title = { Text(pluralStringResource(R.plurals.msg_games_selected, selectedCount, selectedCount)) },
         navigationIcon = {
             IconButton(onClick = onCloseActionMode) {
@@ -286,24 +289,6 @@ fun HotnessActionModeBar(
             if (selectedCount == 1 && isSignedIn) {
                 IconButton(onClick = { onActionItemClicked(R.id.menu_log_play_form) }) {
                     Icon(imageVector = Icons.Default.AddChart, contentDescription = stringResource(R.string.menu_log_play_short))
-                }
-            }
-            // Log Play (Quick) - Visible if signed in
-            if (isSignedIn) {
-                IconButton(onClick = { onActionItemClicked(R.id.menu_log_play_quick) }) {
-                    Icon(Icons.Default.AddChart, contentDescription = stringResource(R.string.menu_log_play_quick_short))
-                }
-            }
-            // Log Play (Wizard) - Visible if count == 1 and signed in
-            if (selectedCount == 1 && isSignedIn) {
-                IconButton(onClick = { onActionItemClicked(R.id.menu_log_play_wizard) }) {
-                    Icon(Icons.Default.AddChart, contentDescription = stringResource(R.string.menu_log_play_quick_short))
-                }
-            }
-            // Log Play (Compose) - Visible if count == 1 (Assuming always available if an item selected)
-            if (selectedCount == 1) {
-                IconButton(onClick = { onActionItemClicked(R.id.menu_compose_log_play) }) {
-                    Icon(Icons.Default.AddChart, contentDescription = stringResource(R.string.compose_label))
                 }
             }
             // Share - Always visible
@@ -322,6 +307,7 @@ fun HotnessActionModeBar(
             titleContentColor = MaterialTheme.colorScheme.inverseOnSurface,
             navigationIconContentColor = MaterialTheme.colorScheme.inverseOnSurface,
             actionIconContentColor = MaterialTheme.colorScheme.inverseOnSurface
-        )
+        ),
+        windowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
     )
 }

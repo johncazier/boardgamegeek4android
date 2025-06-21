@@ -138,7 +138,7 @@
 		</activity-alias>
 
 		<activity
-			android:name=".ui.HotnessActivity"
+			android:name=".ui.hotness.HotnessActivity"
 			android:label="@string/title_hotness">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"

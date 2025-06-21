@@ -20,6 +20,7 @@ import com.boardgamegeek.databinding.ActivityDrawerBaseBinding
 import com.boardgamegeek.model.User
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.pref.SettingsActivity
+import com.boardgamegeek.ui.hotness.HotnessActivity
 import com.boardgamegeek.ui.viewmodel.SelfUserViewModel
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
