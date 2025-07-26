@@ -154,12 +154,12 @@ class CollectionDetailsViewModel @Inject constructor(
         }
     }
 
-    val growthRate = allItems.switchMap {
+    val growthRate = allItems.switchMap { items ->
         liveData {
-            val itemsWithAcquisitionDate = it.filter { it.acquisitionDate > 0L }
+            val itemsWithAcquisitionDate = items.filter { it.acquisitionDate > 0L }
 
             val calendar = Calendar.getInstance()
-            calendar.timeInMillis = itemsWithAcquisitionDate.minOf { it.acquisitionDate }
+            calendar.timeInMillis = itemsWithAcquisitionDate.minOfOrNull { it.acquisitionDate } ?: 0L
             val yearsAcquiring = 2025 - calendar.get(Calendar.YEAR) + 1
 
             emit(itemsWithAcquisitionDate.sumOf { it.quantity } / yearsAcquiring)
