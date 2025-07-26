@@ -32,5 +32,13 @@
 			android:layout_height="wrap_content"
 			app:headerLabel="@string/title_hidden_gems"
 			app:helpText="@string/info_hidden_gems" />
- 	</LinearLayout>
+
+		<com.boardgamegeek.ui.widget.CollectionShelf
+			android:id="@+id/hawtWidget"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			app:headerLabel="@string/title_hawt"
+			app:helpText="@string/info_hawt" />
+
+	</LinearLayout>
 </ScrollView>

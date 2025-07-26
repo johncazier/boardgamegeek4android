@@ -659,6 +659,7 @@ class CollectionDetailsViewModel @Inject constructor(
 
     companion object {
         const val ITEM_LIMIT = 30
+        const val UNPUBLISHED_PROTOTYPE_ID = 18291
         const val WORK_NAME = "CollectionViewModel"
     }
 }
