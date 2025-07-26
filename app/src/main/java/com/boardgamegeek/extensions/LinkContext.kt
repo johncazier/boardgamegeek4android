@@ -22,14 +22,9 @@ fun Context?.linkBgg(gameId: Int) {
     linkToBgg(BOARDGAME_PATH, gameId)
 }
 
-fun Context?.linkBgPrices(gameName: String) {
+fun Context?.linkCamelCamelCamel(gameName: String) {
     if (gameName.isBlank()) return
-    link("http://boardgameprices.com/compare-prices-for?q=${gameName.encodeForUrl()}")
-}
-
-fun Context?.linkBgPricesUk(gameName: String) {
-    if (gameName.isBlank()) return
-    link("https://boardgameprices.co.uk/item/search?search=${gameName.encodeForUrl()}")
+    link("http://camelcamelcamel.com/search?sq=${gameName.encodeForUrl()}")
 }
 
 fun Context?.linkAmazon(gameName: String, domain: String) {

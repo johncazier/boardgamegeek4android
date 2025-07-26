@@ -96,7 +96,7 @@
 			android:layout_height="wrap_content"
 			android:gravity="center_vertical"
 			android:maxLines="1"
-			android:text="@string/link_bg_prices"
+			android:text="@string/link_camel"
 			android:textAppearance="@style/TextAppearance.Primary"
 			app:layout_constraintBottom_toBottomOf="@id/bgPricesLinkIcon"
 			app:layout_constraintEnd_toEndOf="parent"
@@ -114,21 +114,6 @@
 			app:layout_constraintStart_toStartOf="parent"
 			app:layout_constraintTop_toTopOf="@id/bgPricesLinkIcon" />
 
-		<TextView
-			android:id="@+id/bgPricesUkLink"
-			android:layout_width="0dp"
-			android:layout_height="wrap_content"
-			android:background="?attr/selectableItemBackground"
-			android:gravity="center_vertical"
-			android:maxLines="1"
-			android:minHeight="@dimen/game_row_height"
-			android:paddingStart="@dimen/material_indent_horizontal"
-			android:text="@string/link_bg_prices_uk"
-			android:textAppearance="@style/TextAppearance.Primary"
-			app:layout_constraintEnd_toEndOf="parent"
-			app:layout_constraintStart_toStartOf="parent"
-			app:layout_constraintTop_toBottomOf="@id/bgPricesLink" />
-
 		<ImageView
 			android:id="@+id/amazonLinkIcon"
 			style="@style/Icon"
@@ -136,7 +121,7 @@
 			android:src="@drawable/ic_action_amazon"
 			app:layout_constraintEnd_toStartOf="@id/amazonLinkText"
 			app:layout_constraintStart_toStartOf="parent"
-			app:layout_constraintTop_toBottomOf="@id/bgPricesUkLink" />
+			app:layout_constraintTop_toBottomOf="@id/bgPricesLinkIcon" />
 
 		<TextView
 			android:id="@+id/amazonLinkText"

@@ -39,8 +39,7 @@ class GameLinksFragment : Fragment() {
                     binding.bggLink.setOnClickListener { context.linkBgg(game.id) }
                 }
                 if (game.name.isNotBlank()) {
-                    binding.bgPricesLink.setOnClickListener { context.linkBgPrices(game.name) }
-                    binding.bgPricesUkLink.setOnClickListener { context.linkBgPricesUk(game.name) }
+                    binding.bgPricesLink.setOnClickListener { context.linkCamelCamelCamel(game.name) }
                     binding.amazonLink.setOnClickListener { context.linkAmazon(game.name, LINK_AMAZON_COM) }
                     binding.amazonUkLink.setOnClickListener { context.linkAmazon(game.name, LINK_AMAZON_UK) }
                     binding.amazonDeLink.setOnClickListener { context.linkAmazon(game.name, LINK_AMAZON_DE) }
