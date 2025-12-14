@@ -108,12 +108,8 @@ class SettingsActivity : DrawerActivity() {
                 ACTION_ABOUT -> {
                     findPreference<Preference>("open_source_licenses")?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
                         LibsBuilder()
-                            .withFields(R.string::class.java.fields)
-                            .withAutoDetect(true)
                             .withLicenseShown(true)
                             .withActivityTitle(getString(R.string.pref_about_licenses))
-                            .withActivityTheme(R.style.Theme_bgglight_About)
-                            .withActivityStyle(Libs.ActivityStyle.LIGHT_DARK_TOOLBAR)
                             .withAboutIconShown(true)
                             .withAboutAppName(getString(R.string.app_name))
                             .withAboutVersionShownName(true)

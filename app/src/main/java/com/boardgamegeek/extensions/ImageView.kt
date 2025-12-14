@@ -22,7 +22,8 @@ import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.LinkedList
+import java.util.Queue
 
 fun ImageView.setOrClearColorFilter(@ColorInt color: Int) {
     if (color == Color.TRANSPARENT) clearColorFilter() else setColorFilter(color)
@@ -65,14 +66,14 @@ private fun ImageView.safelyLoadImage(imageUrls: Queue<String>?, @DrawableRes er
         } else {
             url = polledUrl
         }
-    } while (url.isNullOrBlank())
+    } while (url.isBlank())
     if (url.isEmpty()) {
         callback?.onFailedImageLoad()
         return
     }
     val imageUrl = url
     val isSameImage = getTag(R.id.image) == imageUrl.getImageId()
-    val requestCreator = Picasso.with(context)
+    val requestCreator = Picasso.get()
         .load(url.ensureHttpsScheme())
         .transform(PaletteTransformation.instance())
     if (isSameImage) {
@@ -86,7 +87,7 @@ private fun ImageView.safelyLoadImage(imageUrls: Queue<String>?, @DrawableRes er
             callback?.onSuccessfulImageLoad(PaletteTransformation.getPalette((drawable as BitmapDrawable).bitmap))
         }
 
-        override fun onError() {
+        override fun onError(e: Exception?) {
             this@safelyLoadImage.safelyLoadImage(imageUrls, errorResId, callback)
         }
     })
@@ -96,7 +97,7 @@ private fun ImageView.safelyLoadImage(imageUrls: Queue<String>?, @DrawableRes er
  * Loads the URL into an ImageView, centering and fitting it into the image. If the URL appears to be for the same image, no placeholder is shown.
  */
 fun ImageView.loadThumbnail(imageUrl: String?, @DrawableRes errorResId: Int = R.drawable.thumbnail_image_empty, callback: ImageLoadCallback? = null) {
-    val requestCreator = Picasso.with(context)
+    val requestCreator = Picasso.get()
         .load(imageUrl.ensureHttpsScheme())
         .error(errorResId)
         .fit()
@@ -108,7 +109,7 @@ fun ImageView.loadThumbnail(imageUrl: String?, @DrawableRes errorResId: Int = R.
             callback?.onSuccessfulImageLoad(PaletteTransformation.getPalette((drawable as BitmapDrawable).bitmap))
         }
 
-        override fun onError() {
+        override fun onError(e: Exception?) {
             callback?.onFailedImageLoad()
         }
     })
@@ -124,7 +125,7 @@ private fun ImageView.safelyLoadThumbnail(imageUrls: Queue<String>, lifecycleSco
         url = imageUrls.poll()
     }
     val imageUrl = url
-    Picasso.with(context)
+    Picasso.get()
         .load(imageUrl.ensureHttpsScheme())
         .placeholder(R.drawable.thumbnail_image_empty)
         .error(R.drawable.thumbnail_image_empty)
@@ -134,7 +135,7 @@ private fun ImageView.safelyLoadThumbnail(imageUrls: Queue<String>, lifecycleSco
             override fun onSuccess() {
                 if (lifecycleScope != null) {
                     imageUrl?.let { url ->
-                        Picasso.with(context).load(imageUrl.ensureHttpsScheme()).into(object : Target {
+                        Picasso.get().load(imageUrl.ensureHttpsScheme()).into(object : Target {
                             override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
                                 bitmap?.let {
                                     lifecycleScope.launch {
@@ -145,7 +146,7 @@ private fun ImageView.safelyLoadThumbnail(imageUrls: Queue<String>, lifecycleSco
                                 }
                             }
 
-                            override fun onBitmapFailed(errorDrawable: Drawable?) {
+                            override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {
                             }
 
                             override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
@@ -155,7 +156,7 @@ private fun ImageView.safelyLoadThumbnail(imageUrls: Queue<String>, lifecycleSco
                 }
             }
 
-            override fun onError() {
+            override fun onError(e: Exception?) {
                 safelyLoadThumbnail(imageUrls, lifecycleScope)
             }
         })

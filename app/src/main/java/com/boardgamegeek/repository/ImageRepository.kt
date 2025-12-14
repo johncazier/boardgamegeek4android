@@ -29,7 +29,7 @@ class ImageRepository(
                 BitmapFactory.decodeFile(file.absolutePath)
             } else {
                 try {
-                    Picasso.with(context)
+                    Picasso.get()
                         .load(thumbnailUrl)
                         .resizeDimen(R.dimen.shortcut_icon_size, R.dimen.shortcut_icon_size)
                         .centerCrop()

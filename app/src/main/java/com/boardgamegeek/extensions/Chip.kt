@@ -12,7 +12,7 @@ import com.squareup.picasso.Transformation
 import kotlin.math.min
 
 fun Chip.loadIcon(imageUrl: String?, @DrawableRes errorResId: Int = 0) {
-    val creator = Picasso.with(context)
+    val creator = Picasso.get()
         .load(imageUrl.ensureHttpsScheme())
         .resize(chipIconSize.toInt(), chipIconSize.toInt())
         .centerCrop()
@@ -32,7 +32,7 @@ fun Chip.loadIcon(imageUrl: String?, @DrawableRes errorResId: Int = 0) {
             this@loadIcon.chipIcon = bitmap?.toDrawable(resources)
         }
 
-        override fun onBitmapFailed(errorDrawable: Drawable?) {
+        override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {
             if (errorResId != 0)
                 this@loadIcon.setChipIconResource(errorResId)
         }

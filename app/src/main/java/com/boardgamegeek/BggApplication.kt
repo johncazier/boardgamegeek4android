@@ -1,7 +1,5 @@
 package com.boardgamegeek
 
-import android.os.Build.VERSION
-import android.os.Build.VERSION_CODES
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
 import android.os.StrictMode.VmPolicy
@@ -146,9 +144,7 @@ class BggApplication : MultiDexApplication(), Configuration.Provider {
                 .detectFileUriExposure()
                 .detectLeakedRegistrationObjects()
                 .penaltyLog()
-            if (VERSION.SDK_INT >= VERSION_CODES.M) {
-                builder.detectCleartextNetwork()
-            }
+            builder.detectCleartextNetwork()
             StrictMode.setVmPolicy(builder.build())
             StrictMode.setThreadPolicy(
                 ThreadPolicy.Builder()
@@ -162,7 +158,7 @@ class BggApplication : MultiDexApplication(), Configuration.Provider {
     }
 
     private fun migrateData() {
-        if (VERSION.SDK_INT >= VERSION_CODES.O) NotificationChannels.create(applicationContext)
+        NotificationChannels.create(applicationContext)
         migrateCollectionStatusSettings()
         SyncPrefs.migrate(this)
     }
