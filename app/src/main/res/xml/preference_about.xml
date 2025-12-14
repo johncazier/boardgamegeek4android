@@ -24,4 +24,8 @@
 		android:summary="https://boardgamegeek.com/guild/3543"
 		android:title="@string/pref_about_bgg_guild"/>
 
+    <com.boardgamegeek.pref.LinkPreference
+        android:summary="https://boardgamegeek.com"
+        android:layout="@layout/powered_by_bgg_layout" />
+
 </androidx.preference.PreferenceScreen>
