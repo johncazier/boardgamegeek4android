@@ -18,7 +18,7 @@ class LargeIconLoader(private val context: Context, vararg urls: String, private
     private var currentImageUrl: String? = null
 
     private val requestCreator: RequestCreator
-        get() = Picasso.get()
+        get() = Picasso.with(context)
                 .load(currentImageUrl.ensureHttpsScheme())
                 .resize(WEARABLE_ICON_SIZE, WEARABLE_ICON_SIZE)
                 .centerCrop()
@@ -29,7 +29,7 @@ class LargeIconLoader(private val context: Context, vararg urls: String, private
 
     @WorkerThread
     fun executeInBackground() {
-        if (imageUrls.size == 0) {
+        if (imageUrls.isEmpty()) {
             callback?.onFailedIconLoad()
             return
         }
@@ -39,7 +39,7 @@ class LargeIconLoader(private val context: Context, vararg urls: String, private
         } else {
             try {
                 onBitmapLoaded(requestCreator.get(), null)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 Timber.i("Didn't find an image at %s", currentImageUrl)
                 executeInBackground()
             }
@@ -48,7 +48,7 @@ class LargeIconLoader(private val context: Context, vararg urls: String, private
 
     @MainThread
     fun executeOnMainThread() {
-        if (imageUrls.size == 0) {
+        if (imageUrls.isEmpty()) {
             callback?.onFailedIconLoad()
             return
         }
@@ -65,7 +65,7 @@ class LargeIconLoader(private val context: Context, vararg urls: String, private
         callback?.onSuccessfulIconLoad(bitmap)
     }
 
-    override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {
+    override fun onBitmapFailed(errorDrawable: Drawable?) {
         Timber.d("Didn't find an image at %s", currentImageUrl)
         callback?.onFailedIconLoad()
     }

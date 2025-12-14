@@ -73,7 +73,7 @@ private fun ImageView.safelyLoadImage(imageUrls: Queue<String>?, @DrawableRes er
     }
     val imageUrl = url
     val isSameImage = getTag(R.id.image) == imageUrl.getImageId()
-    val requestCreator = Picasso.get()
+    val requestCreator = Picasso.with(context)
         .load(url.ensureHttpsScheme())
         .transform(PaletteTransformation.instance())
     if (isSameImage) {
@@ -87,7 +87,7 @@ private fun ImageView.safelyLoadImage(imageUrls: Queue<String>?, @DrawableRes er
             callback?.onSuccessfulImageLoad(PaletteTransformation.getPalette((drawable as BitmapDrawable).bitmap))
         }
 
-        override fun onError(e: Exception?) {
+        override fun onError() {
             this@safelyLoadImage.safelyLoadImage(imageUrls, errorResId, callback)
         }
     })
@@ -97,7 +97,7 @@ private fun ImageView.safelyLoadImage(imageUrls: Queue<String>?, @DrawableRes er
  * Loads the URL into an ImageView, centering and fitting it into the image. If the URL appears to be for the same image, no placeholder is shown.
  */
 fun ImageView.loadThumbnail(imageUrl: String?, @DrawableRes errorResId: Int = R.drawable.thumbnail_image_empty, callback: ImageLoadCallback? = null) {
-    val requestCreator = Picasso.get()
+    val requestCreator = Picasso.with(context)
         .load(imageUrl.ensureHttpsScheme())
         .error(errorResId)
         .fit()
@@ -109,7 +109,7 @@ fun ImageView.loadThumbnail(imageUrl: String?, @DrawableRes errorResId: Int = R.
             callback?.onSuccessfulImageLoad(PaletteTransformation.getPalette((drawable as BitmapDrawable).bitmap))
         }
 
-        override fun onError(e: Exception?) {
+        override fun onError() {
             callback?.onFailedImageLoad()
         }
     })
@@ -125,7 +125,7 @@ private fun ImageView.safelyLoadThumbnail(imageUrls: Queue<String>, lifecycleSco
         url = imageUrls.poll()
     }
     val imageUrl = url
-    Picasso.get()
+    Picasso.with(context)
         .load(imageUrl.ensureHttpsScheme())
         .placeholder(R.drawable.thumbnail_image_empty)
         .error(R.drawable.thumbnail_image_empty)
@@ -135,7 +135,7 @@ private fun ImageView.safelyLoadThumbnail(imageUrls: Queue<String>, lifecycleSco
             override fun onSuccess() {
                 if (lifecycleScope != null) {
                     imageUrl?.let { url ->
-                        Picasso.get().load(imageUrl.ensureHttpsScheme()).into(object : Target {
+                        Picasso.with(context).load(imageUrl.ensureHttpsScheme()).into(object : Target {
                             override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
                                 bitmap?.let {
                                     lifecycleScope.launch {
@@ -146,7 +146,7 @@ private fun ImageView.safelyLoadThumbnail(imageUrls: Queue<String>, lifecycleSco
                                 }
                             }
 
-                            override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {
+                            override fun onBitmapFailed(errorDrawable: Drawable?) {
                             }
 
                             override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
@@ -156,7 +156,7 @@ private fun ImageView.safelyLoadThumbnail(imageUrls: Queue<String>, lifecycleSco
                 }
             }
 
-            override fun onError(e: Exception?) {
+            override fun onError() {
                 safelyLoadThumbnail(imageUrls, lifecycleScope)
             }
         })

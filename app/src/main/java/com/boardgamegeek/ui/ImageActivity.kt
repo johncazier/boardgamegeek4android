@@ -43,7 +43,7 @@ class ImageActivity : AppCompatActivity() {
             }
         }
 
-        Picasso.get()
+        Picasso.with(this)
             .load(imageUrl.ensureHttpsScheme())
             .error(R.drawable.thumbnail_image_empty)
             .fit()
