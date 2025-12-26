@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,6 +20,10 @@ import com.boardgamegeek.ui.hotness.HotnessActivity
 import com.boardgamegeek.ui.navigation.AppBottomNavigationBar
 import com.boardgamegeek.ui.navigation.BottomNavItem
 import com.boardgamegeek.ui.theme.AppTheme
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.padding
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 // Helper extension function for starting activities from Context
@@ -79,38 +84,83 @@ fun AppScreen(
     }
 
     AppTheme {
-        Scaffold(
-            modifier = modifier,
-            topBar = {
-                TopAppBar(
-                    title = { Text(topBarTitle) },
-                    actions = {
-                        IconButton(onClick = onSearchClick) {
-                            Icon(
-                                imageVector = Icons.Filled.Search,
-                                contentDescription = stringResource(R.string.menu_search)
-                            )
-                        }
-                        topBarActions()
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                )
-            },
-            bottomBar = {
-                AppBottomNavigationBar(
-                    currentRoute = selectedRoute,
-                    onItemSelected = { route ->
-                        navigateToScreen(route)
+        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+        val scope = rememberCoroutineScope()
+
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                ModalDrawerSheet {
+                    Text("BoardGameGeek", modifier = Modifier.padding(16.dp))
+                    listOf(
+                        BottomNavItem.Collection,
+                        BottomNavItem.Hotness,
+                        BottomNavItem.TopGames,
+                        BottomNavItem.GeekLists
+                    ).forEach { item ->
+                        NavigationDrawerItem(
+                            icon = { Icon(item.icon, contentDescription = null) },
+                            label = { Text(stringResource(item.titleRes)) },
+                            selected = item.route == selectedRoute,
+                            onClick = {
+                                scope.launch { drawerState.close() }
+                                navigateToScreen(item.route)
+                            },
+                            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                        )
                     }
-                )
+                }
             },
-            snackbarHost = { SnackbarHost(snackbarHostState) }
-        ) { paddingValues ->
-            content(paddingValues)
+            gesturesEnabled = true
+        ) {
+            Scaffold(
+                modifier = modifier,
+                topBar = {
+                    TopAppBar(
+                        title = { Text(topBarTitle) },
+                        navigationIcon = {
+                            IconButton(onClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Menu,
+                                    contentDescription = stringResource(R.string.menu_open_drawer)
+                                )
+                            }
+                        },
+                        actions = {
+                            IconButton(onClick = onSearchClick) {
+                                Icon(
+                                    imageVector = Icons.Filled.Search,
+                                    contentDescription = stringResource(R.string.menu_search)
+                                )
+                            }
+                            topBarActions()
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    )
+                },
+                bottomBar = {
+                    AppBottomNavigationBar(
+                        currentRoute = selectedRoute,
+                        onItemSelected = { route ->
+                            navigateToScreen(route)
+                        }
+                    )
+                },
+                snackbarHost = { SnackbarHost(snackbarHostState) }
+            ) { paddingValues ->
+                content(paddingValues)
+            }
         }
     }
 }

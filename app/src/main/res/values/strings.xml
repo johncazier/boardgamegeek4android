@@ -588,6 +588,7 @@
 	<string name="msg_colors_generated">Colors generated!</string>
 	<string name="drawer_open">Open navigation drawer</string>
 	<string name="drawer_close">Close navigation drawer</string>
+	<string name="menu_open_drawer">Open navigation drawer</string>
 	<string name="message_custom_player_order">Do you want keep the current starting positions or clear them?</string>
 	<string name="play_stat_distinct_games">Distinct games</string>
 	<string name="play_stat_quarters">Quarters</string>
