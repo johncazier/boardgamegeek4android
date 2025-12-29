@@ -37,24 +37,6 @@ class HotnessActivity : ComponentActivity() {
                     paddingValues = paddingValues,
                     onGameClick = { gameId, gameName, thumbnailUrl ->
                         GameActivity.Companion.start(this, gameId, gameName, thumbnailUrl ?: "")
-                    },
-                    onLogPlayForm = { gameId, gameName, thumbnailUrl ->
-                        LogPlayActivity.Companion.logPlay(this, gameId, gameName, thumbnailUrl ?: "")
-                    },
-                    onLogPlayWizard = { gameId, gameName ->
-                        NewPlayActivity.Companion.start(this, gameId, gameName)
-                    },
-                    onComposeLogPlay = { gameId, gameName, thumbnailUrl ->
-                        ComposeLogPlayActivity.Companion.start(this, gameId, gameName, thumbnailUrl ?: "")
-                    },
-                    onShareGame = { gameId, gameName, shareMethod ->
-                        this.shareGame(gameId, gameName, shareMethod)
-                    },
-                    onShareGames = { gamesToShare, shareMethod ->
-                        this.shareGames(gamesToShare, shareMethod)
-                    },
-                    onLinkBgg = { gameId ->
-                        this.linkBgg(gameId)
                     }
                 )
             }
