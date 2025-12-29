@@ -36,9 +36,6 @@ fun CollectionScreen(
     isCreatingShortcut: Boolean,
     changingGamePlayId: Long,
     onGameClick: (gameId: Int, gameName: String, thumbnailUrl: String?, heroImageUrl: String?) -> Unit,
-    onLogPlayForm: (gameId: Int, gameName: String, thumbnailUrl: String?) -> Unit,
-    onLogPlayWizard: (gameId: Int, gameName: String) -> Unit,
-    onCreateShortcut: () -> Unit
 ) {
     val collectionItems by viewModel.itemsFlow.collectAsState()
     val isRefreshing by viewModel.isRefreshingFlow.collectAsState()
@@ -60,7 +57,6 @@ fun CollectionScreen(
             if (collectionItems.isEmpty() && !isFiltering && !isRefreshing) {
                 EmptyCollectionView(
                     modifier = Modifier.fillMaxSize(),
-                    onSettingsClick = { /* TODO: Navigate to Settings */ }
                 )
             } else {
                 LazyColumn(
@@ -156,7 +152,6 @@ fun CollectionItemRow(
 @Composable
 fun EmptyCollectionView(
     modifier: Modifier = Modifier,
-    onSettingsClick: () -> Unit,
     emptyText: String = stringResource(R.string.empty_collection)
 ) {
     Column(

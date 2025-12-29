@@ -1,6 +1,5 @@
 package com.boardgamegeek.ui.collection
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -15,16 +14,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.core.content.pm.ShortcutInfoCompat
-import androidx.core.graphics.drawable.IconCompat
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.CollectionViewPrefs
-import com.boardgamegeek.extensions.toLongLabel
-import com.boardgamegeek.extensions.toShortLabel
 import com.boardgamegeek.model.PlayUploadResult
 import com.boardgamegeek.provider.BggContract
-import com.boardgamegeek.ui.*
-import com.boardgamegeek.ui.LegacyCollectionActivity.Companion.createShortcutName
+import com.boardgamegeek.ui.AppScreen
+import com.boardgamegeek.ui.GameActivity
+import com.boardgamegeek.ui.SearchResultsActivity
 import com.boardgamegeek.ui.navigation.BottomNavItem
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
@@ -128,17 +124,6 @@ class CollectionActivity : ComponentActivity() {
                     onGameClick = { gameId, gameName, thumbnailUrl, heroImageUrl ->
                         GameActivity.start(this, gameId, gameName, thumbnailUrl!!, heroImageUrl!!)
                     },
-                    onLogPlayForm = { gameId, gameName, thumbnailUrl ->
-                        LogPlayActivity.logPlay(this, gameId, gameName, thumbnailUrl ?: "") // Provide default if null
-                    },
-                    onLogPlayWizard = { gameId, gameName ->
-                        NewPlayActivity.start(this, gameId, gameName)
-                    },
-                    onCreateShortcut = {
-                        // This might be triggered from a UI element within CollectionScreen now
-                        // For example, if there's a "Create Shortcut" button for the current view
-                        viewModel.createShortcut()
-                    }
                     // Pass other necessary callbacks for CollectionScreen
                 )
             }
@@ -161,27 +146,5 @@ class CollectionActivity : ComponentActivity() {
     companion object {
         private const val KEY_VIEW_ID = "VIEW_ID"
         private const val KEY_CHANGING_GAME_PLAY_ID = "KEY_CHANGING_GAME_PLAY_ID"
-
-        fun startForGameChange(context: Context, playId: Long) {
-            val intent = Intent(context, CollectionActivity::class.java).apply {
-                putExtra(KEY_CHANGING_GAME_PLAY_ID, playId)
-            }
-            context.startActivity(intent)
-        }
-
-        fun createShortcutInfo(context: Context, viewId: Int, viewName: String): ShortcutInfoCompat {
-            val intent = Intent(context, CollectionActivity::class.java).apply {
-                action = Intent.ACTION_VIEW // Standard action for viewing data
-                putExtra(KEY_VIEW_ID, viewId)
-                // Clear task and new task for shortcuts to ensure they don't just resume an existing task stack inappropriately
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            return ShortcutInfoCompat.Builder(context, createShortcutName(viewId))
-                .setShortLabel(viewName.toShortLabel()) // Ensure .toShortLabel() is robust
-                .setLongLabel(viewName.toLongLabel())   // Ensure .toLongLabel() is robust
-                .setIcon(IconCompat.createWithResource(context, R.drawable.ic_shortcut_ic_collection))
-                .setIntent(intent)
-                .build()
-        }
     }
 }
