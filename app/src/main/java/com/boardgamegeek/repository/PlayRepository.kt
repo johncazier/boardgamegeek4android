@@ -820,7 +820,7 @@ class PlayRepository(
                 context.notify(
                     context.createNotificationBuilder(
                         R.string.title_play_stats, NotificationChannels.STATS, PlayStatsActivity::class.java
-                    ).setContentText(context.getText(messageId, context.getString(typeResId), hIndex.description)).setContentIntent(
+                    ).setContentText(context.getSpannedText(messageId, context.getString(typeResId), hIndex.description)).setContentIntent(
                         PendingIntent.getActivity(
                             context,
                             0,
@@ -837,7 +837,10 @@ class PlayRepository(
 
     private fun Long.asDate() = this.formatDateTime(context, flags = DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_ABBREV_ALL)
 
-    private fun Long.asTime() = this.formatDateTime(context, flags = DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_ABBREV_ALL or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
+    private fun Long.asTime() = this.formatDateTime(
+        context,
+        flags = DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_ABBREV_ALL or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME
+    )
 
     companion object {
         private const val NOTIFICATION_ID_PLAY_STATS_GAME_H_INDEX = 0

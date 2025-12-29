@@ -59,7 +59,7 @@ class PlaysSummaryFragment : Fragment() {
         viewModel.locations.observe(viewLifecycleOwner) { locations -> bindLocations(locations) }
         viewModel.colors.observe(viewLifecycleOwner) { playerColors -> bindColors(playerColors) }
         viewModel.hIndex.observe(viewLifecycleOwner) {
-            binding.hIndexView.text = context?.getText(R.string.game_h_index_prefix, it.description)
+            binding.hIndexView.text = context?.getSpannedText(R.string.game_h_index_prefix, it.description)
             binding.morePlayStatsButton.setOnClickListener {
                 startActivity<PlayStatsActivity>()
             }

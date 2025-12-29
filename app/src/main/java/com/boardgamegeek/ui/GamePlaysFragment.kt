@@ -137,7 +137,7 @@ class GamePlaysFragment : Fragment() {
         val lastPlay = plays.filter { it.dirtyTimestamp == 0L }.maxByOrNull { it.dateInMillis }
         if (lastPlay != null) {
             binding.lastPlayViews.isVisible = true
-            binding.lastPlayDateView.text = requireContext().getText(R.string.last_played_prefix, lastPlay.dateForDisplay(requireContext()))
+            binding.lastPlayDateView.text = requireContext().getSpannedText(R.string.last_played_prefix, lastPlay.dateForDisplay(requireContext()))
             binding.lastPlayInfoView.setTextOrHide(lastPlay.describe(requireContext()))
             binding.lastPlayContainer.setOnClickListener {
                 PlayActivity.start(requireContext(), lastPlay.internalId)
@@ -185,15 +185,15 @@ class GamePlaysFragment : Fragment() {
         override fun updateText() {
             play?.let {
                 text = when {
-                    it.startTime > 0 -> context.getText(
+                    it.startTime > 0 -> context.getSpannedText(
                         R.string.playing_for_prefix,
                         DateUtils.formatElapsedTime((System.currentTimeMillis() - it.startTime) / 1000)
                     )
-                    it.dateInMillis.isToday() -> context.getText(
+                    it.dateInMillis.isToday() -> context.getSpannedText(
                         R.string.playing_prefix,
                         it.dateForDisplay(context)
                     )
-                    else -> context.getText(R.string.playing_since_prefix, it.dateForDisplay(context))
+                    else -> context.getSpannedText(R.string.playing_since_prefix, it.dateForDisplay(context))
                 }
             }
         }

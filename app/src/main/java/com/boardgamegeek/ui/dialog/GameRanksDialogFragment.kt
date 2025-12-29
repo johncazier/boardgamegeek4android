@@ -44,7 +44,7 @@ class GameRanksDialogFragment : DialogFragment() {
             val voteCount = it?.numberOfRatings ?: 0
             val standardDeviation = it?.standardDeviation ?: 0.0
             binding.votesView.text = requireContext().getQuantityText(R.plurals.ratings_suffix, voteCount, voteCount)
-            binding.standardDeviationView.text = requireContext().getText(R.string.standard_deviation_prefix, standardDeviation)
+            binding.standardDeviationView.text = requireContext().getSpannedText(R.string.standard_deviation_prefix, standardDeviation)
             binding.standardDeviationView.isVisible = voteCount > 0
         }
 
@@ -68,7 +68,7 @@ class GameRanksDialogFragment : DialogFragment() {
                 }
             }
             if (!hasRankedSubtype && unRankedSubtype.isNotEmpty()) {
-                binding.unRankedView.text = requireContext().getText(R.string.unranked_prefix, unRankedSubtype)
+                binding.unRankedView.text = requireContext().getSpannedText(R.string.unranked_prefix, unRankedSubtype)
                 binding.unRankedView.isVisible = true
             }
         }

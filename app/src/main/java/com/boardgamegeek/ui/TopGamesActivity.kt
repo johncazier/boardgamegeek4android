@@ -1,14 +1,43 @@
 package com.boardgamegeek.ui
 
-import androidx.fragment.app.Fragment
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
+import com.boardgamegeek.ui.navigation.BottomNavItem
+import com.boardgamegeek.ui.topgames.TopGamesScreen
+import com.boardgamegeek.ui.viewmodel.TopGamesViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class TopGamesActivity : TopLevelSinglePaneActivity() {
-    override val firebaseContentType = "Top Games"
+class TopGamesActivity : ComponentActivity() {
 
-    override fun onCreatePane(): Fragment = TopGamesFragment()
+    private val viewModel: TopGamesViewModel by viewModels()
 
-    override val navigationItemId = R.id.top_games
+    private val activityScreenRoute: String = BottomNavItem.TopGames.route
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setContent {
+            AppScreen(
+                topBarTitle = stringResource(id = R.string.title_top_games),
+                currentScreenRouteFromActivity = activityScreenRoute,
+                onSearchClick = {
+                    startActivity(Intent(this, SearchResultsActivity::class.java))
+                }
+            ) { paddingValues ->
+                TopGamesScreen(
+                    viewModel = viewModel,
+                    paddingValues = paddingValues,
+                    onGameClick = { gameId, gameName, thumbnailUrl ->
+                        GameActivity.start(this, gameId, gameName, thumbnailUrl ?: "")
+                    }
+                )
+            }
+        }
+    }
 }

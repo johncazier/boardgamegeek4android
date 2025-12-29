@@ -65,6 +65,7 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
@@ -146,11 +147,7 @@ dependencies {
     def retrofit_version = '3.0.0'
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
-    implementation("com.squareup.retrofit2:converter-simplexml:$retrofit_version") {
-        exclude group: 'stax', module: 'stax-api'
-        exclude group: 'stax', module: 'stax'
-        exclude group: 'xpp3', module: 'xpp3'
-    }
+    implementation "com.squareup.retrofit2:converter-simplexml:$retrofit_version"
 
     def okhttp_version = '5.3.2'
     //noinspection GradleDependency
@@ -177,10 +174,12 @@ dependencies {
     implementation "com.facebook.stetho:stetho:$stetho_version"
     implementation "com.facebook.stetho:stetho-okhttp3:$stetho_version"
 
-    implementation 'org.jsoup:jsoup:1.21.2'
+    implementation 'org.jsoup:jsoup:1.15.3'
 
     implementation("io.coil-kt.coil3:coil-compose:3.3.0")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
+
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }
 
 apply plugin: 'com.google.gms.google-services'

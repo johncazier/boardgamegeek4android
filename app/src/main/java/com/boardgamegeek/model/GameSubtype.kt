@@ -3,7 +3,7 @@ package com.boardgamegeek.model
 import android.content.Context
 import androidx.annotation.StringRes
 import com.boardgamegeek.R
-import com.boardgamegeek.extensions.getText
+import com.boardgamegeek.extensions.getSpannedText
 
 data class GameSubtype(
     val subtype: Game.Subtype,
@@ -15,8 +15,7 @@ data class GameSubtype(
     fun describe(context: Context): CharSequence {
         val typeDescription = describeType(context)
         return when {
-            isRankValid() -> context.getText(R.string.rank_description, rank, typeDescription)
-            else -> typeDescription
+            		isRankValid() -> context.getSpannedText(R.string.rank_description, rank, typeDescription)            else -> typeDescription
         }
     }
 

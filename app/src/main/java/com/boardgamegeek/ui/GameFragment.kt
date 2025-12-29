@@ -203,7 +203,7 @@ class GameFragment : Fragment() {
     private fun onAgePollQueryComplete(poll: GameAgePoll) {
         val voteCount = poll.totalVotes
         val message = if (poll.modalValue.isBlank()) ""
-        else requireContext().getText(R.string.age_community, poll.modalValue)
+        else requireContext().getSpannedText(R.string.age_community, poll.modalValue)
         binding.agesInclude.playerAgePollView.setTextOrHide(message)
         binding.agesInclude.playerAgeVotesView.setTextOrHide(requireContext().getQuantityText(R.plurals.votes_suffix, voteCount, voteCount))
         binding.agesInclude.playerAgeContainer.setOrClearOnClickListener(voteCount > 0) {
@@ -213,10 +213,12 @@ class GameFragment : Fragment() {
 
     private fun onPlayerCountQueryComplete(entity: List<GamePlayerPollResults>) {
         val bestCounts = entity.filter { it.calculatedRecommendation == GamePlayerPollResults.BEST }.toSet()
-        val goodCounts = entity.filter { it.calculatedRecommendation == GamePlayerPollResults.BEST || it.calculatedRecommendation == GamePlayerPollResults.RECOMMENDED }.toSet()
+        val goodCounts =
+            entity.filter { it.calculatedRecommendation == GamePlayerPollResults.BEST || it.calculatedRecommendation == GamePlayerPollResults.RECOMMENDED }
+                .toSet()
 
-        val best = requireContext().getText(R.string.best_prefix, bestCounts.toList().asRange())
-        val good = requireContext().getText(R.string.recommended_prefix, goodCounts.toList().asRange())
+        val best = requireContext().getSpannedText(R.string.best_prefix, bestCounts.toList().asRange())
+        val good = requireContext().getSpannedText(R.string.recommended_prefix, goodCounts.toList().asRange())
         val communityText = when {
             bestCounts.isNotEmpty() && goodCounts.isNotEmpty() && bestCounts != goodCounts -> getString(R.string.ampersand, best, good)
             bestCounts.isNotEmpty() -> best
@@ -227,7 +229,7 @@ class GameFragment : Fragment() {
     }
 
     private fun List<GamePlayerPollResults>.asRange(comma: String = ", ", dash: String = " - "): String {
-       return this.sortedBy { it.playerNumber }.fold(mutableListOf<MutableList<GamePlayerPollResults>>()) { accumulator, element ->
+        return this.sortedBy { it.playerNumber }.fold(mutableListOf<MutableList<GamePlayerPollResults>>()) { accumulator, element ->
             val current = element.playerNumber
             val last = accumulator.lastOrNull()?.lastOrNull()?.playerNumber ?: Int.MAX_VALUE
             if (accumulator.isEmpty() || last != current - 1) {

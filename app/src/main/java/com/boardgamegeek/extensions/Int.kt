@@ -56,7 +56,7 @@ fun Int.asAge(context: Context?): CharSequence {
     return when {
         context == null -> this.toString()
         this <= 0 -> context.getString(R.string.ages_unknown)
-        else -> context.getText(R.string.age_prefix, this)
+        else -> context.getSpannedText(R.string.age_prefix, this)
     }
 }
 

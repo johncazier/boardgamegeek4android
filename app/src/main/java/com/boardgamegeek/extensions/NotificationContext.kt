@@ -11,8 +11,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -68,7 +66,7 @@ fun Context.createNotificationBuilder(
         .setColor(ContextCompat.getColor(this, R.color.primary))
         .setContentTitle(title)
         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-    val flags = PendingIntent.FLAG_UPDATE_CURRENT or if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
+    val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     val resultPendingIntent = PendingIntent.getActivity(this, 0, intent, flags)
     builder.setContentIntent(resultPendingIntent)
     return builder
@@ -108,7 +106,7 @@ private fun Context.buildAndNotifyPlaying(
         this,
         0,
         intent,
-        PendingIntent.FLAG_CANCEL_CURRENT or if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
+        PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
 
     var info = getString(R.string.playing)
@@ -166,7 +164,7 @@ fun Context.notifyLoggedPlay(result: PlayUploadResult) {
     val message = when {
         result.status == PlayUploadResult.Status.DELETE -> getString(R.string.msg_play_deleted)
         result.status == PlayUploadResult.Status.UPDATE -> getString(R.string.msg_play_updated)
-        result.play.quantity > 0 -> getText(
+        result.play.quantity > 0 -> getSpannedText(
             R.string.msg_play_added_quantity,
             result.numberOfPlays.asRangeDescription(result.play.quantity),
         )
@@ -223,7 +221,7 @@ private fun createRematchAction(context: Context, play: Play): NotificationCompa
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         val pendingIntent = PendingIntent.getActivity(
             context, 0, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         NotificationCompat.Action.Builder(R.drawable.ic_baseline_replay_24, context.getString(R.string.rematch), pendingIntent).build()
     } else null
@@ -249,7 +247,6 @@ object NotificationChannels {
     const val STATS = "stats"
     const val FIREBASE_MESSAGES = "firebase_messages"
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun create(context: Context?) {
         val notificationManager = context?.getSystemService<NotificationManager>() ?: return
 

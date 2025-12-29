@@ -34,7 +34,7 @@ else
     this.getSharedPreferences(name, Context.MODE_PRIVATE)
 
 @Suppress("DEPRECATION")
-fun Context.getText(@StringRes id: Int, vararg args: Any): CharSequence {
+fun Context.getSpannedText(@StringRes id: Int, vararg args: Any): CharSequence {
     val encodedArgs = encodeArgs(args)
     val htmlString = String.format(Html.toHtml(SpannedString(getText(id))), *encodedArgs.toTypedArray())
     return Html.fromHtml(htmlString).trimTrailingWhitespace()
