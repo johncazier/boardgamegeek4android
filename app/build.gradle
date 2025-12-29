@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 buildscript {
     repositories {
         mavenCentral()
@@ -31,7 +33,7 @@ repositories {
 android {
     namespace 'com.boardgamegeek'
 
-    compileSdk 36
+    compileSdk = 36
 
     buildFeatures {
         viewBinding true
@@ -68,13 +70,12 @@ android {
         coreLibraryDesugaringEnabled true
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-        freeCompilerArgs += [
-            '-Xjspecify-annotations=strict',
-            '-Xtype-enhancement-improvements-strict-mode'
-        ]
+    kotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_17
+        }
     }
+
     lint {
         abortOnError true
         baseline file('lint-baseline.xml')
