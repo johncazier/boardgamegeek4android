@@ -1,30 +1,14 @@
 package com.boardgamegeek.ui.geeklist
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -34,15 +18,11 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.formatTimestamp
-import com.boardgamegeek.model.GeekList
-import com.boardgamegeek.model.GeekListComment
-import com.boardgamegeek.model.GeekListItem
-import com.boardgamegeek.model.Status
+import com.boardgamegeek.model.*
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.GeekListItemActivity
 import com.boardgamegeek.ui.components.BggHtmlText
 import com.boardgamegeek.ui.components.HtmlText
-import com.boardgamegeek.ui.geeklist.GeekListViewModel
 import com.boardgamegeek.util.XmlApiMarkupConverter
 import kotlinx.coroutines.launch
 
@@ -51,6 +31,7 @@ fun GeekListScreen(
     viewModel: GeekListViewModel,
     paddingValues: PaddingValues
 ) {
+    val geekListResource by viewModel.geekList.collectAsState(initial = RefreshableResource.refreshing())
     val pages = listOf(
         stringResource(R.string.title_description),
         stringResource(R.string.title_items),
@@ -81,22 +62,21 @@ fun GeekListScreen(
             modifier = Modifier.fillMaxSize()
         ) { page ->
             when (page) {
-                0 -> GeekListDescription(viewModel = viewModel)
-                1 -> GeekListItems(viewModel = viewModel)
-                2 -> GeekListComments(viewModel = viewModel)
+                0 -> GeekListDescription(geekListResource = geekListResource)
+                1 -> GeekListItems(geekListResource = geekListResource)
+                2 -> GeekListComments(geekListResource = geekListResource)
             }
         }
     }
 }
 
 @Composable
-fun GeekListDescription(viewModel: GeekListViewModel) {
-    val geekListResource by viewModel.geekList.observeAsState()
+fun GeekListDescription(geekListResource: RefreshableResource<GeekList>) {
     val context = LocalContext.current
     val markupConverter = remember { XmlApiMarkupConverter(context) }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        geekListResource?.let { (status, data, _) ->
+        geekListResource.let { (status, data, _) ->
             if (status == Status.REFRESHING) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
@@ -131,11 +111,9 @@ fun GeekListDescription(viewModel: GeekListViewModel) {
 }
 
 @Composable
-fun GeekListItems(viewModel: GeekListViewModel) {
-    val geekListResource by viewModel.geekList.observeAsState()
-
+fun GeekListItems(geekListResource: RefreshableResource<GeekList>) {
     Box(modifier = Modifier.fillMaxSize()) {
-        geekListResource?.let { (status, data, message) ->
+        geekListResource.let { (status, data, message) ->
             when (status) {
                 Status.REFRESHING -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -178,7 +156,7 @@ fun GeekListItemRow(geekList: GeekList, geekListItem: GeekListItem, order: Int) 
             .fillMaxSize()
             .clickable {
                 if (geekListItem.objectId != BggContract.INVALID_ID) {
-                    GeekListItemActivity.Companion.start(context, geekList, geekListItem, order)
+                    GeekListItemActivity.start(context, geekList, geekListItem, order)
                 }
             }
             .padding(16.dp),
@@ -202,11 +180,9 @@ fun GeekListItemRow(geekList: GeekList, geekListItem: GeekListItem, order: Int) 
 }
 
 @Composable
-fun GeekListComments(viewModel: GeekListViewModel) {
-    val geekListResource by viewModel.geekList.observeAsState()
-
+fun GeekListComments(geekListResource: RefreshableResource<GeekList>) {
     Box(modifier = Modifier.fillMaxSize()) {
-        geekListResource?.let { (status, data, message) ->
+        geekListResource.let { (status, data, message) ->
             when (status) {
                 Status.REFRESHING -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))

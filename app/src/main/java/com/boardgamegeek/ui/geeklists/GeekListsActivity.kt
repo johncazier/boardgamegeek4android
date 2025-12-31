@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.geeklists
 
 import android.content.Intent
 import android.os.Bundle
@@ -15,8 +15,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
+import com.boardgamegeek.ui.AppScreen
+import com.boardgamegeek.ui.SearchResultsActivity
 import com.boardgamegeek.ui.navigation.BottomNavItem
-import com.boardgamegeek.ui.viewmodel.GeekListsViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics

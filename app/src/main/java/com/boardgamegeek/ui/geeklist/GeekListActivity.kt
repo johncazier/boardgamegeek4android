@@ -11,16 +11,23 @@ import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.clearTop
 import com.boardgamegeek.extensions.createBggUri
 import com.boardgamegeek.extensions.intentFor
 import com.boardgamegeek.extensions.linkToBgg
 import com.boardgamegeek.extensions.share
+import com.boardgamegeek.model.RefreshableResource
+import com.boardgamegeek.model.Status
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.AppScreen
 import com.boardgamegeek.ui.SearchResultsActivity
-import com.boardgamegeek.ui.geeklist.GeekListViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
@@ -29,36 +36,39 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class GeekListActivity : ComponentActivity() {
-    private var geekListId = BggContract.Companion.INVALID_ID
-    private var geekListTitle: String = ""
+    private var geekListId = BggContract.INVALID_ID
+    private var geekListInitialTitle: String = "" // Use this for initial title if needed
     private val viewModel by viewModels<GeekListViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        geekListId = intent.getIntExtra(KEY_ID, BggContract.Companion.INVALID_ID)
-        geekListTitle = intent.getStringExtra(KEY_TITLE).orEmpty()
+        geekListId = intent.getIntExtra(KEY_ID, BggContract.INVALID_ID)
+        geekListInitialTitle = intent.getStringExtra(KEY_TITLE).orEmpty()
 
         if (savedInstanceState == null) {
             Firebase.analytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM) {
                 param(FirebaseAnalytics.Param.CONTENT_TYPE, "GeekList")
                 param(FirebaseAnalytics.Param.ITEM_ID, geekListId.toString())
-                param(FirebaseAnalytics.Param.ITEM_NAME, geekListTitle)
+                param(FirebaseAnalytics.Param.ITEM_NAME, geekListInitialTitle)
             }
         }
 
-        viewModel.geekList.observe(this) {
-            it?.let { (_, data, _) ->
-                data?.let { entity ->
-                    geekListTitle = entity.title
-                }
-            }
-        }
         viewModel.setId(geekListId)
 
         setContent {
+            val geekListResource by viewModel.geekList.collectAsState(initial = RefreshableResource.refreshing())
+            var currentGeekListTitle by remember { mutableStateOf(geekListInitialTitle) }
+
+            // Update title when data is successfully loaded
+            if (geekListResource.status == Status.SUCCESS) {
+                geekListResource.data?.let {
+                    currentGeekListTitle = it.title
+                }
+            }
+
             AppScreen(
-                topBarTitle = geekListTitle,
+                topBarTitle = currentGeekListTitle,
                 currentScreenRouteFromActivity = "",
                 onSearchClick = {
                     startActivity(Intent(this, SearchResultsActivity::class.java))
@@ -73,19 +83,19 @@ class GeekListActivity : ComponentActivity() {
                         )
                     }
                     IconButton(onClick = {
-                        val description = String.format(getString(R.string.share_geeklist_text), geekListTitle)
+                        val description = String.format(getString(R.string.share_geeklist_text), currentGeekListTitle)
                         val uri = createBggUri("geeklist", geekListId)
                         share(getString(R.string.share_geeklist_subject), "$description\n\n$uri")
 
                         Firebase.analytics.logEvent(FirebaseAnalytics.Event.SHARE) {
                             param(FirebaseAnalytics.Param.CONTENT_TYPE, "GeekList")
                             param(FirebaseAnalytics.Param.ITEM_ID, geekListId.toString())
-                            param(FirebaseAnalytics.Param.ITEM_ID, geekListTitle)
+                            param(FirebaseAnalytics.Param.ITEM_NAME, currentGeekListTitle)
                         }
                     }) {
                         Icon(
                             imageVector = Icons.Default.Share,
-                            contentDescription = getString(R.string.menu_share)
+                            contentDescription = stringResource(R.string.menu_share)
                         )
                     }
                 }

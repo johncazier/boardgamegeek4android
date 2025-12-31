@@ -20,9 +20,9 @@ import com.boardgamegeek.ui.hotness.HotnessActivity
 import com.boardgamegeek.ui.navigation.AppBottomNavigationBar
 import com.boardgamegeek.ui.navigation.BottomNavItem
 import com.boardgamegeek.ui.theme.AppTheme
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.padding
+import com.boardgamegeek.ui.geeklists.GeekListsActivity
 import com.boardgamegeek.ui.topgames.TopGamesActivity
 import kotlinx.coroutines.launch
 import java.util.Locale

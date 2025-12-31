@@ -322,7 +322,7 @@
 			android:name=".ui.ForumActivity"
 			android:label="@string/title_forum" />
 		<activity
-			android:name=".ui.GeekListsActivity"
+			android:name=".ui.geeklists.GeekListsActivity"
 			android:label="@string/title_geeklists">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
@@ -333,7 +333,7 @@
 			android:label="@string/title_geeklist">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.GeekListsActivity" />
+				android:value=".ui.geeklists.GeekListsActivity" />
 		</activity>
 		<activity
 			android:name=".ui.GeekListItemActivity"

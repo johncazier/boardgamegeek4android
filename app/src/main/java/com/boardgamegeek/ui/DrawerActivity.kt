@@ -20,6 +20,7 @@ import com.boardgamegeek.databinding.ActivityDrawerBaseBinding
 import com.boardgamegeek.model.User
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.pref.SettingsActivity
+import com.boardgamegeek.ui.geeklists.GeekListsActivity
 import com.boardgamegeek.ui.hotness.HotnessActivity
 import com.boardgamegeek.ui.topgames.TopGamesActivity
 import com.boardgamegeek.ui.viewmodel.SelfUserViewModel

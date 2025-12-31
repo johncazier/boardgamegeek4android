@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.geeklists
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,7 +18,6 @@ import androidx.paging.compose.itemKey
 import com.boardgamegeek.R
 import com.boardgamegeek.model.GeekList
 import com.boardgamegeek.ui.geeklist.GeekListActivity
-import com.boardgamegeek.ui.viewmodel.GeekListsViewModel
 
 @Composable
 fun GeekListsScreen(
