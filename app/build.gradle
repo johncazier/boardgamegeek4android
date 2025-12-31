@@ -88,6 +88,7 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    implementation 'androidx.compose.runtime:runtime-livedata:1.10.0'
 
     def hilt_version = '2.57.2'
     implementation "com.google.dagger:hilt-android:$hilt_version"

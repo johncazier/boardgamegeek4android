@@ -810,6 +810,9 @@
 	<string name="six_players">6P</string>
 	<string name="collection_analyze_summary">Your average rating is %1$s, which correlates with the average rating of %2$s by %3$s</string>
 	<string name="offer_for_trade">Offer for trade</string>
+	<string name="posted">Posted</string>
+	<string name="edited">Edited</string>
+	<string name="no_comments">No Comments</string>
 
 	<plurals name="msg_colors_selected">
 		<item quantity="one">%s color</item>
@@ -978,6 +981,14 @@
 	<plurals name="users_unupdated_total">
 		<item quantity="one"><b>%,d</b> user not updated</item>
 		<item quantity="other"><b>%,d</b> users not updated</item>
+	</plurals>
+	<plurals name="num_items">
+		<item quantity="one">%d item</item>
+		<item quantity="other">%d items</item>
+	</plurals>
+	<plurals name="num_thumbs">
+		<item quantity="one">%d thumb</item>
+		<item quantity="other">%d thumbs</item>
 	</plurals>
 
 </resources>

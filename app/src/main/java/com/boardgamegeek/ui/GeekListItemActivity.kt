@@ -14,6 +14,7 @@ import com.boardgamegeek.extensions.getParcelableCompat
 import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.GameActivity.Companion.start
+import com.boardgamegeek.ui.geeklist.GeekListActivity
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 

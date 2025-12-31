@@ -329,7 +329,7 @@
 				android:value=".ui.HomeActivity" />
 		</activity>
 		<activity
-			android:name=".ui.GeekListActivity"
+			android:name=".ui.geeklist.GeekListActivity"
 			android:label="@string/title_geeklist">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"

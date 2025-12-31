@@ -1,7 +1,11 @@
-package com.boardgamegeek.ui.viewmodel
+package com.boardgamegeek.ui.geeklist
 
 import android.app.Application
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.liveData
+import androidx.lifecycle.switchMap
 import com.boardgamegeek.model.GeekList
 import com.boardgamegeek.model.GeekListItem
 import com.boardgamegeek.model.RefreshableResource
@@ -27,13 +31,13 @@ class GeekListViewModel @Inject constructor(
 
     val geekList: LiveData<RefreshableResource<GeekList>> = _geekListId.switchMap { id ->
         liveData {
-            emit(RefreshableResource.refreshing(latestValue?.data))
-            if (id == BggContract.INVALID_ID) {
-                emit(RefreshableResource.error("Invalid ID!"))
+            emit(RefreshableResource.Companion.refreshing(latestValue?.data))
+            if (id == BggContract.Companion.INVALID_ID) {
+                emit(RefreshableResource.Companion.error("Invalid ID!"))
             } else {
                 try {
                     val geekList = geekListRepository.getGeekList(id)
-                    emit(RefreshableResource.refreshing(geekList))
+                    emit(RefreshableResource.Companion.refreshing(geekList))
                     val itemsWithImages = mutableListOf<GeekListItem>()
                     geekList.items.forEach {
                         itemsWithImages += if (it.thumbnailUrls == null || it.heroImageUrls == null) {
@@ -47,9 +51,9 @@ class GeekListViewModel @Inject constructor(
                             it.copy(thumbnailUrls = urlPair.first, heroImageUrls = urlPair.second)
                         } else it
                     }
-                    emit(RefreshableResource.success(geekList.copy(items = itemsWithImages)))
+                    emit(RefreshableResource.Companion.success(geekList.copy(items = itemsWithImages)))
                 } catch (e: Exception) {
-                    emit(RefreshableResource.error(e, application))
+                    emit(RefreshableResource.Companion.error(e, application))
                 }
             }
         }
