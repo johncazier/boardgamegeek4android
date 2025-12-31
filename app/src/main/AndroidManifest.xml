@@ -154,7 +154,7 @@
 		</activity>
 
 		<activity
-			android:name=".ui.TopGamesActivity"
+			android:name=".ui.topgames.TopGamesActivity"
 			android:label="@string/title_top_games">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"

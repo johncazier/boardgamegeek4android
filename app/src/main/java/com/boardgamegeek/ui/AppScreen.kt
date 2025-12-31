@@ -23,6 +23,7 @@ import com.boardgamegeek.ui.theme.AppTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.padding
+import com.boardgamegeek.ui.topgames.TopGamesActivity
 import kotlinx.coroutines.launch
 import java.util.Locale
 

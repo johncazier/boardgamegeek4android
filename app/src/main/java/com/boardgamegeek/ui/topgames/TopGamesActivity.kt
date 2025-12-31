@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.topgames
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,9 +7,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
+import com.boardgamegeek.ui.AppScreen
+import com.boardgamegeek.ui.GameActivity
+import com.boardgamegeek.ui.SearchResultsActivity
 import com.boardgamegeek.ui.navigation.BottomNavItem
-import com.boardgamegeek.ui.topgames.TopGamesScreen
-import com.boardgamegeek.ui.viewmodel.TopGamesViewModel
+import com.boardgamegeek.ui.topgames.TopGamesViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -34,7 +36,7 @@ class TopGamesActivity : ComponentActivity() {
                     viewModel = viewModel,
                     paddingValues = paddingValues,
                     onGameClick = { gameId, gameName, thumbnailUrl ->
-                        GameActivity.start(this, gameId, gameName, thumbnailUrl ?: "")
+                        GameActivity.Companion.start(this, gameId, gameName, thumbnailUrl ?: "")
                     }
                 )
             }

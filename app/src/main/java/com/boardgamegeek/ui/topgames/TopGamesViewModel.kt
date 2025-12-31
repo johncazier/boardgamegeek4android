@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui.viewmodel
+package com.boardgamegeek.ui.topgames
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -30,13 +30,13 @@ class TopGamesViewModel @Inject constructor(
 
     fun refresh() {
         viewModelScope.launch {
-            _topGamesFlow.value = RefreshableResource.refreshing(_topGamesFlow.value?.data)
+            _topGamesFlow.value = RefreshableResource.Companion.refreshing(_topGamesFlow.value?.data)
             try {
                 repository.findTopGames().let {
-                    _topGamesFlow.value = RefreshableResource.success(it)
+                    _topGamesFlow.value = RefreshableResource.Companion.success(it)
                 }
             } catch (e: Exception) {
-                _topGamesFlow.value = RefreshableResource.error(e, application)
+                _topGamesFlow.value = RefreshableResource.Companion.error(e, application)
                 errorMessageFlow.value = e.message
             }
         }

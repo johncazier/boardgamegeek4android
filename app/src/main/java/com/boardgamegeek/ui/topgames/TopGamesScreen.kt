@@ -42,7 +42,7 @@ import com.boardgamegeek.R
 import com.boardgamegeek.extensions.asYear
 import com.boardgamegeek.model.Status
 import com.boardgamegeek.model.TopGame
-import com.boardgamegeek.ui.viewmodel.TopGamesViewModel
+import com.boardgamegeek.ui.topgames.TopGamesViewModel
 
 @Composable
 fun TopGamesScreen(
