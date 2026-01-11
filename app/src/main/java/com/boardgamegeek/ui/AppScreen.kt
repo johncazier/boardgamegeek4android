@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -19,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.boardgamegeek.R
 import com.boardgamegeek.pref.SettingsActivity
+import com.boardgamegeek.ui.LegacyCollectionActivity
 import com.boardgamegeek.ui.collection.CollectionActivity
 import com.boardgamegeek.ui.geeklists.GeekListsActivity
 import com.boardgamegeek.ui.hotness.HotnessActivity
@@ -113,6 +115,16 @@ fun AppScreen(
                         )
                     }
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    NavigationDrawerItem(
+                        icon = { Icon(Icons.Filled.History, contentDescription = null) },
+                        label = { Text(stringResource(R.string.title_collection_legacy)) },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            context.startActivity<LegacyCollectionActivity>()
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    )
                     NavigationDrawerItem(
                         icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
                         label = { Text(stringResource(R.string.title_settings)) },
