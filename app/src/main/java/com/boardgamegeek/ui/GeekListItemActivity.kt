@@ -1,32 +1,35 @@
 package com.boardgamegeek.ui
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
-import android.view.MenuItem
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.OpenInBrowser
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
+import com.boardgamegeek.extensions.getParcelableCompat
+import com.boardgamegeek.extensions.link
+import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.model.GeekList
 import com.boardgamegeek.model.GeekListItem
-import com.boardgamegeek.extensions.link
-import com.boardgamegeek.extensions.getParcelableCompat
-import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.GameActivity.Companion.start
-import com.boardgamegeek.ui.geeklist.GeekListActivity
+import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
+import dagger.hilt.android.AndroidEntryPoint
 
-class GeekListItemActivity : HeroTabActivity() {
+@AndroidEntryPoint
+class GeekListItemActivity : ComponentActivity() {
     private var geekListId = 0
     private var geekListTitle = ""
     private var order = 0
     private var geekListItem = GeekListItem()
-
-    private val adapter: GeekListItemPagerAdapter by lazy {
-        GeekListItemPagerAdapter(this)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,68 +38,48 @@ class GeekListItemActivity : HeroTabActivity() {
         order = intent.getIntExtra(KEY_ORDER, 0)
         geekListItem = intent.getParcelableCompat(KEY_ITEM) ?: GeekListItem()
 
-        initializeViewPager()
-
-        safelySetTitle(geekListItem.objectName)
         if (savedInstanceState == null && geekListItem.objectId != BggContract.INVALID_ID) {
-            firebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM) {
+            Firebase.analytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM) {
                 param(FirebaseAnalytics.Param.CONTENT_TYPE, "GeekListItem")
                 param(FirebaseAnalytics.Param.ITEM_ID, geekListItem.objectId.toString())
                 param(FirebaseAnalytics.Param.ITEM_NAME, geekListItem.objectName)
             }
         }
-        loadToolbarImage(geekListItem.heroImageUrls)
-    }
 
-    override val optionsMenuId = R.menu.view
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            android.R.id.home -> {
-                if (geekListId != BggContract.INVALID_ID) {
-                    GeekListActivity.startUp(this, geekListId, geekListTitle)
-                }
-                finish()
-                true
-            }
-            R.id.menu_view -> {
-                if (geekListItem.isBoardGame) {
-                    if (geekListItem.objectId == BggContract.INVALID_ID || geekListItem.objectName.isBlank()) false else {
-                        start(this, geekListItem.objectId, geekListItem.objectName)
-                        true
+        setContent {
+            AppScreen(
+                topBarTitle = geekListItem.objectName,
+                currentScreenRouteFromActivity = "",
+                onSearchClick = {
+                     startActivity(Intent(this, SearchResultsActivity::class.java))
+                },
+                topBarActions = {
+                    IconButton(onClick = {
+                        if (geekListItem.isBoardGame) {
+                            if (geekListItem.objectId != BggContract.INVALID_ID && geekListItem.objectName.isNotBlank()) {
+                                start(this@GeekListItemActivity, geekListItem.objectId, geekListItem.objectName)
+                            }
+                        } else {
+                            if (geekListItem.objectUrl.isNotBlank()) {
+                                link(geekListItem.objectUrl)
+                            }
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.OpenInBrowser,
+                            contentDescription = stringResource(R.string.menu_view)
+                        )
                     }
-                } else {
-                    if (geekListItem.objectUrl.isBlank()) false else {
-                        link(geekListItem.objectUrl)
-                        true
-                    }
                 }
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
-    override fun createAdapter() = adapter
-
-    override fun getPageTitle(position: Int): CharSequence {
-        return when (position) {
-            0 -> getString(R.string.title_description)
-            1 -> getString(R.string.title_comments)
-            else -> ""
-        }
-    }
-
-    inner class GeekListItemPagerAdapter(activity: FragmentActivity) :
-        FragmentStateAdapter(activity) {
-        override fun createFragment(position: Int): Fragment {
-            return when (position) {
-                0 -> GeekListItemFragment.newInstance(order, geekListTitle, geekListItem)
-                1 -> GeekListItemCommentsFragment.newInstance(geekListItem.comments)
-                else -> ErrorFragment()
+            ) { paddingValues ->
+                GeekListItemScreen(
+                    geekListItem = geekListItem,
+                    geekListTitle = geekListTitle,
+                    order = order,
+                    paddingValues = paddingValues
+                )
             }
         }
-
-        override fun getItemCount() = 2
     }
 
     companion object {
