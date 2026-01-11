@@ -5,27 +5,36 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.BggColors
+import com.boardgamegeek.extensions.asYear
+import com.boardgamegeek.extensions.formatTimestamp
 import com.boardgamegeek.extensions.getTextColor
 import com.boardgamegeek.extensions.toColor
 import com.boardgamegeek.model.CollectionItem
 import com.boardgamegeek.model.CollectionItem.Companion.UNRATED
+import com.boardgamegeek.sorter.CollectionSorter
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class) // Required for PullToRefreshBox
@@ -40,8 +49,10 @@ fun CollectionScreen(
     val collectionItems by viewModel.itemsFlow.collectAsState()
     val isRefreshing by viewModel.isRefreshingFlow.collectAsState()
     val isFiltering by viewModel.isFilteringFlow.collectAsState()
+    val effectiveSort by viewModel.effectiveSort.collectAsState()
 
     val pullToRefreshState = rememberPullToRefreshState() // Create the state for Material 3 version
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -69,6 +80,7 @@ fun CollectionScreen(
                     ) { item ->
                         CollectionItemRow(
                             item = item,
+                            sorter = effectiveSort?.first,
                             onItemClick = {
                                 when {
                                     isCreatingShortcut -> {
@@ -101,49 +113,104 @@ fun CollectionScreen(
 @Composable
 fun CollectionItemRow(
     item: CollectionItem,
+    sorter: CollectionSorter?,
     onItemClick: () -> Unit,
     onItemLongClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     Row(
         modifier = modifier
             .fillMaxWidth()
             .combinedClickable(onClick = onItemClick, onLongClick = onItemLongClick)
-            .padding(vertical = 12.dp, horizontal = 16.dp),
+            .padding(vertical = 4.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
             model = item.thumbnailUrl,
             contentDescription = item.collectionName,
             modifier = Modifier
-                .size(60.dp)
+                .size(56.dp)
                 .padding(end = 8.dp),
             contentScale = ContentScale.Crop,
             placeholder = painterResource(id = R.drawable.ic_launcher_foreground),
             error = painterResource(id = R.drawable.ic_launcher_foreground)
         )
 
-        Column(modifier = Modifier.weight(1f)) {
-            Text(item.collectionName, style = MaterialTheme.typography.titleMedium)
-            item.yearPublished.takeIf { it > 0 }?.let {
-                Text(it.toString(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-
-        val rating = item.rating
-
-        if (rating != UNRATED) {
-            val ratingColorInt = rating.toColor(BggColors.ratingColors)
-            Box(modifier = Modifier
-                .padding(start = 8.dp)
-                .background(color = Color(ratingColorInt))
-            ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = String.format(Locale.getDefault(), "%.1f", rating),
-                    color = Color(ratingColorInt.getTextColor()),
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
+                    text = item.collectionName,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
                 )
+                if (item.isFavorite) {
+                    Icon(
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = stringResource(R.string.menu_favorite),
+                        modifier = Modifier
+                            .padding(start = 4.dp)
+                            .size(12.dp),
+                        tint = MaterialTheme.colorScheme.primary // Or specific favorite color
+                    )
+                }
+            }
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Year
+                item.yearPublished.asYear(context).takeIf { it.isNotEmpty() }?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                // Info / Rating / Timestamp
+                val timestamp = sorter?.getTimestamp(item) ?: 0L
+                val ratingText = sorter?.getRatingText(item).orEmpty()
+                
+                if (timestamp > 0L) {
+                    Text(
+                        text = timestamp.formatTimestamp(context).toString(),
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.End
+                    )
+                } else if (ratingText.isNotEmpty()) {
+                    val rating = sorter?.getRating(item) ?: 0.0
+                    val ratingColorInt = rating.toColor(BggColors.ratingColors)
+                    
+                    Box(modifier = Modifier
+                        .width(48.dp)
+                        .background(color = Color(ratingColorInt))
+                    ) {
+                        Text(
+                            text = ratingText,
+                            color = Color(ratingColorInt.getTextColor()),
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                            modifier = Modifier.align(Alignment.Center),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                } else {
+                    val displayInfo = sorter?.getDisplayInfo(item)
+                    if (!displayInfo.isNullOrEmpty()) {
+                        Text(
+                            text = displayInfo,
+                            style = MaterialTheme.typography.bodySmall,
+                            textAlign = TextAlign.End
+                        )
+                    }
+                }
             }
         }
     }
