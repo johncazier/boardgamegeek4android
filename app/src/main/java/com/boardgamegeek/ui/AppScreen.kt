@@ -8,11 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.LibraryBooks
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -21,8 +17,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.boardgamegeek.R
 import com.boardgamegeek.pref.SettingsActivity
-import com.boardgamegeek.ui.CollectionDetailsActivity
-import com.boardgamegeek.ui.LegacyCollectionActivity
 import com.boardgamegeek.ui.collection.CollectionActivity
 import com.boardgamegeek.ui.geeklists.GeekListsActivity
 import com.boardgamegeek.ui.hotness.HotnessActivity
@@ -134,6 +128,16 @@ fun AppScreen(
                         onClick = {
                             scope.launch { drawerState.close() }
                             context.startActivity<LegacyCollectionActivity>()
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    )
+                    NavigationDrawerItem(
+                        icon = { Icon(Icons.Filled.Event, contentDescription = null) },
+                        label = { Text(stringResource(R.string.title_plays)) },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            context.startActivity<PlaysSummaryActivity>()
                         },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
