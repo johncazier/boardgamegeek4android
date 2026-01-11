@@ -56,6 +56,7 @@ class CollectionActivity : ComponentActivity() {
                 initialViewId != CollectionViewPrefs.DEFAULT_DEFAULT_ID) { // Ensure selection if not default
                 viewModel.selectView(initialViewId)
             }
+            viewModel.refresh()
         }
 
         setContent {

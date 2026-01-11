@@ -28,15 +28,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
-import com.boardgamegeek.extensions.BggColors
-import com.boardgamegeek.extensions.asYear
-import com.boardgamegeek.extensions.formatTimestamp
-import com.boardgamegeek.extensions.getTextColor
-import com.boardgamegeek.extensions.toColor
+import com.boardgamegeek.extensions.*
 import com.boardgamegeek.model.CollectionItem
-import com.boardgamegeek.model.CollectionItem.Companion.UNRATED
 import com.boardgamegeek.sorter.CollectionSorter
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class) // Required for PullToRefreshBox and stickyHeader
 @Composable
@@ -53,29 +47,38 @@ fun CollectionScreen(
     val effectiveSort by viewModel.effectiveSort.collectAsState()
 
     val pullToRefreshState = rememberPullToRefreshState() // Create the state for Material 3 version
-    val context = LocalContext.current
+    val isLoading = isRefreshing || isFiltering
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        PullToRefreshBox(
-            isRefreshing = isRefreshing || isFiltering,
-            onRefresh = { viewModel.refresh() },
-            state = pullToRefreshState,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            if (collectionItems.isEmpty() && !isFiltering && !isRefreshing) {
-                EmptyCollectionView(
-                    modifier = Modifier.fillMaxSize(),
-                )
+        if (collectionItems.isEmpty()) {
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {
+                PullToRefreshBox(
+                    isRefreshing = false,
+                    onRefresh = { viewModel.refresh() },
+                    state = pullToRefreshState,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    EmptyCollectionView(modifier = Modifier.fillMaxSize())
+                }
+            }
+        } else {
+            PullToRefreshBox(
+                isRefreshing = isLoading,
+                onRefresh = { viewModel.refresh() },
+                state = pullToRefreshState,
+                modifier = Modifier.fillMaxSize()
+            ) {
                 val sorter = effectiveSort?.first
                 val groupedItems = remember(collectionItems, sorter) {
-                     collectionItems.groupBy { item ->
-                         sorter?.getHeaderText(item) ?: "-"
-                     }
+                    collectionItems.groupBy { item ->
+                        sorter?.getHeaderText(item) ?: "-"
+                    }
                 }
 
                 LazyColumn(
@@ -129,10 +132,6 @@ fun CollectionScreen(
                     }
                 }
             }
-        }
-
-        if (isFiltering && collectionItems.isEmpty()) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
     }
 }
