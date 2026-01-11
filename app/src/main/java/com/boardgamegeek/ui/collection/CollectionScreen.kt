@@ -1,5 +1,6 @@
 package com.boardgamegeek.ui.collection
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
@@ -37,7 +38,7 @@ import com.boardgamegeek.model.CollectionItem.Companion.UNRATED
 import com.boardgamegeek.sorter.CollectionSorter
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class) // Required for PullToRefreshBox
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class) // Required for PullToRefreshBox and stickyHeader
 @Composable
 fun CollectionScreen(
     viewModel: CollectionViewModel,
@@ -70,35 +71,59 @@ fun CollectionScreen(
                     modifier = Modifier.fillMaxSize(),
                 )
             } else {
+                val sorter = effectiveSort?.first
+                val groupedItems = remember(collectionItems, sorter) {
+                     collectionItems.groupBy { item ->
+                         sorter?.getHeaderText(item) ?: "-"
+                     }
+                }
+
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 72.dp)
                 ) {
-                    items(
-                        items = collectionItems,
-                        key = { item -> item.internalId }
-                    ) { item ->
-                        CollectionItemRow(
-                            item = item,
-                            sorter = effectiveSort?.first,
-                            onItemClick = {
-                                when {
-                                    isCreatingShortcut -> {
-                                        // TODO: Handle shortcut creation for item
+                    groupedItems.forEach { (header, itemsInGroup) ->
+                        stickyHeader(key = header) {
+                             Surface(
+                                 modifier = Modifier.fillMaxWidth(),
+                                 color = MaterialTheme.colorScheme.surfaceVariant
+                             ) {
+                                 Text(
+                                     text = header,
+                                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                     style = MaterialTheme.typography.labelLarge,
+                                     fontWeight = FontWeight.Bold,
+                                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                                 )
+                             }
+                        }
+
+                        items(
+                            items = itemsInGroup,
+                            key = { item -> item.internalId }
+                        ) { item ->
+                            CollectionItemRow(
+                                item = item,
+                                sorter = sorter,
+                                onItemClick = {
+                                    when {
+                                        isCreatingShortcut -> {
+                                            // TODO: Handle shortcut creation for item
+                                        }
+                                        changingGamePlayId != com.boardgamegeek.provider.BggContract.INVALID_ID.toLong() -> {
+                                            // TODO: Handle changing game for a play
+                                        }
+                                        else -> {
+                                            onGameClick(item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
+                                        }
                                     }
-                                    changingGamePlayId != com.boardgamegeek.provider.BggContract.INVALID_ID.toLong() -> {
-                                        // TODO: Handle changing game for a play
-                                    }
-                                    else -> {
-                                        onGameClick(item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
-                                    }
+                                },
+                                onItemLongClick = {
+                                    // TODO: Implement ActionMode initiation
                                 }
-                            },
-                            onItemLongClick = {
-                                // TODO: Implement ActionMode initiation
-                            }
-                        )
-                        HorizontalDivider()
+                            )
+                            HorizontalDivider()
+                        }
                     }
                 }
             }
