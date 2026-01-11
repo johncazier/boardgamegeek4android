@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.geeklistitem
 
 import android.text.format.DateUtils
 import android.webkit.WebView
@@ -36,7 +36,7 @@ fun GeekListItemScreen(
     geekListItem: GeekListItem,
     geekListTitle: String,
     order: Int,
-    paddingValues: androidx.compose.foundation.layout.PaddingValues
+    paddingValues: PaddingValues
 ) {
     val pagerState = rememberPagerState(pageCount = { 2 })
     val scope = rememberCoroutineScope()

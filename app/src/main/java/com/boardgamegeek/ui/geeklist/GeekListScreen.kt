@@ -20,7 +20,7 @@ import com.boardgamegeek.R
 import com.boardgamegeek.extensions.formatTimestamp
 import com.boardgamegeek.model.*
 import com.boardgamegeek.provider.BggContract
-import com.boardgamegeek.ui.GeekListItemActivity
+import com.boardgamegeek.ui.geeklistitem.GeekListItemActivity
 import com.boardgamegeek.ui.components.BggHtmlText
 import com.boardgamegeek.ui.components.HtmlText
 import com.boardgamegeek.util.XmlApiMarkupConverter

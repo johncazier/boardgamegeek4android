@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.geeklistitem
 
 import android.content.Context
 import android.content.Intent
@@ -17,7 +17,9 @@ import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.model.GeekList
 import com.boardgamegeek.model.GeekListItem
 import com.boardgamegeek.provider.BggContract
+import com.boardgamegeek.ui.AppScreen
 import com.boardgamegeek.ui.GameActivity.Companion.start
+import com.boardgamegeek.ui.SearchResultsActivity
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
@@ -51,7 +53,7 @@ class GeekListItemActivity : ComponentActivity() {
                 topBarTitle = geekListItem.objectName,
                 currentScreenRouteFromActivity = "",
                 onSearchClick = {
-                     startActivity(Intent(this, SearchResultsActivity::class.java))
+                    startActivity(Intent(this, SearchResultsActivity::class.java))
                 },
                 topBarActions = {
                     IconButton(onClick = {

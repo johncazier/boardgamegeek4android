@@ -336,7 +336,7 @@
 				android:value=".ui.geeklists.GeekListsActivity" />
 		</activity>
 		<activity
-			android:name=".ui.GeekListItemActivity"
+			android:name=".ui.geeklistitem.GeekListItemActivity"
 			android:label="@string/title_geeklist" />
 		<activity
 			android:name=".ui.ThreadActivity"
