@@ -6,23 +6,25 @@ import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.boardgamegeek.R
+import com.boardgamegeek.pref.SettingsActivity
 import com.boardgamegeek.ui.collection.CollectionActivity
+import com.boardgamegeek.ui.geeklists.GeekListsActivity
 import com.boardgamegeek.ui.hotness.HotnessActivity
 import com.boardgamegeek.ui.navigation.AppBottomNavigationBar
 import com.boardgamegeek.ui.navigation.BottomNavItem
 import com.boardgamegeek.ui.theme.AppTheme
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.padding
-import com.boardgamegeek.ui.geeklists.GeekListsActivity
 import com.boardgamegeek.ui.topgames.TopGamesActivity
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -110,6 +112,17 @@ fun AppScreen(
                             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                         )
                     }
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    NavigationDrawerItem(
+                        icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
+                        label = { Text(stringResource(R.string.title_settings)) },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            context.startActivity<SettingsActivity>()
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    )
                 }
             },
             gesturesEnabled = true
