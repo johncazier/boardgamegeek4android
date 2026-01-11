@@ -84,18 +84,20 @@ fun CollectionScreen(
                 ) {
                     groupedItems.forEach { (header, itemsInGroup) ->
                         stickyHeader(key = header) {
-                             Surface(
-                                 modifier = Modifier.fillMaxWidth(),
-                                 color = MaterialTheme.colorScheme.surfaceVariant
-                             ) {
-                                 Text(
-                                     text = header,
-                                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                                     style = MaterialTheme.typography.labelLarge,
-                                     fontWeight = FontWeight.Bold,
-                                     color = MaterialTheme.colorScheme.onSurfaceVariant
-                                 )
-                             }
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = MaterialTheme.colorScheme.surfaceVariant
+                            ) {
+                                val isRatingSort = sorter?.getRatingText(itemsInGroup.firstOrNull() ?: CollectionItem())?.isNotEmpty() == true
+                                Text(
+                                    text = header,
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = if (isRatingSort) TextAlign.Center else TextAlign.Start
+                                )
+                            }
                         }
 
                         items(
