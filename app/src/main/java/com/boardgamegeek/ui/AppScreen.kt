@@ -142,6 +142,16 @@ fun AppScreen(
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                     NavigationDrawerItem(
+                        icon = { Icon(Icons.Filled.Person, contentDescription = null) },
+                        label = { Text(stringResource(R.string.title_buddies)) },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            context.startActivity<BuddiesActivity>()
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    )
+                    NavigationDrawerItem(
                         icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
                         label = { Text(stringResource(R.string.title_settings)) },
                         selected = false,
