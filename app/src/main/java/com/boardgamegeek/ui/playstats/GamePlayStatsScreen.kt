@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -51,6 +52,7 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color as ComposeColor
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
@@ -122,17 +124,26 @@ fun GamePlayStatsScreen(
         ?.map { item -> item.modifiedWhitmoreScore }
         ?.average() ?: 0.0
 
-    val playCountColors = remember(collectionItems) {
-        val fallback = intArrayOf(
-            ContextCompat.getColor(ctx, R.color.orange),
-            ContextCompat.getColor(ctx, R.color.dark_blue),
-            ContextCompat.getColor(ctx, R.color.light_blue),
-        )
+    val isDarkTheme = isSystemInDarkTheme()
+    val playCountColors = remember(collectionItems, isDarkTheme) {
+        val fallback = if (isDarkTheme) {
+            intArrayOf(
+                ContextCompat.getColor(ctx, R.color.orange),
+                ContextCompat.getColor(ctx, R.color.medium_blue),
+                ContextCompat.getColor(ctx, R.color.light_blue),
+            )
+        } else {
+            intArrayOf(
+                ContextCompat.getColor(ctx, R.color.orange),
+                ContextCompat.getColor(ctx, R.color.dark_blue),
+                ContextCompat.getColor(ctx, R.color.light_blue),
+            )
+        }
         collectionItems?.firstOrNull()?.let { item ->
             intArrayOf(
-                item.winsColor.colorOrElse(ctx, R.color.orange),
-                item.winnablePlaysColor.colorOrElse(ctx, R.color.dark_blue),
-                item.allPlaysColor.colorOrElse(ctx, R.color.light_blue),
+                sanitizeChartColor(item.winsColor, fallback[0], isDarkTheme),
+                sanitizeChartColor(item.winnablePlaysColor, fallback[1], isDarkTheme),
+                sanitizeChartColor(item.allPlaysColor, fallback[2], isDarkTheme),
             )
         } ?: fallback
     }
@@ -341,6 +352,7 @@ private fun PlayCountCard(
         if (username.isNotBlank()) {
             val playCountValues = buildPlayCountValues(stats, username)
             if (playCountValues.isNotEmpty()) {
+                val labelColor = resolveTint(headerTint, MaterialTheme.colorScheme.onSurface).toArgb()
                 PlayCountChart(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -348,6 +360,7 @@ private fun PlayCountCard(
                         .padding(top = dimensionResource(R.dimen.padding_extra)),
                     playCountValues = playCountValues,
                     playCountColors = playCountColors,
+                    labelColor = labelColor,
                 )
             }
         }
@@ -380,6 +393,7 @@ private fun PlayCountChart(
     modifier: Modifier,
     playCountValues: List<BarEntry>,
     playCountColors: IntArray,
+    labelColor: Int,
 ) {
     val titlePlays = stringResource(R.string.title_plays)
     val titleWins = stringResource(R.string.title_wins)
@@ -396,6 +410,9 @@ private fun PlayCountChart(
                 axisRight.granularity = 1.0f
                 xAxis.granularity = 1.0f
                 xAxis.setDrawGridLines(false)
+                axisRight.textColor = labelColor
+                xAxis.textColor = labelColor
+                legend.textColor = labelColor
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
@@ -1074,7 +1091,22 @@ private fun resolveTint(color: ComposeColor, fallback: ComposeColor): ComposeCol
 }
 
 private fun Int.colorOrElse(context: android.content.Context, @ColorInt colorResId: Int): Int {
-    return if (this == Color.TRANSPARENT) ContextCompat.getColor(context, colorResId) else this
+    return if (this == Color.TRANSPARENT || this == 0) ContextCompat.getColor(context, colorResId) else this
+}
+
+private fun sanitizeChartColor(@ColorInt color: Int, @ColorInt fallback: Int, isDarkTheme: Boolean): Int {
+    // Treat transparent/zero/black as invalid to avoid unreadable bars.
+    val rgb = color and 0x00FFFFFF
+    if (color == 0 || color == Color.TRANSPARENT || rgb == 0) return fallback
+    return if (isDarkTheme && isTooDark(color)) fallback else color
+}
+
+private fun isTooDark(@ColorInt color: Int): Boolean {
+    val r = (color shr 16) and 0xFF
+    val g = (color shr 8) and 0xFF
+    val b = color and 0xFF
+    val luminance = (0.2126 * r) + (0.7152 * g) + (0.0722 * b)
+    return luminance < 60
 }
 
 private fun formatDate(context: android.content.Context, date: String): String {

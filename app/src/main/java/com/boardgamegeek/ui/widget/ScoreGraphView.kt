@@ -1,6 +1,7 @@
 package com.boardgamegeek.ui.widget
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -65,9 +66,9 @@ class ScoreGraphView @JvmOverloads constructor(
             hasPersonalScores = true
         }
 
-
     init {
-        barPaint.color = Color.BLACK
+        val isDarkTheme = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+        barPaint.color = if (isDarkTheme) Color.WHITE else Color.DKGRAY
         barPaint.strokeWidth = 1f
 
         scorePaint.strokeWidth = SCORE_STROKE_WIDTH.toFloat()
