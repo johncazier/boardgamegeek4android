@@ -1095,7 +1095,7 @@ private fun resolveTint(color: ComposeColor, fallback: ComposeColor): ComposeCol
 }
 
 private fun Int.colorOrElse(context: android.content.Context, @ColorInt colorResId: Int): Int {
-    return if (this == Color.TRANSPARENT || this == 0) ContextCompat.getColor(context, colorResId) else this
+    return if (this == Color.TRANSPARENT) ContextCompat.getColor(context, colorResId) else this
 }
 
 private fun sanitizeChartColor(@ColorInt color: Int, @ColorInt fallback: Int, isDarkTheme: Boolean): Int {
