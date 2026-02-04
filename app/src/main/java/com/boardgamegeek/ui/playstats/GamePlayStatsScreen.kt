@@ -1,13 +1,9 @@
 package com.boardgamegeek.ui.playstats
 
 import android.graphics.Color
-import android.text.SpannableString
 import android.text.format.DateUtils
-import android.text.method.LinkMovementMethod
-import android.text.util.Linkify
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
@@ -58,7 +54,13 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.fromHtml
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -1045,7 +1047,6 @@ private fun InfoDialog(
     @StringRes messageRes: Int,
     onDismiss: () -> Unit
 ) {
-    val context = LocalContext.current
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -1053,15 +1054,18 @@ private fun InfoDialog(
         },
         title = { Text(text = title) },
         text = {
-            AndroidView(
-                factory = {
-                    TextView(context).apply {
-                        val spannableString = SpannableString(context.getString(messageRes))
-                        Linkify.addLinks(spannableString, Linkify.WEB_URLS)
-                        text = spannableString
-                        movementMethod = LinkMovementMethod.getInstance()
-                    }
-                }
+            val htmlText = stringResource(messageRes)
+            Text(
+                text = AnnotatedString.fromHtml(
+                    htmlText,
+                    linkStyles = TextLinkStyles(
+                        style = SpanStyle(
+                            textDecoration = TextDecoration.Underline,
+                            fontStyle = FontStyle.Italic,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                )
             )
         }
     )

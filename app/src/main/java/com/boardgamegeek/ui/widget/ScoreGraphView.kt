@@ -73,7 +73,7 @@ class ScoreGraphView @JvmOverloads constructor(
 
         scorePaint.strokeWidth = SCORE_STROKE_WIDTH.toFloat()
 
-        textPaint.color = ContextCompat.getColor(getContext(), R.color.secondary_text)
+        textPaint.color = if (isDarkTheme) Color.LTGRAY else ContextCompat.getColor(getContext(), R.color.secondary_text)
         textPaint.textSize = TypedValue.applyDimension(COMPLEX_UNIT_SP, 8f, getContext().resources.displayMetrics)
 
         scoreRadius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6f, context.resources.displayMetrics)
