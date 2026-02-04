@@ -865,7 +865,7 @@ private fun StatRowInternal(
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.width(72.dp)
+            modifier = Modifier.weight(1f)
         )
         Spacer(modifier = Modifier.width(dimensionResource(R.dimen.padding_standard)))
         Row(
