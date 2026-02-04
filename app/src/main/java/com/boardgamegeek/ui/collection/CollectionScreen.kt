@@ -9,8 +9,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,7 +30,7 @@ import com.boardgamegeek.extensions.*
 import com.boardgamegeek.model.CollectionItem
 import com.boardgamegeek.sorter.CollectionSorter
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class) // Required for PullToRefreshBox and stickyHeader
+@OptIn(ExperimentalFoundationApi::class) // Required for stickyHeader
 @Composable
 fun CollectionScreen(
     viewModel: CollectionViewModel,
@@ -46,7 +44,6 @@ fun CollectionScreen(
     val isFiltering by viewModel.isFilteringFlow.collectAsState()
     val effectiveSort by viewModel.effectiveSort.collectAsState()
 
-    val pullToRefreshState = rememberPullToRefreshState() // Create the state for Material 3 version
     val isLoading = isRefreshing || isFiltering
 
     Box(
@@ -58,77 +55,66 @@ fun CollectionScreen(
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {
-                PullToRefreshBox(
-                    isRefreshing = false,
-                    onRefresh = { viewModel.refresh() },
-                    state = pullToRefreshState,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    EmptyCollectionView(modifier = Modifier.fillMaxSize())
-                }
+                EmptyCollectionView(
+                    modifier = Modifier.fillMaxSize(),
+                    onRefresh = { viewModel.refresh() }
+                )
             }
         } else {
-            PullToRefreshBox(
-                isRefreshing = isLoading,
-                onRefresh = { viewModel.refresh() },
-                state = pullToRefreshState,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                val sorter = effectiveSort?.first
-                val groupedItems = remember(collectionItems, sorter) {
-                    collectionItems.groupBy { item ->
-                        sorter?.getHeaderText(item) ?: "-"
-                    }
+            val sorter = effectiveSort?.first
+            val groupedItems = remember(collectionItems, sorter) {
+                collectionItems.groupBy { item ->
+                    sorter?.getHeaderText(item) ?: "-"
                 }
+            }
 
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 72.dp)
-                ) {
-                    groupedItems.forEach { (header, itemsInGroup) ->
-                        stickyHeader(key = header) {
-                            Surface(
-                                modifier = Modifier.fillMaxWidth(),
-                                color = MaterialTheme.colorScheme.surfaceVariant
-                            ) {
-                                val isRatingSort = sorter?.getRatingText(itemsInGroup.firstOrNull() ?: CollectionItem())?.isNotEmpty() == true
-                                Text(
-                                    text = header,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = if (isRatingSort) TextAlign.Center else TextAlign.Start
-                                )
-                            }
-                        }
-
-                        items(
-                            items = itemsInGroup,
-                            key = { item -> item.internalId }
-                        ) { item ->
-                            CollectionItemRow(
-                                item = item,
-                                sorter = sorter,
-                                onItemClick = {
-                                    when {
-                                        isCreatingShortcut -> {
-                                            // TODO: Handle shortcut creation for item
-                                        }
-                                        changingGamePlayId != com.boardgamegeek.provider.BggContract.INVALID_ID.toLong() -> {
-                                            // TODO: Handle changing game for a play
-                                        }
-                                        else -> {
-                                            onGameClick(item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
-                                        }
-                                    }
-                                },
-                                onItemLongClick = {
-                                    // TODO: Implement ActionMode initiation
-                                }
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 72.dp)
+            ) {
+                groupedItems.forEach { (header, itemsInGroup) ->
+                    stickyHeader(key = header) {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            val isRatingSort = sorter?.getRatingText(itemsInGroup.firstOrNull() ?: CollectionItem())?.isNotEmpty() == true
+                            Text(
+                                text = header,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = if (isRatingSort) TextAlign.Center else TextAlign.Start
                             )
-                            HorizontalDivider()
                         }
+                    }
+
+                    items(
+                        items = itemsInGroup,
+                        key = { item -> item.internalId }
+                    ) { item ->
+                        CollectionItemRow(
+                            item = item,
+                            sorter = sorter,
+                            onItemClick = {
+                                when {
+                                    isCreatingShortcut -> {
+                                        // TODO: Handle shortcut creation for item
+                                    }
+                                    changingGamePlayId != com.boardgamegeek.provider.BggContract.INVALID_ID.toLong() -> {
+                                        // TODO: Handle changing game for a play
+                                    }
+                                    else -> {
+                                        onGameClick(item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
+                                    }
+                                }
+                            },
+                            onItemLongClick = {
+                                // TODO: Implement ActionMode initiation
+                            }
+                        )
+                        HorizontalDivider()
                     }
                 }
             }
@@ -245,7 +231,8 @@ fun CollectionItemRow(
 @Composable
 fun EmptyCollectionView(
     modifier: Modifier = Modifier,
-    emptyText: String = stringResource(R.string.empty_collection)
+    emptyText: String = stringResource(R.string.empty_collection),
+    onRefresh: () -> Unit = {}
 ) {
     Column(
         modifier = modifier.padding(16.dp),
@@ -258,7 +245,7 @@ fun EmptyCollectionView(
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        Button(onClick = { /* TODO: Maybe trigger a refresh or sync? */ }) {
+        Button(onClick = onRefresh) {
             Text(stringResource(R.string.menu_refresh))
         }
     }

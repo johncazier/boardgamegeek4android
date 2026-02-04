@@ -18,6 +18,7 @@ import com.boardgamegeek.databinding.FragmentGamePlaysBinding
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.provider.BggContract
+import com.boardgamegeek.ui.playstats.GamePlayStatsActivity
 import com.boardgamegeek.ui.viewmodel.GameViewModel
 import com.boardgamegeek.ui.widget.SelfUpdatingView
 import dagger.hilt.android.AndroidEntryPoint

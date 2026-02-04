@@ -303,7 +303,7 @@
 			android:name=".ui.GamePlaysActivity"
 			android:label="@string/title_plays" />
 		<activity
-			android:name=".ui.GamePlayStatsActivity"
+			android:name=".ui.playstats.GamePlayStatsActivity"
 			android:label="@string/title_play_stats" />
 		<activity
 			android:name=".ui.GameColorsActivity"
