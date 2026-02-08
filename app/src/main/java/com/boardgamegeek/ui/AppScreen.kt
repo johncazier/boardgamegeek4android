@@ -144,6 +144,27 @@ fun AppScreen(
                         },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    NavigationDrawerItem(
+                        icon = { Icon(Icons.Filled.Sync, contentDescription = null) },
+                        label = { Text(stringResource(R.string.title_sync)) },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            context.startActivity<SyncActivity>()
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    )
+                    NavigationDrawerItem(
+                        icon = { Icon(Icons.Filled.FileCopy, contentDescription = null) },
+                        label = { Text(stringResource(R.string.title_backup)) },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            context.startActivity<DataActivity>()
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    )
                     NavigationDrawerItem(
                         icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
                         label = { Text(stringResource(R.string.title_settings)) },
