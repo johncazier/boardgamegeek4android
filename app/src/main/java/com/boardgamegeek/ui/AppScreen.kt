@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -113,22 +114,12 @@ fun AppScreen(
                     }
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Filled.LibraryBooks, contentDescription = null) },
-                        label = { Text(stringResource(R.string.title_collection)) },
+                        icon = { Icon(Icons.AutoMirrored.Filled.LibraryBooks, contentDescription = null) },
+                        label = { Text(stringResource(R.string.title_collection_details)) },
                         selected = false,
                         onClick = {
                             scope.launch { drawerState.close() }
                             context.startActivity<CollectionDetailsActivity>()
-                        },
-                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                    )
-                    NavigationDrawerItem(
-                        icon = { Icon(Icons.Filled.History, contentDescription = null) },
-                        label = { Text(stringResource(R.string.title_collection_legacy)) },
-                        selected = false,
-                        onClick = {
-                            scope.launch { drawerState.close() }
-                            context.startActivity<LegacyCollectionActivity>()
                         },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )

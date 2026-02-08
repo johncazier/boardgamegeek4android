@@ -12,7 +12,7 @@ import com.boardgamegeek.model.CollectionItemUploadResult
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.repository.GameCollectionRepository
-import com.boardgamegeek.ui.LegacyCollectionActivity
+import com.boardgamegeek.ui.collection.CollectionActivity
 import com.boardgamegeek.ui.GameActivity
 import com.boardgamegeek.util.LargeIconLoader
 import dagger.assisted.Assisted
@@ -112,7 +112,7 @@ class CollectionUploadWorker @AssistedInject constructor(
                 val summaryBuilder = context.createNotificationBuilder(
                     message,
                     NotificationChannels.SYNC_UPLOAD,
-                    context.intentFor<LegacyCollectionActivity>()
+                    context.intentFor<CollectionActivity>()
                 )
                     .setGroup(NotificationTags.UPLOAD_COLLECTION)
                     .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_SUMMARY)

@@ -1,5 +1,6 @@
 package com.boardgamegeek.ui.collection
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -43,6 +44,13 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
+import androidx.core.content.pm.ShortcutInfoCompat
+import androidx.core.graphics.drawable.IconCompat
+import com.boardgamegeek.extensions.clearTask
+import com.boardgamegeek.extensions.intentFor
+import com.boardgamegeek.extensions.newTask
+import com.boardgamegeek.extensions.toLongLabel
+import com.boardgamegeek.extensions.toShortLabel
 
 @AndroidEntryPoint
 class CollectionActivity : AppCompatActivity() {
@@ -287,5 +295,24 @@ class CollectionActivity : AppCompatActivity() {
     companion object {
         private const val KEY_VIEW_ID = "VIEW_ID"
         private const val KEY_CHANGING_GAME_PLAY_ID = "KEY_CHANGING_GAME_PLAY_ID"
+
+        fun startForGameChange(context: Context, playId: Long) {
+            context.startActivity(context.intentFor<CollectionActivity>(KEY_CHANGING_GAME_PLAY_ID to playId))
+        }
+
+        fun createShortcutInfo(context: Context, viewId: Int, viewName: String): ShortcutInfoCompat {
+            val intent = context.intentFor<CollectionActivity>(KEY_VIEW_ID to viewId)
+                .clearTask()
+                .newTask()
+                .apply { action = Intent.ACTION_VIEW }
+            return ShortcutInfoCompat.Builder(context, createShortcutName(viewId))
+                .setShortLabel(viewName.toShortLabel())
+                .setLongLabel(viewName.toLongLabel())
+                .setIcon(IconCompat.createWithResource(context, R.drawable.ic_shortcut_ic_collection))
+                .setIntent(intent)
+                .build()
+        }
+
+        fun createShortcutName(viewId: Int) = "collection_view-$viewId"
     }
 }

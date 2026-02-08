@@ -55,18 +55,8 @@
 				android:resource="@xml/shortcuts" />
 		</activity>
 		<activity
-			android:name=".ui.LegacyCollectionActivity"
-			android:exported="true"
-			android:label="@string/title_collection_legacy"
-			android:uiOptions="splitActionBarWhenNarrow"
-			android:windowSoftInputMode="adjustNothing">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-		<activity
 			android:name=".ui.CollectionDetailsActivity"
-			android:label="@string/title_collection">
+			android:label="@string/title_collection_details">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
 				android:value=".ui.HomeActivity" />
@@ -125,7 +115,7 @@
 			android:name=".CreateShortcutActivity"
 			android:exported="true"
 			android:label="@string/title_game"
-			android:targetActivity=".ui.LegacyCollectionActivity">
+			android:targetActivity=".ui.collection.CollectionActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.CREATE_SHORTCUT" />
 

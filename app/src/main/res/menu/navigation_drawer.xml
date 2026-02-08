@@ -12,7 +12,7 @@
 		<item
 			android:id="@+id/collection"
 			android:icon="@drawable/ic_baseline_library_books_24"
-			android:title="@string/title_collection_legacy" />
+			android:title="@string/title_collection" />
 		<item
 			android:id="@+id/plays"
 			android:icon="@drawable/ic_baseline_event_24"

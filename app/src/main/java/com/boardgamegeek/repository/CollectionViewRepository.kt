@@ -9,7 +9,7 @@ import com.boardgamegeek.mappers.mapToEntity
 import com.boardgamegeek.mappers.mapToModel
 import com.boardgamegeek.model.CollectionView
 import com.boardgamegeek.provider.BggContract
-import com.boardgamegeek.ui.LegacyCollectionActivity
+import com.boardgamegeek.ui.collection.CollectionActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.conflate
@@ -73,7 +73,7 @@ class CollectionViewRepository(
 
     suspend fun createViewShortcut(context: Context, viewId: Int, viewName: String) = withContext(Dispatchers.Default) {
         if (ShortcutManagerCompat.isRequestPinShortcutSupported(context)) {
-            val info = LegacyCollectionActivity.createShortcutInfo(context, viewId, viewName)
+            val info = CollectionActivity.createShortcutInfo(context, viewId, viewName)
             ShortcutManagerCompat.requestPinShortcut(context, info, null)
         }
     }
@@ -87,12 +87,12 @@ class CollectionViewRepository(
                 }
             }
             withContext(Dispatchers.Default) {
-                ShortcutManagerCompat.reportShortcutUsed(context, LegacyCollectionActivity.createShortcutName(viewId))
+                ShortcutManagerCompat.reportShortcutUsed(context, CollectionActivity.createShortcutName(viewId))
                 val shortcuts = withContext(Dispatchers.IO) { collectionViewDao.loadViewsWithoutFilters() }
                     .sortedByDescending { it.selectedCount }
                     .filterNot { it.name.isNullOrBlank() }
                     .take(SHORTCUT_COUNT)
-                    .map { view -> LegacyCollectionActivity.createShortcutInfo(context, view.id, view.name.orEmpty()) }
+                    .map { view -> CollectionActivity.createShortcutInfo(context, view.id, view.name.orEmpty()) }
                 ShortcutManagerCompat.setDynamicShortcuts(context, shortcuts)
             }
         }

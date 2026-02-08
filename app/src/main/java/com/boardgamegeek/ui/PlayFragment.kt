@@ -274,7 +274,7 @@ class PlayFragment : Fragment() {
                     R.id.menu_change_game -> {
                         play?.let {
                             logDataManipulationAction("ChangeGame")
-                            LegacyCollectionActivity.startForGameChange(requireContext(), it.internalId)
+                            com.boardgamegeek.ui.collection.CollectionActivity.startForGameChange(requireContext(), it.internalId)
                             requireActivity().finish() // don't want to show the "old" play upon return
                         }
                         return true
