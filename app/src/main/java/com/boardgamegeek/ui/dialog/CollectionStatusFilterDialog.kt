@@ -2,17 +2,15 @@ package com.boardgamegeek.ui.dialog
 
 import android.content.Context
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.ViewModelProvider
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.createThemedBuilder
 import com.boardgamegeek.filterer.CollectionFilterer
 import com.boardgamegeek.filterer.CollectionStatusFilterer
-import com.boardgamegeek.ui.viewmodel.CollectionViewViewModel
 
 class CollectionStatusFilterDialog : CollectionFilterDialog {
 
     override fun createDialog(activity: FragmentActivity, filter: CollectionFilterer?) {
-        val viewModel by lazy { ViewModelProvider(activity)[CollectionViewViewModel::class.java] }
+        val viewModel = activity.collectionFilterViewModelBridge()
         val statusEntries = activity.resources.getStringArray(R.array.collection_status_filter_entries)
         val selectedStatuses = (filter as CollectionStatusFilterer?)?.selectedStatuses ?: BooleanArray(statusEntries.size)
 

@@ -7,14 +7,12 @@ import android.view.View
 import android.widget.CheckBox
 import android.widget.EditText
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.ViewModelProvider
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.createThemedBuilder
 import com.boardgamegeek.extensions.requestFocus
 import com.boardgamegeek.extensions.setAndSelectExistingText
 import com.boardgamegeek.filterer.CollectionFilterer
 import com.boardgamegeek.filterer.CollectionNameFilter
-import com.boardgamegeek.ui.viewmodel.CollectionViewViewModel
 
 class CollectionNameFilterDialog : CollectionFilterDialog {
     lateinit var layout: View
@@ -23,7 +21,7 @@ class CollectionNameFilterDialog : CollectionFilterDialog {
 
     @SuppressLint("InflateParams")
     override fun createDialog(activity: FragmentActivity, filter: CollectionFilterer?) {
-        val viewModel by lazy { ViewModelProvider(activity)[CollectionViewViewModel::class.java] }
+        val viewModel = activity.collectionFilterViewModelBridge()
         layout = LayoutInflater.from(activity).inflate(R.layout.dialog_collection_filter_name, null)
         (filter as? CollectionNameFilter)?.let {
             filterTextView.setAndSelectExistingText(it.filterText)

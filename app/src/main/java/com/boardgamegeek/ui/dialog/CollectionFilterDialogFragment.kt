@@ -6,11 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
-import androidx.fragment.app.activityViewModels
 import com.boardgamegeek.databinding.DialogCollectionFilterBinding
 import com.boardgamegeek.filterer.CollectionFilterer
 import com.boardgamegeek.filterer.CollectionFiltererFactory
-import com.boardgamegeek.ui.viewmodel.CollectionViewViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
@@ -22,8 +20,8 @@ class CollectionFilterDialogFragment : BottomSheetDialogFragment() {
     private var _binding: DialogCollectionFilterBinding? = null
     private val binding get() = _binding!!
     private val filters = mutableListOf<CollectionFilterer>()
-    private val viewModel by activityViewModels<CollectionViewViewModel>()
     private val factory by lazy { CollectionFiltererFactory(requireContext()) }
+    private val viewModelBridge by lazy { requireActivity().collectionFilterViewModelBridge() }
 
     @Suppress("RedundantNullableReturnType")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -32,9 +30,9 @@ class CollectionFilterDialogFragment : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        viewModel.effectiveFilters.observe(viewLifecycleOwner) {
+        viewModelBridge.observeEffectiveFilters(viewLifecycleOwner) { effectiveFilters ->
             filters.clear()
-            it?.let { filters.addAll(it) }
+            filters.addAll(effectiveFilters)
             bindUi()
         }
     }
@@ -65,7 +63,7 @@ class CollectionFilterDialogFragment : BottomSheetDialogFragment() {
                 }
 
                 chip.setOnCloseIconClickListener {
-                    viewModel.removeFilter(type)
+                    viewModelBridge.removeFilter(type)
                     dismiss()
                 }
             }

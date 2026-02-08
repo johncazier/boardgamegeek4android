@@ -4,13 +4,11 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.widget.ArrayAdapter
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.ViewModelProvider
 import com.boardgamegeek.R
 import com.boardgamegeek.databinding.DialogCollectionFilterRecommendedPlayerCountBinding
 import com.boardgamegeek.extensions.createThemedBuilder
 import com.boardgamegeek.filterer.CollectionFilterer
 import com.boardgamegeek.filterer.RecommendedPlayerCountFilterer
-import com.boardgamegeek.ui.viewmodel.CollectionViewViewModel
 
 class RecommendedPlayerCountFilterDialog : CollectionFilterDialog {
     private var _binding: DialogCollectionFilterRecommendedPlayerCountBinding? = null
@@ -18,7 +16,7 @@ class RecommendedPlayerCountFilterDialog : CollectionFilterDialog {
     private val defaultPlayerCount = 4
 
     override fun createDialog(activity: FragmentActivity, filter: CollectionFilterer?) {
-        val viewModel by lazy { ViewModelProvider(activity)[CollectionViewViewModel::class.java] }
+        val viewModel = activity.collectionFilterViewModelBridge()
         _binding = DialogCollectionFilterRecommendedPlayerCountBinding.inflate(LayoutInflater.from(activity), null, false)
 
         binding.rangeBar.addOnChangeListener { _, value, _ ->

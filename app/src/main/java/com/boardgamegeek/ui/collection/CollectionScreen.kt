@@ -3,16 +3,26 @@ package com.boardgamegeek.ui.collection
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,8 +37,12 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.*
+import com.boardgamegeek.filterer.CollectionFilterer
 import com.boardgamegeek.model.CollectionItem
 import com.boardgamegeek.sorter.CollectionSorter
+import com.boardgamegeek.sorter.CollectionSorterFactory
+import com.boardgamegeek.ui.dialog.CollectionFilterDialogFactory
+import androidx.fragment.app.FragmentActivity
 
 @OptIn(ExperimentalFoundationApi::class) // Required for stickyHeader
 @Composable
@@ -43,8 +57,30 @@ fun CollectionScreen(
     val isRefreshing by viewModel.isRefreshingFlow.collectAsState()
     val isFiltering by viewModel.isFilteringFlow.collectAsState()
     val effectiveSort by viewModel.effectiveSort.collectAsState()
+    val effectiveFilters by viewModel.effectiveFilters.collectAsState()
 
     val isLoading = isRefreshing || isFiltering
+
+    val context = LocalContext.current
+    val activity = remember(context) { context as? FragmentActivity }
+    val validFilters = remember(effectiveFilters) { effectiveFilters.filter { it.isValid } }
+    val sortType = effectiveSort?.first?.getType(effectiveSort?.second ?: false)
+        ?: CollectionSorterFactory.TYPE_DEFAULT
+    val showSortChip = sortType != CollectionSorterFactory.TYPE_DEFAULT
+
+    val listState = rememberLazyListState()
+    var pendingScrollToTop by remember { mutableStateOf(false) }
+
+    LaunchedEffect(sortType, effectiveSort?.second) {
+        pendingScrollToTop = true
+    }
+
+    LaunchedEffect(collectionItems, pendingScrollToTop) {
+        if (pendingScrollToTop && collectionItems.isNotEmpty()) {
+            listState.scrollToItem(0)
+            pendingScrollToTop = false
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -69,8 +105,9 @@ fun CollectionScreen(
             }
 
             LazyColumn(
+                state = listState,
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 72.dp)
+                contentPadding = PaddingValues(bottom = if (showSortChip || validFilters.isNotEmpty()) 64.dp else 16.dp)
             ) {
                 groupedItems.forEach { (header, itemsInGroup) ->
                     stickyHeader(key = header) {
@@ -117,6 +154,135 @@ fun CollectionScreen(
                         HorizontalDivider()
                     }
                 }
+            }
+        }
+
+        if (showSortChip || validFilters.isNotEmpty()) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter),
+                shadowElevation = 6.dp,
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                CollectionFilterChipsRow(
+                    filters = validFilters,
+                    sortLabel = effectiveSort?.first?.description.orEmpty(),
+                    isSortReversed = effectiveSort?.second == true,
+                    showSortChip = showSortChip,
+                    onSortClick = { viewModel.reverseSort() },
+                    onFilterClick = { filter ->
+                        activity?.let { host ->
+                            CollectionFilterDialogFactory()
+                                .create(host, filter.type)
+                                ?.createDialog(host, filter)
+                        }
+                    },
+                    onFilterRemove = { type -> viewModel.removeFilter(type) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CollectionFilterChipsRow(
+    filters: List<CollectionFilterer>,
+    sortLabel: String,
+    isSortReversed: Boolean,
+    showSortChip: Boolean,
+    onSortClick: () -> Unit,
+    onFilterClick: (CollectionFilterer) -> Unit,
+    onFilterRemove: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyRow(
+        modifier = modifier.padding(vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        if (showSortChip) {
+            item(key = "sort_chip") {
+                CollectionChip(
+                    text = sortLabel,
+                    leadingIcon = if (isSortReversed) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
+                    onClick = onSortClick,
+                    trailingIcon = null,
+                    onTrailingIconClick = null
+                )
+            }
+        }
+        items(filters, key = { it.type }) { filter ->
+            CollectionChip(
+                text = filter.chipText(),
+                leadingPainter = if (filter.iconResourceId != CollectionFilterer.INVALID_ICON) {
+                    painterResource(id = filter.iconResourceId)
+                } else null,
+                onClick = { onFilterClick(filter) },
+                trailingIcon = Icons.Filled.Close,
+                onTrailingIconClick = { onFilterRemove(filter.type) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun CollectionChip(
+    text: String,
+    leadingIcon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    leadingPainter: androidx.compose.ui.graphics.painter.Painter? = null,
+    trailingIcon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    onClick: () -> Unit,
+    onTrailingIconClick: (() -> Unit)?,
+    modifier: Modifier = Modifier
+) {
+    val shape = RoundedCornerShape(16.dp)
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        modifier = modifier
+            .height(32.dp)
+            .clickable(onClick = onClick),
+        shape = shape,
+        color = colors.secondaryContainer,
+        contentColor = colors.onSecondaryContainer,
+        shadowElevation = 0.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            when {
+                leadingIcon != null -> {
+                    Icon(
+                        imageVector = leadingIcon,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+                leadingPainter != null -> {
+                    Icon(
+                        painter = leadingPainter,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (trailingIcon != null && onTrailingIconClick != null) {
+                Icon(
+                    imageVector = trailingIcon,
+                    contentDescription = stringResource(R.string.menu_clear),
+                    modifier = Modifier
+                        .size(16.dp)
+                        .clickable(onClick = onTrailingIconClick)
+                )
             }
         }
     }

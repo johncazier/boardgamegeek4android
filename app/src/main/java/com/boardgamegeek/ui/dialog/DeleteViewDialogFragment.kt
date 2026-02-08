@@ -4,19 +4,17 @@ import android.app.Dialog
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog.Builder
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModelProvider
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.CollectionViewPrefs
 import com.boardgamegeek.extensions.createThemedBuilder
-import com.boardgamegeek.ui.viewmodel.CollectionViewViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class DeleteViewDialogFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val viewModel = ViewModelProvider(requireActivity())[CollectionViewViewModel::class.java]
+        val viewModel = requireActivity().collectionViewDialogBridge()
 
-        val views = viewModel.views.value.orEmpty().filter { it.id != CollectionViewPrefs.DEFAULT_DEFAULT_ID }
+        val views = viewModel.getViews().filter { it.id != CollectionViewPrefs.DEFAULT_DEFAULT_ID }
         val viewNames = views.map { it.name }.toTypedArray()
 
         return requireContext().createThemedBuilder()

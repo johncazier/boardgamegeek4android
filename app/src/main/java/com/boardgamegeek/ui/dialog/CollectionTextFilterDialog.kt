@@ -10,7 +10,6 @@ import android.widget.AutoCompleteTextView
 import android.widget.CheckBox
 import android.widget.Spinner
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.ViewModelProvider
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.createThemedBuilder
 import com.boardgamegeek.extensions.setAndSelectExistingText
@@ -18,7 +17,6 @@ import com.boardgamegeek.filterer.CollectionFilterer
 import com.boardgamegeek.filterer.CollectionTextFilter
 import com.boardgamegeek.filterer.TextOperator
 import com.boardgamegeek.ui.adapter.AutoCompleteAdapter
-import com.boardgamegeek.ui.viewmodel.CollectionViewViewModel
 import com.google.android.material.textfield.TextInputLayout
 
 abstract class CollectionTextFilterDialog : CollectionFilterDialog {
@@ -33,7 +31,7 @@ abstract class CollectionTextFilterDialog : CollectionFilterDialog {
 
     @SuppressLint("InflateParams")
     override fun createDialog(activity: FragmentActivity, filter: CollectionFilterer?) {
-        val viewModel by lazy { ViewModelProvider(activity)[CollectionViewViewModel::class.java] }
+        val viewModel = activity.collectionFilterViewModelBridge()
         layout = LayoutInflater.from(activity).inflate(R.layout.dialog_collection_filter_text, null)
         textOperatorView.adapter = ArrayAdapter.createFromResource(activity, R.array.text_operator, android.R.layout.simple_spinner_item).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -79,7 +77,7 @@ abstract class CollectionTextFilterDialog : CollectionFilterDialog {
             .show()
     }
 
-    open fun createAdapter(viewModel: CollectionViewViewModel, activity: FragmentActivity): AutoCompleteAdapter? = null
+    open fun createAdapter(viewModel: CollectionFilterViewModelBridge, activity: FragmentActivity): AutoCompleteAdapter? = null
 
     override fun getType(context: Context) = createFilter(context).type
 }

@@ -41,6 +41,7 @@ inline fun <reified T : Activity> Context.startActivity(noinline init: (Intent.(
 fun AppScreen(
     modifier: Modifier = Modifier,
     topBarTitle: String,
+    topBarTitleContent: (@Composable () -> Unit)? = null,
     currentScreenRouteFromActivity: String,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     onSearchClick: () -> Unit,
@@ -169,7 +170,7 @@ fun AppScreen(
                 modifier = modifier,
                 topBar = {
                     TopAppBar(
-                        title = { Text(topBarTitle) },
+                        title = { (topBarTitleContent ?: { Text(topBarTitle) })() },
                         navigationIcon = {
                             IconButton(onClick = {
                                 scope.launch {

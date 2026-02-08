@@ -6,12 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.RadioButton
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.ViewModelProvider
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.createThemedBuilder
 import com.boardgamegeek.filterer.CollectionFilterer
 import com.boardgamegeek.filterer.FavoriteFilterer
-import com.boardgamegeek.ui.viewmodel.CollectionViewViewModel
 
 class FavoriteFilterDialog : CollectionFilterDialog {
     lateinit var layout: View
@@ -20,7 +18,7 @@ class FavoriteFilterDialog : CollectionFilterDialog {
 
     @SuppressLint("InflateParams")
     override fun createDialog(activity: FragmentActivity, filter: CollectionFilterer?) {
-        val viewModel by lazy { ViewModelProvider(activity)[CollectionViewViewModel::class.java] }
+        val viewModel = activity.collectionFilterViewModelBridge()
         layout = LayoutInflater.from(activity).inflate(R.layout.dialog_collection_filter_favorite, null)
         (filter as? FavoriteFilterer)?.let {
             if (it.isFavorite) {

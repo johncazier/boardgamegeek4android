@@ -5,7 +5,6 @@ import androidx.fragment.app.FragmentActivity
 import com.boardgamegeek.R
 import com.boardgamegeek.filterer.AcquiredFromFilter
 import com.boardgamegeek.ui.adapter.AutoCompleteAdapter
-import com.boardgamegeek.ui.viewmodel.CollectionViewViewModel
 
 class AcquiredFromFilterDialog : CollectionTextFilterDialog() {
     override val titleResId: Int
@@ -13,10 +12,8 @@ class AcquiredFromFilterDialog : CollectionTextFilterDialog() {
 
     override fun createFilter(context: Context) = AcquiredFromFilter(context)
 
-    override fun createAdapter(viewModel: CollectionViewViewModel, activity: FragmentActivity) =
+    override fun createAdapter(viewModel: CollectionFilterViewModelBridge, activity: FragmentActivity) =
         AutoCompleteAdapter(activity).also { adapter ->
-            viewModel.acquiredFrom.observe(activity) {
-                adapter.addData(it)
-            }
+            viewModel.observeAcquiredFrom(activity) { adapter.addData(it) }
         }
 }

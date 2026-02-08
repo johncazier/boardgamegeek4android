@@ -2,6 +2,7 @@ package com.boardgamegeek.ui.collection
 
 import android.app.Application
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import androidx.core.os.bundleOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -61,12 +62,17 @@ class CollectionViewModel @Inject constructor(
 ) : AndroidViewModel(application) {
     private val firebaseAnalytics = FirebaseAnalytics.getInstance(getApplication())
     private val prefs: SharedPreferences by lazy { application.preferences() }
+    private val filtererFactory: CollectionFiltererFactory by lazy { CollectionFiltererFactory(application) }
 
     val defaultViewIdFlow = MutableStateFlow(
         prefs.getInt(CollectionViewPrefs.PREFERENCES_KEY_DEFAULT_ID, CollectionViewPrefs.DEFAULT_DEFAULT_ID)
     )
 
     private val collectionSorterFactory: CollectionSorterFactory by lazy { CollectionSorterFactory(application) }
+    private val lastSortType = MutableStateFlow(
+        prefs.getInt(CollectionViewPrefs.PREFERENCES_KEY_LAST_SORT_TYPE, CollectionSorterFactory.TYPE_UNKNOWN)
+    )
+    private val lastFilters = MutableStateFlow(loadPersistedFilters())
 
     // Inputs from UI (e.g., user selects a sort type or adds a filter)
     val selectedViewId = MutableStateFlow(defaultViewIdFlow.value)
@@ -99,21 +105,33 @@ class CollectionViewModel @Inject constructor(
 
     val effectiveSort: StateFlow<Pair<CollectionSorter, Boolean>?> = combine(
         selectedView,
-        manualSortType // Directly use the MutableStateFlow here
-    ) { view, currentManualSort ->
-        val type = currentManualSort ?: view?.sortType ?: CollectionSorterFactory.TYPE_DEFAULT
+        manualSortType,
+        selectedViewId,
+        lastSortType
+    ) { view, currentManualSort, currentViewId, persistedSortType ->
+        val type = when {
+            currentManualSort != null -> currentManualSort
+            currentViewId == CollectionViewPrefs.DEFAULT_DEFAULT_ID && persistedSortType != CollectionSorterFactory.TYPE_UNKNOWN ->
+                persistedSortType
+            else -> view?.sortType ?: CollectionSorterFactory.TYPE_DEFAULT
+        }
         collectionSorterFactory.create(type)
     }.stateInWhileSubscribed(viewModelScope, null)
 
     val effectiveFilters: StateFlow<List<CollectionFilterer>> = combine(
         selectedView,
-        addedFilters,       // Directly use the MutableStateFlow
-        removedFilterTypes  // Directly use the MutableStateFlow
-    ) { view, currentAdded, currentRemovedTypes ->
-        val addedTypes = currentAdded.map { it.type }
-        val viewFilters = view?.filters.orEmpty()
-        viewFilters.filter { !addedTypes.contains(it.type) && !currentRemovedTypes.contains(it.type) } +
-                currentAdded.filter { !currentRemovedTypes.contains(it.type) }
+        addedFilters,
+        removedFilterTypes,
+        selectedViewId,
+        lastFilters
+    ) { view, currentAdded, currentRemovedTypes, currentViewId, persistedFilters ->
+        val baseFilters = view?.filters.orEmpty()
+        val persisted = if (currentViewId == CollectionViewPrefs.DEFAULT_DEFAULT_ID) persistedFilters else emptyList()
+        val combined = LinkedHashMap<Int, CollectionFilterer>()
+        baseFilters.forEach { combined[it.type] = it }
+        persisted.forEach { combined[it.type] = it }
+        currentAdded.forEach { combined[it.type] = it }
+        combined.values.filter { !currentRemovedTypes.contains(it.type) }
     }.stateInWhileSubscribed(viewModelScope, emptyList())
 
     private val allItemsFlow: StateFlow<List<CollectionItem>> = // Renamed to avoid confusion with `items`
@@ -192,6 +210,8 @@ class CollectionViewModel @Inject constructor(
         if (manualSortType.value != type) {
             isFilteringFlow.value = true
             manualSortType.value = type // Directly set the MutableStateFlow
+            lastSortType.value = type
+            prefs.edit { putInt(CollectionViewPrefs.PREFERENCES_KEY_LAST_SORT_TYPE, type) }
         }
     }
 
@@ -218,6 +238,14 @@ class CollectionViewModel @Inject constructor(
                     val newList = currentAdded.filterNot { it.type == filter.type }.toMutableList()
                     newList.add(filter)
                     newList
+                }
+                if (selectedViewId.value == CollectionViewPrefs.DEFAULT_DEFAULT_ID) {
+                    lastFilters.update { current ->
+                        val updated = current.filterNot { it.type == filter.type }.toMutableList()
+                        updated.add(filter)
+                        updated
+                    }
+                    persistFilters(lastFilters.value)
                 }
 
                 firebaseAnalytics.logEvent(
@@ -248,6 +276,10 @@ class CollectionViewModel @Inject constructor(
                     currentRemoved
                 }
             }
+            if (selectedViewId.value == CollectionViewPrefs.DEFAULT_DEFAULT_ID) {
+                lastFilters.update { current -> current.filterNot { it.type == type } }
+                persistFilters(lastFilters.value)
+            }
         }
     }
 
@@ -275,11 +307,29 @@ class CollectionViewModel @Inject constructor(
                 (prefs.isStatusSetToSync(CollectionStatus.WantParts) && it.wantPartsList.isNotBlank())
     }
 
+    private fun loadPersistedFilters(): List<CollectionFilterer> {
+        val raw = prefs.getStringSet(CollectionViewPrefs.PREFERENCES_KEY_LAST_FILTERS, emptySet()).orEmpty()
+        return raw.mapNotNull { encoded ->
+            val separatorIndex = encoded.indexOf('|')
+            if (separatorIndex <= 0 || separatorIndex == encoded.lastIndex) return@mapNotNull null
+            val type = encoded.substring(0, separatorIndex).toIntOrNull() ?: return@mapNotNull null
+            val data = encoded.substring(separatorIndex + 1)
+            filtererFactory.create(type, data)
+        }
+    }
+
+    private fun persistFilters(filters: List<CollectionFilterer>) {
+        val encoded = filters.map { "${it.type}|${it.deflate()}" }.toSet()
+        prefs.edit { putStringSet(CollectionViewPrefs.PREFERENCES_KEY_LAST_FILTERS, encoded) }
+    }
+
     fun refresh() {
         if (!isRefreshingFlow.value) {
             gameCollectionRepository.enqueueRefreshRequest(WORK_NAME)
         }
     }
+
+    fun findViewId(viewName: String) = views.value.find { it.name == viewName }?.id ?: BggContract.INVALID_ID
 
     fun insert(name: String, isDefault: Boolean) {
         viewModelScope.launch {

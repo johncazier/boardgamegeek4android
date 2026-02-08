@@ -11,14 +11,12 @@ import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.children
 import androidx.core.view.isVisible
-import androidx.fragment.app.activityViewModels
 import com.boardgamegeek.R
 import com.boardgamegeek.databinding.DialogCollectionSortBinding
 import com.boardgamegeek.extensions.PREFERENCES_KEY_SYNC_PLAYS
 import com.boardgamegeek.extensions.get
 import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.sorter.CollectionSorterFactory
-import com.boardgamegeek.ui.viewmodel.CollectionViewViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
@@ -32,7 +30,7 @@ class CollectionSortDialogFragment : BottomSheetDialogFragment() {
     private var _binding: DialogCollectionSortBinding? = null
     private val binding get() = _binding!!
     private var selectedType: Int = CollectionSorterFactory.TYPE_DEFAULT
-    private val viewModel by activityViewModels<CollectionViewViewModel>()
+    private val viewModelBridge by lazy { requireActivity().collectionFilterViewModelBridge() }
     private val factory by lazy { CollectionSorterFactory(requireContext()) }
 
     @Suppress("RedundantNullableReturnType")
@@ -100,7 +98,7 @@ class CollectionSortDialogFragment : BottomSheetDialogFragment() {
                     factory.reverse(selectedType)
                 } ?: CollectionSorterFactory.TYPE_DEFAULT
                 Timber.d("Sort by $sortType")
-                viewModel.setSort(sortType)
+                viewModelBridge.setSort(sortType)
                 FirebaseAnalytics.getInstance(requireContext()).logEvent("Sort") {
                     param(FirebaseAnalytics.Param.CONTENT_TYPE, "Collection")
                     param("SortBy", sortType.toString())

@@ -8,14 +8,12 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModelProvider
 import com.boardgamegeek.R
 import com.boardgamegeek.databinding.DialogSaveViewBinding
 import com.boardgamegeek.extensions.CollectionViewPrefs
 import com.boardgamegeek.extensions.createThemedBuilder
 import com.boardgamegeek.extensions.requestFocus
 import com.boardgamegeek.extensions.setAndSelectExistingText
-import com.boardgamegeek.ui.viewmodel.CollectionViewViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -27,7 +25,7 @@ class SaveViewDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         _binding = DialogSaveViewBinding.inflate(layoutInflater)
-        val viewModel = ViewModelProvider(requireActivity())[CollectionViewViewModel::class.java]
+        val viewModel = requireActivity().collectionViewDialogBridge()
 
         arguments?.let {
             name = it.getString(KEY_NAME).orEmpty()
@@ -81,9 +79,9 @@ class SaveViewDialogFragment : DialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val viewModel = ViewModelProvider(requireActivity())[CollectionViewViewModel::class.java]
+        val viewModel = requireActivity().collectionViewDialogBridge()
         binding.nameView.setAndSelectExistingText(name)
-        val defaultViewId = viewModel.defaultViewId.value
+        val defaultViewId = viewModel.getDefaultViewId()
         binding.defaultViewCheckBox.isChecked =
             defaultViewId != CollectionViewPrefs.DEFAULT_DEFAULT_ID &&
             viewModel.findViewId(name) == defaultViewId

@@ -6,12 +6,10 @@ import android.view.View
 import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.ViewModelProvider
 import com.boardgamegeek.R
 import com.boardgamegeek.databinding.DialogSliderFilterBinding
 import com.boardgamegeek.extensions.createThemedBuilder
 import com.boardgamegeek.filterer.CollectionFilterer
-import com.boardgamegeek.ui.viewmodel.CollectionViewViewModel
 import com.google.android.material.slider.RangeSlider
 import kotlin.math.roundToInt
 
@@ -48,7 +46,7 @@ abstract class SliderFilterDialog : CollectionFilterDialog {
     protected open val stepSize = 1.0f
 
     override fun createDialog(activity: FragmentActivity, filter: CollectionFilterer?) {
-        val viewModel by lazy { ViewModelProvider(activity)[CollectionViewViewModel::class.java] }
+        val viewModel = activity.collectionFilterViewModelBridge()
         _binding = DialogSliderFilterBinding.inflate(LayoutInflater.from(activity), null, false)
 
         initValues(filter).apply {
