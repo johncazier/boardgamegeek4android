@@ -46,6 +46,7 @@ fun AppScreen(
     currentScreenRouteFromActivity: String,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     onSearchClick: () -> Unit,
+    drawerGesturesEnabled: Boolean = true,
     topBarActions: @Composable RowScope.() -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
@@ -155,7 +156,7 @@ fun AppScreen(
                     )
                 }
             },
-            gesturesEnabled = true
+            gesturesEnabled = drawerGesturesEnabled
         ) {
             Scaffold(
                 modifier = modifier,
