@@ -55,7 +55,7 @@
 				android:resource="@xml/shortcuts" />
 		</activity>
 		<activity
-			android:name=".ui.CollectionDetailsActivity"
+			android:name=".ui.collectiondetails.CollectionDetailsActivity"
 			android:label="@string/title_collection_details">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"

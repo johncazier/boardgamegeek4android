@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.collectiondetails
 
 import android.content.DialogInterface
 import android.graphics.Color
@@ -34,12 +34,17 @@ import com.boardgamegeek.R
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.model.CollectionItem
 import com.boardgamegeek.model.CollectionStatus
-import com.boardgamegeek.ui.dialog.CollectionDetailPrivateInfoDialogFragment
-import com.boardgamegeek.ui.dialog.CollectionDetailsCommentDialogFragment
-import com.boardgamegeek.ui.dialog.CollectionDetailsConditionDialogFragment
-import com.boardgamegeek.ui.dialog.CollectionDetailsRatingNumberPadDialogFragment
-import com.boardgamegeek.ui.viewmodel.CollectionDetailsViewModel
 import com.boardgamegeek.ui.widget.CollectionShelf
+import com.boardgamegeek.ui.ArtistsActivity
+import com.boardgamegeek.ui.CategoriesActivity
+import com.boardgamegeek.ui.DesignersActivity
+import com.boardgamegeek.ui.GameActivity
+import com.boardgamegeek.ui.GameCollectionItemActivity
+import com.boardgamegeek.ui.LogPlayActivity
+import com.boardgamegeek.ui.MechanicsActivity
+import com.boardgamegeek.ui.NewPlayActivity
+import com.boardgamegeek.ui.PublishersActivity
+import com.boardgamegeek.ui.startActivity
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 
@@ -65,7 +70,7 @@ fun CollectionDetailsScreen(
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        PrimaryScrollableTabRow (
+        ScrollableTabRow(
             selectedTabIndex = pagerState.currentPage,
             edgePadding = 0.dp
         ) {

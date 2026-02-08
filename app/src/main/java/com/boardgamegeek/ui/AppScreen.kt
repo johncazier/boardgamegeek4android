@@ -120,7 +120,7 @@ fun AppScreen(
                         selected = false,
                         onClick = {
                             scope.launch { drawerState.close() }
-                            context.startActivity<CollectionDetailsActivity>()
+                            context.startActivity<com.boardgamegeek.ui.collectiondetails.CollectionDetailsActivity>()
                         },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )

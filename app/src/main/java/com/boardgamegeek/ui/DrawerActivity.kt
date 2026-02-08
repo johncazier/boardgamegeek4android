@@ -110,7 +110,7 @@ abstract class DrawerActivity : BaseActivity() {
         if (menuItemId != navigationItemId) {
             when (menuItemId) {
                 R.id.collection -> startActivity<com.boardgamegeek.ui.collection.CollectionActivity>()
-                R.id.collection_details -> startActivity<CollectionDetailsActivity>()
+                R.id.collection_details -> startActivity<com.boardgamegeek.ui.collectiondetails.CollectionDetailsActivity>()
                 R.id.search -> startActivity<SearchResultsActivity>()
                 R.id.hotness -> startActivity<HotnessActivity>()
                 R.id.top_games -> startActivity<TopGamesActivity>()

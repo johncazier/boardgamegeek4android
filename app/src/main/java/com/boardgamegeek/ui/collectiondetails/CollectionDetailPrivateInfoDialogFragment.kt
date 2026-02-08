@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui.dialog
+package com.boardgamegeek.ui.collectiondetails
 
 import android.app.Dialog
 import android.os.Bundle
@@ -19,7 +19,6 @@ import com.boardgamegeek.databinding.DialogPrivateInfoCollectionDetailsBinding
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
 import com.boardgamegeek.ui.adapter.AutoCompleteAdapter
-import com.boardgamegeek.ui.viewmodel.CollectionDetailsViewModel
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat

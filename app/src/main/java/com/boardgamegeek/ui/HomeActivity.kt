@@ -16,7 +16,7 @@ class HomeActivity : TopLevelActivity() {
                     Authenticator.signOut(this)
                     intentFor<HotnessActivity>()
                 }
-                prefs.isCollectionSetToSync() -> intentFor<CollectionDetailsActivity>()
+                prefs.isCollectionSetToSync() -> intentFor<com.boardgamegeek.ui.collectiondetails.CollectionDetailsActivity>()
                 prefs[PREFERENCES_KEY_SYNC_PLAYS, false] == true -> intentFor<PlaysSummaryActivity>()
                 prefs[PREFERENCES_KEY_SYNC_BUDDIES, false] == true -> intentFor<BuddiesActivity>()
                 else -> intentFor<HotnessActivity>()

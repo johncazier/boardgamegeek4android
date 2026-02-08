@@ -1,26 +1,24 @@
-package com.boardgamegeek.ui.dialog
+package com.boardgamegeek.ui.collectiondetails
 
 import android.app.Dialog
 import android.os.Bundle
-import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.res.ResourcesCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import com.boardgamegeek.R
-import com.boardgamegeek.databinding.DialogEditTextWithTitlesBinding
+import com.boardgamegeek.databinding.DialogEditConditionTextBinding
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
-import com.boardgamegeek.ui.viewmodel.CollectionDetailsViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class CollectionDetailsCommentDialogFragment : DialogFragment() {
-    private var _binding: DialogEditTextWithTitlesBinding? = null
+class CollectionDetailsConditionDialogFragment : DialogFragment() {
+    private var _binding: DialogEditConditionTextBinding? = null
     private val binding get() = _binding!!
     private var originalText: String? = null
 
@@ -30,16 +28,15 @@ class CollectionDetailsCommentDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        _binding = DialogEditTextWithTitlesBinding.inflate(layoutInflater)
+        _binding = DialogEditConditionTextBinding.inflate(layoutInflater)
 
         val internalId = arguments?.getLong(INTERNAL_ID) ?: INVALID_ID.toLong()
         val viewModel = ViewModelProvider(requireActivity())[CollectionDetailsViewModel::class.java]
-        val builder = requireContext().createThemedBuilder()
-            //.setTitle(R.string.comment)
+        val builder = MaterialAlertDialogBuilder(requireContext())
             .setView(binding.root)
             .setNegativeButton(R.string.cancel, null)
             .setPositiveButton(R.string.ok) { _, _ ->
-                viewModel.updateComment(internalId, binding.editText.text?.toString()?.trim().orEmpty())
+                viewModel.updateCondition(internalId, binding.editText.text?.toString()?.trim().orEmpty())
             }
 
         return builder.create().apply {
@@ -52,11 +49,7 @@ class CollectionDetailsCommentDialogFragment : DialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val titleResId = arguments?.getInt(KEY_TITLE) ?: ResourcesCompat.ID_NULL
-        if (titleResId != ResourcesCompat.ID_NULL) binding.titleView.setText(titleResId)
-        binding.subtitleView.setTextOrHide(arguments?.getString(KEY_SUBTITLE))
-
-        binding.editText.inputType = binding.editText.inputType or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+        binding.gameNameView.setTextOrHide(arguments?.getString(KEY_GAME_NAME))
         if (savedInstanceState == null) {
             originalText = arguments?.getString(KEY_TEXT)
             binding.editText.setAndSelectExistingText(originalText)
@@ -69,20 +62,18 @@ class CollectionDetailsCommentDialogFragment : DialogFragment() {
     }
 
     companion object {
-        private const val KEY_TITLE = "TITLE"
-        private const val KEY_SUBTITLE = "SUBTITLE"
+        private const val KEY_GAME_NAME = "GAME_NAME"
         private const val INTERNAL_ID = "INTERNAL_ID"
-        private const val KEY_TEXT = "text"
+        private const val KEY_TEXT = "TEXT"
 
-        fun show(fragmentManager: FragmentManager, titleResId: Int, subtitle: String?, internalId: Long, text: String) {
-            CollectionDetailsCommentDialogFragment().apply {
+        fun show(fragmentManager: FragmentManager, gameName: String?, collectionItemInternalId: Long, conditionText: String) {
+            CollectionDetailsConditionDialogFragment().apply {
                 arguments = bundleOf(
-                    KEY_TEXT to text,
-                    KEY_TITLE to titleResId,
-                    INTERNAL_ID to internalId,
+                    KEY_TEXT to conditionText,
+                    INTERNAL_ID to collectionItemInternalId,
                 ).apply {
-                    if (!subtitle.isNullOrBlank()) {
-                        putString(KEY_SUBTITLE, subtitle)
+                    if (!gameName.isNullOrBlank()) {
+                        putString(KEY_GAME_NAME, gameName)
                     }
                 }
             }.show(fragmentManager, CollectionDetailsCommentDialogFragment.TAG)

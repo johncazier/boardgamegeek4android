@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.collectiondetails
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -8,7 +8,8 @@ import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.intentFor
 import com.boardgamegeek.extensions.notifyLoggedPlay
-import com.boardgamegeek.ui.viewmodel.CollectionDetailsViewModel
+import com.boardgamegeek.ui.AppScreen
+import com.boardgamegeek.ui.SearchResultsActivity
 import com.boardgamegeek.ui.navigation.BottomNavItem
 import dagger.hilt.android.AndroidEntryPoint
 
