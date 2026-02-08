@@ -4,24 +4,28 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.core.app.TaskStackBuilder
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
-import androidx.palette.graphics.Palette
-import androidx.viewpager2.widget.ViewPager2
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.OpenInBrowser
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
-import com.boardgamegeek.auth.Authenticator
-import com.boardgamegeek.databinding.ActivityHeroTabBinding
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.provider.BggContract
-import com.boardgamegeek.ui.adapter.GamePagerAdapter
 import com.boardgamegeek.ui.dialog.CollectionStatusDialogFragment
-import com.boardgamegeek.ui.dialog.GameUsersDialogFragment
-import com.boardgamegeek.ui.hotness.HotnessActivity
 import com.boardgamegeek.ui.viewmodel.GameViewModel
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
@@ -29,7 +33,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
 @AndroidEntryPoint
-class GameActivity : HeroTabActivity(), CollectionStatusDialogFragment.Listener {
+class GameActivity : AppCompatActivity(), CollectionStatusDialogFragment.Listener {
     private var gameId: Int = BggContract.INVALID_ID
     private var gameName: String = ""
     private var heroImageUrl = ""
@@ -38,31 +42,21 @@ class GameActivity : HeroTabActivity(), CollectionStatusDialogFragment.Listener 
     private var arePlayersCustomSorted = false
     private var isFavorite: Boolean = false
     private var isUserMenuEnabled = false
-    private lateinit var binding: ActivityHeroTabBinding
     private val viewModel by viewModels<GameViewModel>()
-
-    private val adapter: GamePagerAdapter by lazy {
-        GamePagerAdapter(this, gameId, intent.getStringExtra(KEY_GAME_NAME).orEmpty())
-    }
-
-    override val optionsMenuId = R.menu.game
+    private val firebaseAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        binding = ActivityHeroTabBinding.bind(findViewById(R.id.drawer_layout))
 
         gameId = intent.getIntExtra(KEY_GAME_ID, BggContract.INVALID_ID)
         if (gameId == BggContract.INVALID_ID) {
             Timber.w("Received an invalid game ID.")
             finish()
+            return
         }
-
-        initializeViewPager()
 
         changeName(intent.getStringExtra(KEY_GAME_NAME).orEmpty())
         changeImage(intent.getStringExtra(KEY_HERO_IMAGE_URL).orEmpty(), intent.getStringExtra(KEY_THUMBNAIL_URL).orEmpty())
-
         viewModel.setId(gameId)
 
         viewModel.game.observe(this) {
@@ -74,12 +68,6 @@ class GameActivity : HeroTabActivity(), CollectionStatusDialogFragment.Listener 
                 thumbnailUrl = game.thumbnailUrl
                 imageUrl = game.imageUrl
                 arePlayersCustomSorted = game.customPlayerSort
-            }
-        }
-
-        viewModel.errorMessage.observe(this) { event ->
-            event.getContentIfNotHandled()?.let {
-                binding.coordinatorLayout.snackbar(it)
             }
         }
 
@@ -96,69 +84,67 @@ class GameActivity : HeroTabActivity(), CollectionStatusDialogFragment.Listener 
                 param(FirebaseAnalytics.Param.ITEM_NAME, gameName)
             }
         }
-    }
 
-    override fun createAdapter(): GamePagerAdapter {
-        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-                adapter.currentPosition = position
-            }
-        })
-        return adapter
-    }
+        setContent {
+            val snackbarHostState = remember { SnackbarHostState() }
+            val gameState by viewModel.game.observeAsState()
+            val title = gameState?.name ?: gameName
+            val heroUrl = gameState?.heroImageUrl ?: heroImageUrl
+            val thumbUrl = gameState?.thumbnailUrl ?: thumbnailUrl
+            val image = gameState?.imageUrl ?: imageUrl
+            val arePlayersSorted = gameState?.customPlayerSort ?: arePlayersCustomSorted
+            val favorite = gameState?.isFavorite ?: isFavorite
+            val userMenuEnabled = (gameState?.maxUsers ?: if (isUserMenuEnabled) 1 else 0) > 0
 
-    override fun getPageTitle(position: Int) = adapter.getPageTitle(position)
-
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        menu.findItem(R.id.menu_favorite)?.setTitle(if (isFavorite) R.string.menu_unfavorite else R.string.menu_favorite)
-        menu.findItem(R.id.menu_users)?.isEnabled = isUserMenuEnabled
-        return super.onPrepareOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                val upIntent = when {
-                    Authenticator.isSignedIn(this) -> intentFor<com.boardgamegeek.ui.collection.CollectionActivity>()
-                    else -> intentFor<HotnessActivity>()
+            AppScreen(
+                topBarTitle = title,
+                currentScreenRouteFromActivity = "",
+                snackbarHostState = snackbarHostState,
+                onSearchClick = {
+                    startActivity(Intent(this, SearchResultsActivity::class.java))
+                },
+                topBarActions = {
+                    IconButton(onClick = { linkToBgg("boardgame", gameId) }) {
+                        Icon(
+                            imageVector = Icons.Filled.OpenInBrowser,
+                            contentDescription = stringResource(R.string.menu_view)
+                        )
+                    }
+                    GameOverflowMenuAction(
+                        gameId = gameId,
+                        gameName = title,
+                        heroUrl = heroUrl,
+                        thumbnailUrl = thumbUrl,
+                        imageUrl = image,
+                        arePlayersCustomSorted = arePlayersSorted,
+                        isFavorite = favorite,
+                        isUserMenuEnabled = userMenuEnabled,
+                        viewModel = viewModel,
+                    )
                 }
-                if (shouldUpRecreateTask()) {
-                    TaskStackBuilder.create(this).addNextIntentWithParentStack(upIntent).startActivities()
-                } else {
-                    this.navigateUpTo(upIntent)
+            ) { paddingValues ->
+                Box(modifier = Modifier.padding(paddingValues)) {
+                    GameScreen(
+                        viewModel = viewModel,
+                        gameId = gameId,
+                        initialGameName = gameName,
+                        initialHeroUrl = heroImageUrl,
+                        initialThumbnailUrl = thumbnailUrl,
+                        initialImageUrl = imageUrl,
+                        initialArePlayersCustomSorted = arePlayersCustomSorted,
+                        initialIsFavorite = isFavorite,
+                        initialIsUserMenuEnabled = isUserMenuEnabled,
+                        snackbarHostState = snackbarHostState,
+                    )
                 }
             }
-            R.id.menu_share -> shareGame(gameId, gameName, "Game", firebaseAnalytics)
-            R.id.menu_favorite -> {
-                isFavorite = !isFavorite
-                viewModel.updateFavorite(isFavorite)
-            }
-            R.id.menu_shortcut -> viewModel.createShortcut()
-            R.id.menu_log_play_quick -> {
-                binding.coordinatorLayout.snackbar(R.string.msg_logging_play)
-                viewModel.logQuickPlay(gameId, gameName)
-            }
-            R.id.menu_log_play -> LogPlayActivity.logPlay(this, gameId, gameName, heroImageUrl.ifBlank { thumbnailUrl.ifBlank { imageUrl } }, arePlayersCustomSorted)
-            R.id.menu_log_play_wizard -> NewPlayActivity.start(this, gameId, gameName)
-            R.id.menu_compose_log_play -> ComposeLogPlayActivity.start(this, gameId, gameName, heroImageUrl.ifBlank { thumbnailUrl.ifBlank { imageUrl } })
-            R.id.menu_view_image -> ImageActivity.start(this, heroImageUrl)
-            R.id.menu_users -> GameUsersDialogFragment.launch(this)
-            R.id.menu_view -> linkToBgg("boardgame", gameId)
-            else -> return super.onOptionsItemSelected(item)
         }
-        return true
-    }
-
-    private fun shouldUpRecreateTask(): Boolean {
-        return intent.getBooleanExtra(KEY_FROM_SHORTCUT, false)
     }
 
     private fun changeName(gameName: String) {
         if (gameName != this.gameName) {
             this.gameName = gameName
             intent.putExtra(KEY_GAME_NAME, gameName)
-            safelySetTitle(gameName)
         }
     }
 
@@ -168,12 +154,7 @@ class GameActivity : HeroTabActivity(), CollectionStatusDialogFragment.Listener 
         ) {
             this.heroImageUrl = heroImageUrl
             this.thumbnailUrl = thumbnailUrl
-            loadToolbarImage(listOf(heroImageUrl, thumbnailUrl))
         }
-    }
-
-    override fun onPaletteLoaded(palette: Palette?) {
-        viewModel.updateGameColors(palette)
     }
 
     override fun onSelectStatuses(selectedStatuses: List<String>, wishlistPriority: Int) {
