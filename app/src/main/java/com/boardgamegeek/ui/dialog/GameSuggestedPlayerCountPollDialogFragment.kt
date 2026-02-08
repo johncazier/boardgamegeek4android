@@ -17,7 +17,7 @@ import com.boardgamegeek.R
 import com.boardgamegeek.databinding.FragmentPollSuggestedPlayerCountBinding
 import com.boardgamegeek.extensions.setViewBackground
 import com.boardgamegeek.extensions.showAndSurvive
-import com.boardgamegeek.ui.viewmodel.GameViewModel
+import com.boardgamegeek.ui.game.GameViewModel
 import com.boardgamegeek.ui.widget.PlayerNumberRow
 import dagger.hilt.android.AndroidEntryPoint
 

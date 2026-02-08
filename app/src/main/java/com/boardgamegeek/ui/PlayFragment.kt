@@ -15,6 +15,7 @@ import com.boardgamegeek.model.PlayPlayer
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
 import com.boardgamegeek.ui.adapter.PlayPlayerAdapter
+import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.viewmodel.PlayViewModel
 import com.boardgamegeek.util.XmlApiMarkupConverter
 import com.google.firebase.analytics.FirebaseAnalytics

@@ -152,7 +152,7 @@
 		</activity>
 
 		<activity
-			android:name=".ui.GameActivity"
+			android:name=".ui.game.GameActivity"
 			android:exported="true"
 			android:label="@string/title_game" />
 		<activity

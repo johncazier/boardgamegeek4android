@@ -14,7 +14,7 @@ import com.boardgamegeek.databinding.FragmentPollBinding
 import com.boardgamegeek.extensions.BggColors
 import com.boardgamegeek.extensions.showAndSurvive
 import com.boardgamegeek.model.GameLanguagePoll
-import com.boardgamegeek.ui.viewmodel.GameViewModel
+import com.boardgamegeek.ui.game.GameViewModel
 import com.boardgamegeek.ui.widget.IntegerValueFormatter
 import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.components.Legend.LegendHorizontalAlignment

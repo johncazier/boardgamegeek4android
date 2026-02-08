@@ -11,6 +11,7 @@ import com.boardgamegeek.extensions.linkBgg
 import com.boardgamegeek.extensions.shareGame
 import com.boardgamegeek.extensions.shareGames
 import com.boardgamegeek.ui.*
+import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.navigation.BottomNavItem
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -36,7 +37,7 @@ class HotnessActivity : ComponentActivity() {
                     viewModel = viewModel,
                     paddingValues = paddingValues,
                     onGameClick = { gameId, gameName, thumbnailUrl ->
-                        GameActivity.Companion.start(this, gameId, gameName, thumbnailUrl ?: "")
+                        GameActivity.start(this, gameId, gameName, thumbnailUrl ?: "")
                     }
                 )
             }

@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.annotation.ColorInt
 import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.provider.BggContract
+import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.viewmodel.GameColorsViewModel
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent

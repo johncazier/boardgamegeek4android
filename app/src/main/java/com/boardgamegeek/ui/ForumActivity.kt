@@ -12,7 +12,7 @@ import com.boardgamegeek.extensions.getSerializableCompat
 import com.boardgamegeek.extensions.linkToBgg
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.ForumsActivity.Companion.startUp
-import com.boardgamegeek.ui.GameActivity.Companion.startUp
+import com.boardgamegeek.ui.game.GameActivity.Companion.startUp
 import com.boardgamegeek.ui.PersonActivity.Companion.startUpForArtist
 import com.boardgamegeek.ui.PersonActivity.Companion.startUpForDesigner
 import com.boardgamegeek.ui.PersonActivity.Companion.startUpForPublisher

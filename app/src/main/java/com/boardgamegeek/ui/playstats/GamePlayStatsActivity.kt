@@ -21,7 +21,7 @@ import androidx.core.content.ContextCompat
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.provider.BggContract
-import com.boardgamegeek.ui.GameActivity.Companion.startUp
+import com.boardgamegeek.ui.game.GameActivity.Companion.startUp
 import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent

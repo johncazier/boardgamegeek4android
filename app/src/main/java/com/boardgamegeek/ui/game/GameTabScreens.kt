@@ -3,7 +3,7 @@
     ExperimentalLayoutApi::class
 )
 
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.game
 
 import android.text.format.DateUtils
 import android.widget.TextView
@@ -98,12 +98,20 @@ import com.boardgamegeek.model.GameSubtype
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.model.Status
 import com.boardgamegeek.provider.BggContract
+import com.boardgamegeek.ui.CommentsActivity
+import com.boardgamegeek.ui.ForumActivity
+import com.boardgamegeek.ui.GameCollectionItemActivity
+import com.boardgamegeek.ui.GameColorsActivity
+import com.boardgamegeek.ui.GameDetailActivity
+import com.boardgamegeek.ui.GamePlaysActivity
+import com.boardgamegeek.ui.PersonActivity
+import com.boardgamegeek.ui.PlayActivity
 import com.boardgamegeek.ui.dialog.GameAgePollDialogFragment
 import com.boardgamegeek.ui.dialog.GameLanguagePollDialogFragment
 import com.boardgamegeek.ui.dialog.GameRanksDialogFragment
 import com.boardgamegeek.ui.dialog.GameSuggestedPlayerCountPollDialogFragment
 import com.boardgamegeek.ui.viewmodel.ForumsViewModel
-import com.boardgamegeek.ui.viewmodel.GameViewModel
+import com.boardgamegeek.ui.game.GameViewModel
 import com.boardgamegeek.util.XmlApiMarkupConverter
 import androidx.fragment.app.FragmentActivity
 import com.boardgamegeek.ui.playstats.GamePlayStatsActivity

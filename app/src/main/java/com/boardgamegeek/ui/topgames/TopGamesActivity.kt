@@ -8,7 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
 import com.boardgamegeek.ui.AppScreen
-import com.boardgamegeek.ui.GameActivity
+import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.SearchResultsActivity
 import com.boardgamegeek.ui.navigation.BottomNavItem
 import com.boardgamegeek.ui.topgames.TopGamesViewModel

@@ -10,6 +10,7 @@ import androidx.core.content.getSystemService
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.longToast
 import com.boardgamegeek.provider.BggContract.Games
+import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.viewmodel.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
 

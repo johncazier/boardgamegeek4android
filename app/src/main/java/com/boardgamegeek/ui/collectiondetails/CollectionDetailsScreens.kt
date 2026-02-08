@@ -38,7 +38,7 @@ import com.boardgamegeek.ui.widget.CollectionShelf
 import com.boardgamegeek.ui.ArtistsActivity
 import com.boardgamegeek.ui.CategoriesActivity
 import com.boardgamegeek.ui.DesignersActivity
-import com.boardgamegeek.ui.GameActivity
+import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.GameCollectionItemActivity
 import com.boardgamegeek.ui.LogPlayActivity
 import com.boardgamegeek.ui.MechanicsActivity

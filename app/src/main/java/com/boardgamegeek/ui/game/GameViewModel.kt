@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui.viewmodel
+package com.boardgamegeek.ui.game
 
 import android.app.Application
 import androidx.annotation.ColorInt
@@ -14,7 +14,7 @@ import com.boardgamegeek.livedata.EventLiveData
 import com.boardgamegeek.livedata.LiveSharedPreference
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.repository.*
-import com.boardgamegeek.ui.GameActivity
+import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.util.RemoteConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers

@@ -9,8 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.boardgamegeek.databinding.FragmentGameDetailsBinding
 import com.boardgamegeek.ui.adapter.GameDetailAdapter
-import com.boardgamegeek.ui.viewmodel.GameViewModel
-import com.boardgamegeek.ui.viewmodel.GameViewModel.ProducerType
+import com.boardgamegeek.ui.game.GameViewModel
+import com.boardgamegeek.ui.game.GameViewModel.ProducerType
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

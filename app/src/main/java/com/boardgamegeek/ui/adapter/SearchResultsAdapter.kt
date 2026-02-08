@@ -13,7 +13,7 @@ import com.boardgamegeek.extensions.asYear
 import com.boardgamegeek.extensions.filterTrue
 import com.boardgamegeek.extensions.inflate
 import com.boardgamegeek.extensions.toggle
-import com.boardgamegeek.ui.GameActivity
+import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.adapter.SearchResultsAdapter.SearchResultViewHolder
 import kotlin.properties.Delegates
 

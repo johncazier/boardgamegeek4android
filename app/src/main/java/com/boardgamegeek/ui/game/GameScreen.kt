@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.game
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Box
@@ -34,9 +34,13 @@ import com.boardgamegeek.extensions.logPlayPreference
 import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.extensions.shareGame
 import com.boardgamegeek.extensions.showAndSurvive
+import com.boardgamegeek.ui.ComposeLogPlayActivity
+import com.boardgamegeek.ui.ImageActivity
+import com.boardgamegeek.ui.LogPlayActivity
+import com.boardgamegeek.ui.NewPlayActivity
 import com.boardgamegeek.ui.dialog.CollectionStatusDialogFragment
 import com.boardgamegeek.ui.dialog.GameUsersDialogFragment
-import com.boardgamegeek.ui.viewmodel.GameViewModel
+import com.boardgamegeek.ui.game.GameViewModel
 import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.coroutines.launch
 

@@ -10,7 +10,7 @@ import androidx.fragment.app.activityViewModels
 import com.boardgamegeek.R
 import com.boardgamegeek.databinding.DialogGameUsersBinding
 import com.boardgamegeek.extensions.showAndSurvive
-import com.boardgamegeek.ui.viewmodel.GameViewModel
+import com.boardgamegeek.ui.game.GameViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

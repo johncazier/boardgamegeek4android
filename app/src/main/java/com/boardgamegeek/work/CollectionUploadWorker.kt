@@ -13,7 +13,7 @@ import com.boardgamegeek.extensions.*
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.repository.GameCollectionRepository
 import com.boardgamegeek.ui.collection.CollectionActivity
-import com.boardgamegeek.ui.GameActivity
+import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.util.LargeIconLoader
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject

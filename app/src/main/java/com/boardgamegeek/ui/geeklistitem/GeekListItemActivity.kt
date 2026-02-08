@@ -18,7 +18,7 @@ import com.boardgamegeek.model.GeekList
 import com.boardgamegeek.model.GeekListItem
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.AppScreen
-import com.boardgamegeek.ui.GameActivity.Companion.start
+import com.boardgamegeek.ui.game.GameActivity.Companion.start
 import com.boardgamegeek.ui.SearchResultsActivity
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics

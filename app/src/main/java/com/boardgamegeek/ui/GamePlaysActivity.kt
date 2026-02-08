@@ -12,6 +12,7 @@ import com.boardgamegeek.R
 import com.boardgamegeek.extensions.intentFor
 import com.boardgamegeek.extensions.setActionBarCount
 import com.boardgamegeek.provider.BggContract
+import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.viewmodel.PlaysViewModel
 import dagger.hilt.android.AndroidEntryPoint
 

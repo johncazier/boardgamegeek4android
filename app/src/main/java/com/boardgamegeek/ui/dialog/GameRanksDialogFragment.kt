@@ -12,7 +12,7 @@ import androidx.fragment.app.activityViewModels
 import com.boardgamegeek.R
 import com.boardgamegeek.databinding.DialogGameRanksBinding
 import com.boardgamegeek.extensions.*
-import com.boardgamegeek.ui.viewmodel.GameViewModel
+import com.boardgamegeek.ui.game.GameViewModel
 import com.boardgamegeek.ui.widget.GameFamilyRow
 import com.boardgamegeek.ui.widget.GameSubtypeRow
 import dagger.hilt.android.AndroidEntryPoint

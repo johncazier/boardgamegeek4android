@@ -8,7 +8,7 @@ import com.boardgamegeek.databinding.RowCollectionBuddyBinding
 import com.boardgamegeek.model.CollectionItem
 import com.boardgamegeek.extensions.firstChar
 import com.boardgamegeek.extensions.inflate
-import com.boardgamegeek.ui.GameActivity.Companion.start
+import com.boardgamegeek.ui.game.GameActivity.Companion.start
 import com.boardgamegeek.ui.adapter.BuddyCollectionAdapter.BuddyGameViewHolder
 import com.boardgamegeek.ui.widget.RecyclerSectionItemDecoration.SectionCallback
 import kotlin.properties.Delegates

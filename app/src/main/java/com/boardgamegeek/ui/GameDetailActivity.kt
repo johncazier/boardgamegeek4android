@@ -7,8 +7,9 @@ import androidx.activity.viewModels
 import com.boardgamegeek.extensions.getSerializableCompat
 import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.provider.BggContract
-import com.boardgamegeek.ui.viewmodel.GameViewModel
-import com.boardgamegeek.ui.viewmodel.GameViewModel.ProducerType
+import com.boardgamegeek.ui.game.GameActivity
+import com.boardgamegeek.ui.game.GameViewModel
+import com.boardgamegeek.ui.game.GameViewModel.ProducerType
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint

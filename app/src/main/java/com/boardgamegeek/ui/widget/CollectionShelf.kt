@@ -21,7 +21,7 @@ import com.boardgamegeek.R
 import com.boardgamegeek.databinding.RowCollectionItemBinding
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.model.CollectionItem
-import com.boardgamegeek.ui.GameActivity
+import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.adapter.AutoUpdatableAdapter
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import kotlin.properties.Delegates

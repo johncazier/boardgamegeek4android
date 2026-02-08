@@ -12,9 +12,9 @@ import com.boardgamegeek.extensions.loadThumbnail
 import com.boardgamegeek.extensions.setOrClearOnClickListener
 import com.boardgamegeek.extensions.setTextOrHide
 import com.boardgamegeek.model.GameDetail
-import com.boardgamegeek.ui.GameActivity
+import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.PersonActivity
-import com.boardgamegeek.ui.viewmodel.GameViewModel
+import com.boardgamegeek.ui.game.GameViewModel
 import kotlin.properties.Delegates
 
 class GameDetailAdapter : RecyclerView.Adapter<GameDetailAdapter.DetailViewHolder>(), AutoUpdatableAdapter {

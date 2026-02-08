@@ -14,6 +14,7 @@ import com.boardgamegeek.mappers.mapFromResourceToEnum
 import com.boardgamegeek.mappers.mapToResource
 import com.boardgamegeek.model.Status
 import com.boardgamegeek.ui.adapter.BuddyCollectionAdapter
+import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.viewmodel.BuddyCollectionViewModel
 import com.boardgamegeek.ui.widget.RecyclerSectionItemDecoration
 import dagger.hilt.android.AndroidEntryPoint

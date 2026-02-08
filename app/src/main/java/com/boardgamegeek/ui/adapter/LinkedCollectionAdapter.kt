@@ -10,7 +10,7 @@ import com.boardgamegeek.R
 import com.boardgamegeek.databinding.RowCollectionBinding
 import com.boardgamegeek.model.CollectionItem
 import com.boardgamegeek.extensions.*
-import com.boardgamegeek.ui.GameActivity
+import com.boardgamegeek.ui.game.GameActivity
 
 class LinkedCollectionAdapter :
     ListAdapter<CollectionItem, LinkedCollectionAdapter.DetailViewHolder>(
