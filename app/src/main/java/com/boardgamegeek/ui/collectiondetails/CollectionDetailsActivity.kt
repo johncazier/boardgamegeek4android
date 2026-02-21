@@ -19,6 +19,7 @@ import com.boardgamegeek.R
 import com.boardgamegeek.extensions.intentFor
 import com.boardgamegeek.extensions.notifyLoggedPlay
 import com.boardgamegeek.ui.AppScreen
+import com.boardgamegeek.ui.DrawerRoute
 import com.boardgamegeek.ui.SearchResultsActivity
 import com.boardgamegeek.ui.collection.CollectionActivity
 import com.boardgamegeek.ui.navigation.BottomNavItem
@@ -55,6 +56,7 @@ class CollectionDetailsActivity : ComponentActivity() {
             AppScreen(
                 topBarTitle = stringResource(R.string.title_collection_details),
                 currentScreenRouteFromActivity = BottomNavItem.Collection.route,
+                currentDrawerRouteFromActivity = DrawerRoute.CollectionDetails,
                 onSearchClick = { startActivity(intentFor<SearchResultsActivity>()) },
                 drawerGesturesEnabled = false,
                 snackbarHostState = snackbarHostState,

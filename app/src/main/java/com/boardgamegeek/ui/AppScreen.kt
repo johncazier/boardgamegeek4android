@@ -44,6 +44,7 @@ fun AppScreen(
     topBarTitle: String,
     topBarTitleContent: (@Composable () -> Unit)? = null,
     currentScreenRouteFromActivity: String,
+    currentDrawerRouteFromActivity: String = currentScreenRouteFromActivity,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     onSearchClick: () -> Unit,
     drawerGesturesEnabled: Boolean = true,
@@ -56,13 +57,16 @@ fun AppScreen(
 
     val navigateToScreen = remember<(String) -> Unit> {
         { route ->
-            // Prevent navigation if already on the target screen AND the current activity matches the route
-            val currentActivityNameSimple = (context as? ComponentActivity)?.javaClass?.simpleName ?: ""
+            val currentActivityClass = (context as? ComponentActivity)?.javaClass
+            val alreadyOnTarget = when (route) {
+                BottomNavItem.Collection.route -> currentActivityClass == CollectionActivity::class.java
+                BottomNavItem.Hotness.route -> currentActivityClass == HotnessActivity::class.java
+                BottomNavItem.TopGames.route -> currentActivityClass == TopGamesActivity::class.java
+                BottomNavItem.GeekLists.route -> currentActivityClass == GeekListsActivity::class.java
+                else -> false
+            }
 
-            val routeCapitalized = route.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-
-            if (selectedRoute == route && currentActivityNameSimple.startsWith(routeCapitalized)) {
-                // Already on this screen and current activity corresponds to it
+            if (selectedRoute == route && alreadyOnTarget) {
                 return@remember
             }
 
@@ -105,7 +109,7 @@ fun AppScreen(
                         NavigationDrawerItem(
                             icon = { Icon(item.icon, contentDescription = null) },
                             label = { Text(stringResource(item.titleRes)) },
-                            selected = item.route == selectedRoute,
+                            selected = item.route == currentDrawerRouteFromActivity,
                             onClick = {
                                 scope.launch { drawerState.close() }
                                 navigateToScreen(item.route)
@@ -117,10 +121,12 @@ fun AppScreen(
                     NavigationDrawerItem(
                         icon = { Icon(Icons.AutoMirrored.Filled.LibraryBooks, contentDescription = null) },
                         label = { Text(stringResource(R.string.title_collection_details)) },
-                        selected = false,
+                        selected = currentDrawerRouteFromActivity == DrawerRoute.CollectionDetails,
                         onClick = {
                             scope.launch { drawerState.close() }
-                            context.startActivity<com.boardgamegeek.ui.collectiondetails.CollectionDetailsActivity>()
+                            if ((context as? ComponentActivity)?.javaClass != com.boardgamegeek.ui.collectiondetails.CollectionDetailsActivity::class.java) {
+                                context.startActivity<com.boardgamegeek.ui.collectiondetails.CollectionDetailsActivity>()
+                            }
                         },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
@@ -229,4 +235,8 @@ fun AppScreen(
             }
         }
     }
+}
+
+object DrawerRoute {
+    const val CollectionDetails = "collection_details"
 }
