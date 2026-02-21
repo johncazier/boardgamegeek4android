@@ -4,37 +4,40 @@ import android.content.DialogInterface
 import android.graphics.Color
 import android.text.format.DateFormat
 import android.text.format.DateUtils
-import android.view.MenuItem
-import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
+import androidx.annotation.MenuRes
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
+import coil3.compose.AsyncImage
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.view.isVisible
-import androidx.fragment.app.FragmentActivity
-import androidx.recyclerview.widget.RecyclerView
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.model.CollectionItem
 import com.boardgamegeek.model.CollectionStatus
-import com.boardgamegeek.ui.widget.CollectionShelf
 import com.boardgamegeek.ui.ArtistsActivity
 import com.boardgamegeek.ui.CategoriesActivity
 import com.boardgamegeek.ui.DesignersActivity
@@ -104,11 +107,11 @@ fun CollectionDetailsScreen(
 @Composable
 private fun CollectionBrowseTab(viewModel: CollectionDetailsViewModel) {
     val context = LocalContext.current
-    val recentlyViewed by viewModel.recentlyViewedItems.observeAsState(emptyList())
-    val friendlessFavorites by viewModel.friendlessFavoriteItems.observeAsState(emptyList())
-    val friendless by viewModel.friendless.observeAsState(0)
-    val underrated by viewModel.underratedItems.observeAsState(emptyList())
-    val hawt by viewModel.hawtItems.observeAsState(emptyList())
+    val recentlyViewed by viewModel.recentlyViewedItems.collectAsStateWithLifecycle(emptyList())
+    val friendlessFavorites by viewModel.friendlessFavoriteItems.collectAsStateWithLifecycle(emptyList())
+    val friendless by viewModel.friendless.collectAsStateWithLifecycle(0)
+    val underrated by viewModel.underratedItems.collectAsStateWithLifecycle(emptyList())
+    val hawt by viewModel.hawtItems.collectAsStateWithLifecycle(emptyList())
 
     val padding = dimensionResource(R.dimen.padding_extra)
 
@@ -155,13 +158,13 @@ private fun CollectionBrowseTab(viewModel: CollectionDetailsViewModel) {
 @Composable
 private fun CollectionOwnTab(viewModel: CollectionDetailsViewModel) {
     val context = LocalContext.current
-    val growthRate by viewModel.growthRate.observeAsState(0)
-    val utilization by viewModel.utilization.observeAsState(0.0)
-    val games by viewModel.own.observeAsState()
-    val expansions by viewModel.expansions.observeAsState()
-    val accessories by viewModel.accessories.observeAsState()
-    val recentlyAcquired by viewModel.recentlyAcquired.observeAsState()
-    val hawt by viewModel.hawtItems.observeAsState(emptyList())
+    val growthRate by viewModel.growthRate.collectAsStateWithLifecycle(0)
+    val utilization by viewModel.utilization.collectAsStateWithLifecycle(0.0)
+    val games by viewModel.own.collectAsStateWithLifecycle()
+    val expansions by viewModel.expansions.collectAsStateWithLifecycle()
+    val accessories by viewModel.accessories.collectAsStateWithLifecycle()
+    val recentlyAcquired by viewModel.recentlyAcquired.collectAsStateWithLifecycle()
+    val hawt by viewModel.hawtItems.collectAsStateWithLifecycle(emptyList())
 
     val padding = dimensionResource(R.dimen.padding_extra)
     val horizontalMargin = dimensionResource(R.dimen.material_margin_horizontal)
@@ -229,15 +232,14 @@ private fun CollectionOwnTab(viewModel: CollectionDetailsViewModel) {
 @Composable
 private fun CollectionPlayTab(viewModel: CollectionDetailsViewModel) {
     val context = LocalContext.current
-    val activity = context as FragmentActivity
-    val syncStatuses = viewModel.syncCollectionStatuses.observeAsState(emptySet()).value.orEmpty()
-    val playerCountType by viewModel.playerCountType.observeAsState(CollectionDetailsViewModel.PlayerCountType.All)
+    val syncStatuses by viewModel.syncCollectionStatuses.collectAsStateWithLifecycle()
+    val playerCountType by viewModel.playerCountType.collectAsStateWithLifecycle()
 
-    val friendlessShouldPlay by viewModel.friendlessShouldPlayGames.observeAsState()
-    val wantToPlay by viewModel.wantToPlayItems.observeAsState()
-    val recentlyPlayed by viewModel.recentlyPlayedGames.observeAsState()
-    val shelfOfOpportunity by viewModel.shelfOfOpportunityItems.observeAsState()
-    val shelfOfNewOpportunity by viewModel.shelfOfNewOpportunityItems.observeAsState()
+    val friendlessShouldPlay by viewModel.friendlessShouldPlayGames.collectAsStateWithLifecycle()
+    val wantToPlay by viewModel.wantToPlayItems.collectAsStateWithLifecycle()
+    val recentlyPlayed by viewModel.recentlyPlayedGames.collectAsStateWithLifecycle()
+    val shelfOfOpportunity by viewModel.shelfOfOpportunityItems.collectAsStateWithLifecycle()
+    val shelfOfNewOpportunity by viewModel.shelfOfNewOpportunityItems.collectAsStateWithLifecycle()
 
     var playerCount by rememberSaveable { mutableStateOf<Int?>(null) }
 
@@ -323,7 +325,7 @@ private fun CollectionPlayTab(viewModel: CollectionDetailsViewModel) {
             items = friendlessShouldPlay?.first.orEmpty(),
             count = friendlessShouldPlay?.second,
             menuRes = R.menu.collection_shelf_play,
-            onMenuClick = playMenuHandler(context, viewModel, activity),
+            onMenuClick = playMenuHandler(context, viewModel, context),
         ) { item -> ratingBadge(context, item.rating) }
 
         if (syncStatuses.contains(CollectionStatus.WantToPlay)) {
@@ -332,7 +334,7 @@ private fun CollectionPlayTab(viewModel: CollectionDetailsViewModel) {
                 items = wantToPlay?.first.orEmpty(),
                 count = wantToPlay?.second,
                 menuRes = R.menu.collection_shelf_want_to_play,
-                onMenuClick = playMenuHandler(context, viewModel, activity),
+                onMenuClick = playMenuHandler(context, viewModel, context),
             ) { item -> ratingBadge(context, item.averageRating) }
         }
 
@@ -341,7 +343,7 @@ private fun CollectionPlayTab(viewModel: CollectionDetailsViewModel) {
             items = recentlyPlayed?.first.orEmpty(),
             count = recentlyPlayed?.second,
             menuRes = R.menu.collection_shelf_play,
-            onMenuClick = playMenuHandler(context, viewModel, activity),
+            onMenuClick = playMenuHandler(context, viewModel, context),
         ) { item -> ratingBadge(context, item.averageRating) }
 
         CollectionShelfView(
@@ -350,7 +352,7 @@ private fun CollectionPlayTab(viewModel: CollectionDetailsViewModel) {
             items = shelfOfOpportunity?.first.orEmpty(),
             count = shelfOfOpportunity?.second,
             menuRes = R.menu.collection_shelf_play,
-            onMenuClick = playMenuHandler(context, viewModel, activity),
+            onMenuClick = playMenuHandler(context, viewModel, context),
         ) { item -> ratingBadge(context, item.averageRating) }
 
         CollectionShelfView(
@@ -359,7 +361,7 @@ private fun CollectionPlayTab(viewModel: CollectionDetailsViewModel) {
             items = shelfOfNewOpportunity?.first.orEmpty(),
             count = shelfOfNewOpportunity?.second,
             menuRes = R.menu.collection_shelf_play,
-            onMenuClick = playMenuHandler(context, viewModel, activity),
+            onMenuClick = playMenuHandler(context, viewModel, context),
         ) { item ->
             item.acquisitionDate.formatDateTime(context, flags = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_ABBREV_ALL) to Color.WHITE
         }
@@ -369,16 +371,18 @@ private fun CollectionPlayTab(viewModel: CollectionDetailsViewModel) {
 @Composable
 private fun CollectionAcquireTab(viewModel: CollectionDetailsViewModel) {
     val context = LocalContext.current
-    val activity = context as FragmentActivity
-    val syncStatuses = viewModel.syncCollectionStatuses.observeAsState(emptySet()).value.orEmpty()
-    val acquireStats by viewModel.collectionAcquireStats.observeAsState()
-    val preordered by viewModel.preordered.observeAsState()
-    val wishlist by viewModel.wishlist.observeAsState()
-    val wantToBuy by viewModel.wantToBuy.observeAsState()
-    val wantInTrade by viewModel.wantInTrade.observeAsState()
-    val favoriteUnowned by viewModel.favoriteUnownedItems.observeAsState(emptyList())
-    val playedUnowned by viewModel.playedButUnownedItems.observeAsState(emptyList())
-    val hawtUnowned by viewModel.hawtUnownedItems.observeAsState(emptyList())
+    val syncStatuses by viewModel.syncCollectionStatuses.collectAsStateWithLifecycle()
+    val acquireStats by viewModel.collectionAcquireStats.collectAsStateWithLifecycle()
+    val preordered by viewModel.preordered.collectAsStateWithLifecycle()
+    val wishlist by viewModel.wishlist.collectAsStateWithLifecycle()
+    val wantToBuy by viewModel.wantToBuy.collectAsStateWithLifecycle()
+    val wantInTrade by viewModel.wantInTrade.collectAsStateWithLifecycle()
+    val favoriteUnowned by viewModel.favoriteUnownedItems.collectAsStateWithLifecycle(emptyList())
+    val playedUnowned by viewModel.playedButUnownedItems.collectAsStateWithLifecycle(emptyList())
+    val hawtUnowned by viewModel.hawtUnownedItems.collectAsStateWithLifecycle(emptyList())
+    val acquiredFrom by viewModel.acquiredFrom.collectAsStateWithLifecycle()
+
+    var itemToAcquire by remember { mutableStateOf<CollectionItem?>(null) }
 
     val padding = dimensionResource(R.dimen.padding_extra)
     val horizontalMargin = dimensionResource(R.dimen.material_margin_horizontal)
@@ -409,7 +413,7 @@ private fun CollectionAcquireTab(viewModel: CollectionDetailsViewModel) {
                 items = preordered?.first.orEmpty(),
                 count = preordered?.second,
                 menuRes = R.menu.collection_shelf_preordered,
-                onMenuClick = acquireMenuHandler(context, viewModel, activity),
+                onMenuClick = acquireMenuHandler(context, viewModel, context) { itemToAcquire = it },
             ) { item ->
                 item.acquisitionDate.formatDateTime(context, flags = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_ABBREV_ALL) to Color.WHITE
             }
@@ -421,7 +425,7 @@ private fun CollectionAcquireTab(viewModel: CollectionDetailsViewModel) {
                 items = wishlist?.first.orEmpty(),
                 count = wishlist?.second,
                 menuRes = R.menu.collection_shelf_wishlist,
-                onMenuClick = acquireMenuHandler(context, viewModel, activity),
+                onMenuClick = acquireMenuHandler(context, viewModel, context) { itemToAcquire = it },
             ) { item ->
                 item.wishListPriority.asWishListPriority(context) to item.wishListPriority.toDouble().toColor(BggColors.fiveStageColors)
             }
@@ -433,7 +437,7 @@ private fun CollectionAcquireTab(viewModel: CollectionDetailsViewModel) {
                 items = wantToBuy?.first.orEmpty(),
                 count = wantToBuy?.second,
                 menuRes = R.menu.collection_shelf_want_to_buy,
-                onMenuClick = acquireMenuHandler(context, viewModel, activity),
+                onMenuClick = acquireMenuHandler(context, viewModel, context) { itemToAcquire = it },
             ) { item -> ratingBadge(context, item.averageRating) }
         }
 
@@ -442,43 +446,62 @@ private fun CollectionAcquireTab(viewModel: CollectionDetailsViewModel) {
             items = wantInTrade?.first.orEmpty(),
             count = wantInTrade?.second,
             menuRes = R.menu.collection_shelf_want_in_trade,
-            onMenuClick = acquireMenuHandler(context, viewModel, activity),
+            onMenuClick = acquireMenuHandler(context, viewModel, context) { itemToAcquire = it },
         ) { item -> ratingBadge(context, item.averageRating) }
 
         CollectionShelfView(
             header = stringResource(R.string.title_favorite_unowned),
             items = favoriteUnowned,
             menuRes = R.menu.collection_shelf_acquire,
-            onMenuClick = acquireMenuHandler(context, viewModel, activity),
+            onMenuClick = acquireMenuHandler(context, viewModel, context) { itemToAcquire = it },
         ) { item -> ratingBadge(context, item.rating) }
 
         CollectionShelfView(
             header = stringResource(R.string.title_played_unowned),
             items = playedUnowned,
             menuRes = R.menu.collection_shelf_acquire,
-            onMenuClick = acquireMenuHandler(context, viewModel, activity),
+            onMenuClick = acquireMenuHandler(context, viewModel, context) { itemToAcquire = it },
         ) { item -> context.getQuantityText(R.plurals.plays_suffix, item.numberOfPlays, item.numberOfPlays) to Color.WHITE }
 
         CollectionShelfView(
             header = stringResource(R.string.title_hawt_unowned),
             items = hawtUnowned,
             menuRes = R.menu.collection_shelf_acquire,
-            onMenuClick = acquireMenuHandler(context, viewModel, activity),
+            onMenuClick = acquireMenuHandler(context, viewModel, context) { itemToAcquire = it },
         ) { item -> ratingBadge(context, item.averageRating) }
+    }
+
+    itemToAcquire?.let { item ->
+        AcquireCollectionItemDialog(
+            item = item,
+            acquiredFromOptions = acquiredFrom,
+            onDismiss = { itemToAcquire = null },
+            onConfirm = { priceCurrency, pricePaid, quantity, acquisitionDate, acquiredFromValue ->
+                viewModel.markedAsAcquired(
+                    internalId = item.internalId,
+                    priceCurrency = priceCurrency,
+                    pricePaid = pricePaid,
+                    quantity = quantity,
+                    acquisitionDate = acquisitionDate,
+                    acquiredFrom = acquiredFromValue,
+                )
+                itemToAcquire = null
+            }
+        )
     }
 }
 
 @Composable
 private fun CollectionDivestTab(viewModel: CollectionDetailsViewModel) {
     val context = LocalContext.current
-    val activity = context as FragmentActivity
-    val syncStatuses = viewModel.syncCollectionStatuses.observeAsState(emptySet()).value.orEmpty()
-    val own by viewModel.own.observeAsState()
-    val regretFactor by viewModel.regretFactor.observeAsState(0)
-    val forTrade by viewModel.forTrade.observeAsState()
-    val forTradeWithoutCondition by viewModel.forTradeWithoutCondition.observeAsState()
-    val previouslyOwned by viewModel.previouslyOwned.observeAsState()
-    val whyOwn by viewModel.whyOwnItems.observeAsState()
+    val syncStatuses by viewModel.syncCollectionStatuses.collectAsStateWithLifecycle()
+    val own by viewModel.own.collectAsStateWithLifecycle()
+    val regretFactor by viewModel.regretFactor.collectAsStateWithLifecycle(0)
+    val forTrade by viewModel.forTrade.collectAsStateWithLifecycle()
+    val forTradeWithoutCondition by viewModel.forTradeWithoutCondition.collectAsStateWithLifecycle()
+    val previouslyOwned by viewModel.previouslyOwned.collectAsStateWithLifecycle()
+    val whyOwn by viewModel.whyOwnItems.collectAsStateWithLifecycle()
+    var itemForConditionEdit by remember { mutableStateOf<CollectionItem?>(null) }
 
     val padding = dimensionResource(R.dimen.padding_extra)
     val horizontalMargin = dimensionResource(R.dimen.material_margin_horizontal)
@@ -521,7 +544,7 @@ private fun CollectionDivestTab(viewModel: CollectionDetailsViewModel) {
                 items = forTrade?.first.orEmpty(),
                 count = forTrade?.second,
                 menuRes = R.menu.collection_shelf_for_trade,
-                onMenuClick = divestMenuHandler(context, viewModel, activity),
+                onMenuClick = divestMenuHandler(context, viewModel, context) { itemForConditionEdit = it },
             ) { item -> ratingBadge(context, item.geekRating) }
 
             CollectionShelfView(
@@ -529,7 +552,7 @@ private fun CollectionDivestTab(viewModel: CollectionDetailsViewModel) {
                 items = forTradeWithoutCondition?.first.orEmpty(),
                 count = forTradeWithoutCondition?.second,
                 menuRes = R.menu.collection_shelf_divest_for_trade_without_condition,
-                onMenuClick = divestMenuHandler(context, viewModel, activity),
+                onMenuClick = divestMenuHandler(context, viewModel, context) { itemForConditionEdit = it },
             ) { item -> ratingBadge(context, item.geekRating) }
         }
 
@@ -539,7 +562,7 @@ private fun CollectionDivestTab(viewModel: CollectionDetailsViewModel) {
                 items = previouslyOwned?.first.orEmpty(),
                 count = previouslyOwned?.second,
                 menuRes = R.menu.collection_shelf,
-                onMenuClick = divestMenuHandler(context, viewModel, activity),
+                onMenuClick = divestMenuHandler(context, viewModel, context) { itemForConditionEdit = it },
             ) { item -> ratingBadge(context, item.geekRating) }
         }
 
@@ -549,21 +572,35 @@ private fun CollectionDivestTab(viewModel: CollectionDetailsViewModel) {
             items = whyOwn?.first.orEmpty(),
             count = whyOwn?.second,
             menuRes = R.menu.collection_shelf_offer_trade,
-            onMenuClick = divestMenuHandler(context, viewModel, activity),
+            onMenuClick = divestMenuHandler(context, viewModel, context) { itemForConditionEdit = it },
         ) { item ->
             val dateFormat = DateFormat.getDateFormat(context)
             (item.lastPlayDate?.let { dateFormat.format(it) } ?: "") to Color.WHITE
         }
+    }
+
+    itemForConditionEdit?.let { item ->
+        EditTextDialog(
+            title = stringResource(R.string.menu_add_condition_text),
+            subtitle = item.gameName,
+            initialValue = item.conditionText,
+            onDismiss = { itemForConditionEdit = null },
+            onConfirm = {
+                viewModel.updateCondition(item.internalId, it)
+                itemForConditionEdit = null
+            }
+        )
     }
 }
 
 @Composable
 private fun CollectionAnalyzeTab(viewModel: CollectionDetailsViewModel) {
     val context = LocalContext.current
-    val activity = context as FragmentActivity
-    val analyzeStats by viewModel.collectionAnalyzeStats.observeAsState()
-    val ratable by viewModel.ratableItems.observeAsState()
-    val commentable by viewModel.commentableItems.observeAsState()
+    val analyzeStats by viewModel.collectionAnalyzeStats.collectAsStateWithLifecycle()
+    val ratable by viewModel.ratableItems.collectAsStateWithLifecycle()
+    val commentable by viewModel.commentableItems.collectAsStateWithLifecycle()
+    var itemForRating by remember { mutableStateOf<CollectionItem?>(null) }
+    var itemForComment by remember { mutableStateOf<CollectionItem?>(null) }
 
     val padding = dimensionResource(R.dimen.padding_extra)
     val horizontalMargin = dimensionResource(R.dimen.material_margin_horizontal)
@@ -597,7 +634,7 @@ private fun CollectionAnalyzeTab(viewModel: CollectionDetailsViewModel) {
             items = ratable?.first.orEmpty(),
             count = ratable?.second,
             menuRes = R.menu.collection_shelf_rate,
-            onMenuClick = analyzeMenuHandler(context, activity),
+            onMenuClick = analyzeMenuHandler(context, onShowRatingDialog = { itemForRating = it }, onShowCommentDialog = { itemForComment = it }),
         ) { item -> context.getQuantityText(R.plurals.plays_suffix, item.numberOfPlays, item.numberOfPlays) to Color.WHITE }
 
         CollectionShelfView(
@@ -605,8 +642,33 @@ private fun CollectionAnalyzeTab(viewModel: CollectionDetailsViewModel) {
             items = commentable?.first.orEmpty(),
             count = commentable?.second,
             menuRes = R.menu.collection_shelf_comment,
-            onMenuClick = analyzeMenuHandler(context, activity),
+            onMenuClick = analyzeMenuHandler(context, onShowRatingDialog = { itemForRating = it }, onShowCommentDialog = { itemForComment = it }),
         ) { item -> ratingBadge(context, item.rating) }
+    }
+
+    itemForRating?.let { item ->
+        RatingDialog(
+            gameName = item.gameName,
+            initialValue = item.rating.takeIf { it > 0.0 }?.toString().orEmpty(),
+            onDismiss = { itemForRating = null },
+            onConfirm = { rating ->
+                viewModel.updateRating(item.internalId, rating)
+                itemForRating = null
+            }
+        )
+    }
+
+    itemForComment?.let { item ->
+        EditTextDialog(
+            title = stringResource(R.string.comment),
+            subtitle = item.gameName,
+            initialValue = item.comment,
+            onDismiss = { itemForComment = null },
+            onConfirm = {
+                viewModel.updateComment(item.internalId, it)
+                itemForComment = null
+            }
+        )
     }
 }
 
@@ -687,44 +749,530 @@ private fun CollectionShelfView(
     header: String,
     items: List<CollectionItem>,
     menuRes: Int,
-    onMenuClick: ((CollectionItem, MenuItem) -> Boolean)?,
+    onMenuClick: ((CollectionItem, Int) -> Boolean)?,
     count: Int? = null,
     helpText: String? = null,
     badge: ((CollectionItem) -> Pair<CharSequence, Int>)? = null,
 ) {
     val context = LocalContext.current
-    val adapter = remember(menuRes, onMenuClick, badge) {
-        CollectionShelf.CollectionItemAdapter(menuRes, onMenuClick, badge)
-    }
-    val headerText = count?.let { "$header - $it" } ?: header
+    if (items.isEmpty()) return
 
-    AndroidView(
-        factory = { ctx ->
-            CollectionShelf(ctx).apply {
-                setAdapter(adapter)
-            }
-        },
-        update = { view ->
-            view.findViewById<RecyclerView>(R.id.recyclerView).apply {
-                isNestedScrollingEnabled = false
-                overScrollMode = View.OVER_SCROLL_NEVER
-            }
-            view.findViewById<TextView>(R.id.headerView).text = headerText
-            view.findViewById<ImageView>(R.id.infoView).apply {
-                isVisible = !helpText.isNullOrBlank()
-                setOnClickListener {
-                    helpText?.let { context.showClickableAlertDialog(ResourcesCompat.ID_NULL, it) }
+    val headerText = count?.let { "$header - $it" } ?: header
+    val horizontalPadding = dimensionResource(R.dimen.activity_horizontal_margin)
+    val spacing = dimensionResource(R.dimen.padding_small)
+    val menuOptions = remember(menuRes) { shelfMenuOptions(menuRes) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = dimensionResource(R.dimen.padding_half))
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = horizontalPadding),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = headerText,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f)
+            )
+            if (!helpText.isNullOrBlank()) {
+                IconButton(
+                    onClick = {
+                        context.showClickableAlertDialog(ResourcesCompat.ID_NULL, helpText)
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Info,
+                        contentDescription = stringResource(R.string.information)
+                    )
                 }
             }
-            adapter.items = items
-            view.bindList(items)
+        }
+
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = horizontalPadding),
+            horizontalArrangement = Arrangement.spacedBy(spacing)
+        ) {
+            items(items, key = { it.internalId }) { item ->
+                CollectionShelfItemCard(
+                    item = item,
+                    menuOptions = menuOptions,
+                    badge = badge?.invoke(item),
+                    onClick = {
+                        GameActivity.start(
+                            context = context,
+                            gameId = item.gameId,
+                            gameName = item.gameName,
+                            thumbnailUrl = item.thumbnailUrl,
+                            heroImageUrl = item.heroImageUrl
+                        )
+                    },
+                    onLongClick = {
+                        GameActivity.start(
+                            context = context,
+                            gameId = item.gameId,
+                            gameName = item.gameName,
+                            thumbnailUrl = item.thumbnailUrl,
+                            heroImageUrl = item.heroImageUrl
+                        )
+                    },
+                    onMenuClick = { menuItemId ->
+                        onMenuClick?.invoke(item, menuItemId) ?: false
+                    }
+                )
+            }
+        }
+    }
+}
+
+private data class ShelfMenuOption(
+    val id: Int,
+    val titleRes: Int
+)
+
+private fun shelfMenuOptions(@MenuRes menuRes: Int): List<ShelfMenuOption> = when (menuRes) {
+    R.menu.collection_shelf -> listOf(
+        ShelfMenuOption(R.id.menu_view_game, R.string.menu_view_game),
+        ShelfMenuOption(R.id.menu_view_item, R.string.menu_view_item),
+    )
+    R.menu.collection_shelf_play -> listOf(
+        ShelfMenuOption(R.id.menu_view_game, R.string.menu_view_game),
+        ShelfMenuOption(R.id.menu_view_item, R.string.menu_view_item),
+        ShelfMenuOption(R.id.menu_play_game, R.string.menu_log_play),
+    )
+    R.menu.collection_shelf_want_to_play -> listOf(
+        ShelfMenuOption(R.id.menu_view_game, R.string.menu_view_game),
+        ShelfMenuOption(R.id.menu_view_item, R.string.menu_view_item),
+        ShelfMenuOption(R.id.menu_play_game, R.string.menu_log_play),
+        ShelfMenuOption(R.id.menu_remove_want_to_play, R.string.menu_remove_want_to_play),
+    )
+    R.menu.collection_shelf_acquire -> listOf(
+        ShelfMenuOption(R.id.menu_acquire, R.string.title_acquire),
+        ShelfMenuOption(R.id.menu_view_game, R.string.menu_view_game),
+        ShelfMenuOption(R.id.menu_view_item, R.string.menu_view_item),
+    )
+    R.menu.collection_shelf_preordered -> listOf(
+        ShelfMenuOption(R.id.menu_acquire, R.string.title_acquire),
+        ShelfMenuOption(R.id.menu_view_game, R.string.menu_view_game),
+        ShelfMenuOption(R.id.menu_view_item, R.string.menu_view_item),
+        ShelfMenuOption(R.id.menu_remove_preordered, R.string.menu_remove_preordered),
+    )
+    R.menu.collection_shelf_wishlist -> listOf(
+        ShelfMenuOption(R.id.menu_acquire, R.string.title_acquire),
+        ShelfMenuOption(R.id.menu_view_game, R.string.menu_view_game),
+        ShelfMenuOption(R.id.menu_view_item, R.string.menu_view_item),
+        ShelfMenuOption(R.id.menu_remove_wishlist, R.string.menu_remove_wishlist),
+    )
+    R.menu.collection_shelf_want_to_buy -> listOf(
+        ShelfMenuOption(R.id.menu_acquire, R.string.title_acquire),
+        ShelfMenuOption(R.id.menu_view_game, R.string.menu_view_game),
+        ShelfMenuOption(R.id.menu_view_item, R.string.menu_view_item),
+        ShelfMenuOption(R.id.menu_remove_want_to_buy, R.string.menu_remove_want_to_buy),
+    )
+    R.menu.collection_shelf_want_in_trade -> listOf(
+        ShelfMenuOption(R.id.menu_acquire, R.string.title_acquire),
+        ShelfMenuOption(R.id.menu_view_game, R.string.menu_view_game),
+        ShelfMenuOption(R.id.menu_view_item, R.string.menu_view_item),
+        ShelfMenuOption(R.id.menu_remove_want_in_trade, R.string.menu_remove_want_in_trade),
+    )
+    R.menu.collection_shelf_for_trade -> listOf(
+        ShelfMenuOption(R.id.menu_trade, R.string.title_trade),
+        ShelfMenuOption(R.id.menu_view_game, R.string.menu_view_game),
+        ShelfMenuOption(R.id.menu_view_item, R.string.menu_view_item),
+        ShelfMenuOption(R.id.menu_remove_for_trade, R.string.menu_remove_for_trade),
+    )
+    R.menu.collection_shelf_divest_for_trade_without_condition -> listOf(
+        ShelfMenuOption(R.id.menu_add_condition_text, R.string.menu_add_condition_text),
+        ShelfMenuOption(R.id.menu_trade, R.string.title_trade),
+        ShelfMenuOption(R.id.menu_view_game, R.string.menu_view_game),
+        ShelfMenuOption(R.id.menu_view_item, R.string.menu_view_item),
+        ShelfMenuOption(R.id.menu_remove_for_trade, R.string.menu_remove_for_trade),
+    )
+    R.menu.collection_shelf_offer_trade -> listOf(
+        ShelfMenuOption(R.id.menu_view_game, R.string.menu_view_game),
+        ShelfMenuOption(R.id.menu_view_item, R.string.menu_view_item),
+        ShelfMenuOption(R.id.menu_offer_trade, R.string.offer_for_trade),
+    )
+    R.menu.collection_shelf_rate -> listOf(
+        ShelfMenuOption(R.id.menu_view_game, R.string.menu_view_game),
+        ShelfMenuOption(R.id.menu_view_item, R.string.menu_view_item),
+        ShelfMenuOption(R.id.menu_rate_item, R.string.menu_rate_item),
+    )
+    R.menu.collection_shelf_comment -> listOf(
+        ShelfMenuOption(R.id.menu_view_game, R.string.menu_view_game),
+        ShelfMenuOption(R.id.menu_view_item, R.string.menu_view_item),
+        ShelfMenuOption(R.id.menu_comment_item, R.string.menu_comment_item),
+    )
+    else -> emptyList()
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun CollectionShelfItemCard(
+    item: CollectionItem,
+    menuOptions: List<ShelfMenuOption>,
+    badge: Pair<CharSequence, Int>?,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    onMenuClick: (Int) -> Boolean,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val cardWidth = dimensionResource(R.dimen.card_width)
+
+    Card(
+        modifier = Modifier
+            .width(cardWidth)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+        shape = MaterialTheme.shapes.medium
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Box {
+                AsyncImage(
+                    model = item.thumbnailUrl,
+                    contentDescription = item.gameName,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f),
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(id = R.drawable.thumbnail_image_empty),
+                    error = painterResource(id = R.drawable.thumbnail_image_empty)
+                )
+                badge?.let { (text, colorInt) ->
+                    Surface(
+                        color = androidx.compose.ui.graphics.Color(colorInt),
+                        contentColor = androidx.compose.ui.graphics.Color(colorInt.getTextColor()),
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(dimensionResource(R.dimen.padding_half))
+                    ) {
+                        Text(
+                            text = text.toString(),
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+            }
+
+            Text(
+                text = item.gameName,
+                style = MaterialTheme.typography.bodyMedium,
+                minLines = 2,
+                maxLines = 2,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.padding(
+                    horizontal = dimensionResource(R.dimen.padding_half),
+                    vertical = 2.dp
+                )
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = dimensionResource(R.dimen.padding_half), end = dimensionResource(R.dimen.padding_half)),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = item.yearPublished.asYear(LocalContext.current),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.weight(1f)
+                )
+                if (menuOptions.isNotEmpty()) {
+                    Box {
+                        Box(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clickable { expanded = true },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = stringResource(R.string.more),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            menuOptions.forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(option.titleRes)) },
+                                    onClick = {
+                                        expanded = false
+                                        onMenuClick(option.id)
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EditTextDialog(
+    title: String,
+    subtitle: String?,
+    initialValue: String,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+) {
+    var value by remember(initialValue) { mutableStateOf(initialValue) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = title) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))) {
+                if (!subtitle.isNullOrBlank()) {
+                    Text(text = subtitle, style = MaterialTheme.typography.bodyMedium)
+                }
+                OutlinedTextField(
+                    value = value,
+                    onValueChange = { value = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3,
+                    maxLines = 6,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(value.trim()) }) {
+                Text(text = stringResource(R.string.ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.cancel))
+            }
+        }
+    )
+}
+
+@Composable
+private fun RatingDialog(
+    gameName: String,
+    initialValue: String,
+    onDismiss: () -> Unit,
+    onConfirm: (Double) -> Unit,
+) {
+    var value by remember(initialValue) { mutableStateOf(initialValue) }
+    val parsed = value.toDoubleOrNull()
+    val isValid = parsed != null && parsed in 1.0..10.0
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = stringResource(R.string.rating)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))) {
+                Text(text = gameName, style = MaterialTheme.typography.bodyMedium)
+                OutlinedTextField(
+                    value = value,
+                    onValueChange = { value = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                enabled = isValid,
+                onClick = { parsed?.let(onConfirm) }
+            ) {
+                Text(text = stringResource(R.string.ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.cancel))
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AcquireCollectionItemDialog(
+    item: CollectionItem,
+    acquiredFromOptions: List<String>,
+    onDismiss: () -> Unit,
+    onConfirm: (String?, Double?, Int?, Long?, String?) -> Unit,
+) {
+    var selectedCurrency by remember(item.internalId) { mutableStateOf(item.pricePaidCurrency.orEmpty()) }
+    var price by remember(item.internalId) {
+        mutableStateOf(
+            if (item.pricePaid == 0.0) "" else DecimalFormat("0.00").format(item.pricePaid)
+        )
+    }
+    var quantity by remember(item.internalId) { mutableStateOf(item.quantity.toString()) }
+    var acquiredFrom by remember(item.internalId) { mutableStateOf(item.acquiredFrom.orEmpty()) }
+    var acquisitionDate by remember(item.internalId) { mutableStateOf(item.acquisitionDate) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var currencyExpanded by remember { mutableStateOf(false) }
+    var acquiredFromExpanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    val currencyOptions = remember(context) { listOf(*context.resources.getStringArray(R.array.currency)) }
+
+    if (showDatePicker) {
+        val initialDate = if (acquisitionDate == 0L) null else acquisitionDate.fromLocalToUtc()
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDate)
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        acquisitionDate = datePickerState.selectedDateMillis?.fromLocalToUtc() ?: 0L
+                        showDatePicker = false
+                    }
+                ) {
+                    Text(text = stringResource(R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text(text = stringResource(R.string.cancel))
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = stringResource(R.string.title_buy)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))) {
+                Text(text = item.collectionName, style = MaterialTheme.typography.bodyMedium)
+
+                ExposedDropdownMenuBox(
+                    expanded = currencyExpanded,
+                    onExpandedChange = { currencyExpanded = !currencyExpanded }
+                ) {
+                    OutlinedTextField(
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        value = selectedCurrency,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text(stringResource(R.string.price)) },
+                    )
+                    ExposedDropdownMenu(
+                        expanded = currencyExpanded,
+                        onDismissRequest = { currencyExpanded = false }
+                    ) {
+                        currencyOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    selectedCurrency = option
+                                    currencyExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                OutlinedTextField(
+                    value = price,
+                    onValueChange = { price = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.price)) },
+                    singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = quantity,
+                    onValueChange = { quantity = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.quantity)) },
+                    singleLine = true
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = acquisitionDate.formatDateTime(LocalContext.current, 0, DateUtils.FORMAT_SHOW_DATE).toString()
+                            .ifBlank { stringResource(R.string.acquisition_date) },
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    TextButton(onClick = { showDatePicker = true }) {
+                        Text(stringResource(R.string.acquisition_date))
+                    }
+                    if (acquisitionDate != 0L) {
+                        TextButton(onClick = { acquisitionDate = 0L }) {
+                            Text(stringResource(R.string.clear))
+                        }
+                    }
+                }
+
+                ExposedDropdownMenuBox(
+                    expanded = acquiredFromExpanded,
+                    onExpandedChange = { acquiredFromExpanded = !acquiredFromExpanded }
+                ) {
+                    OutlinedTextField(
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        value = acquiredFrom,
+                        onValueChange = {
+                            acquiredFrom = it
+                            acquiredFromExpanded = true
+                        },
+                        label = { Text(stringResource(R.string.acquired_from)) },
+                    )
+                    ExposedDropdownMenu(
+                        expanded = acquiredFromExpanded && acquiredFromOptions.isNotEmpty(),
+                        onDismissRequest = { acquiredFromExpanded = false }
+                    ) {
+                        acquiredFromOptions
+                            .filter { option -> acquiredFrom.isBlank() || option.contains(acquiredFrom, ignoreCase = true) }
+                            .take(8)
+                            .forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(option) },
+                                    onClick = {
+                                        acquiredFrom = option
+                                        acquiredFromExpanded = false
+                                    }
+                                )
+                            }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirm(
+                        selectedCurrency.ifBlank { null },
+                        price.toDoubleOrNull(),
+                        quantity.toIntOrNull(),
+                        acquisitionDate,
+                        acquiredFrom.trim().ifBlank { null },
+                    )
+                }
+            ) {
+                Text(text = stringResource(R.string.ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.cancel))
+            }
         }
     )
 }
 
 private fun browseMenuHandler(context: android.content.Context) =
-    { item: CollectionItem, menuItem: MenuItem ->
-        when (menuItem.itemId) {
+    { item: CollectionItem, menuItemId: Int ->
+        when (menuItemId) {
             R.id.menu_view_game -> {
                 GameActivity.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
                 true
@@ -740,9 +1288,9 @@ private fun browseMenuHandler(context: android.content.Context) =
 private fun playMenuHandler(
     context: android.content.Context,
     viewModel: CollectionDetailsViewModel,
-    activity: FragmentActivity
-) = { item: CollectionItem, menuItem: MenuItem ->
-    when (menuItem.itemId) {
+    dialogContext: android.content.Context
+) = { item: CollectionItem, menuItemId: Int ->
+    when (menuItemId) {
         R.id.menu_view_game -> {
             GameActivity.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
             true
@@ -761,7 +1309,7 @@ private fun playMenuHandler(
                     item.arePlayersCustomSorted
                 )
                 LOG_PLAY_TYPE_QUICK -> {
-                    activity.createThemedBuilder()
+                    dialogContext.createThemedBuilder()
                         .setMessage(context.getString(R.string.are_you_sure_log_quick_play, item.gameName))
                         .setPositiveButton(R.string.title_log_play) { _, _ ->
                             viewModel.logQuickPlay(item.gameId, item.gameName)
@@ -775,7 +1323,7 @@ private fun playMenuHandler(
             true
         }
         R.id.menu_remove_want_to_play -> {
-            activity.createThemedBuilder()
+            dialogContext.createThemedBuilder()
                 .setTitle(item.collectionName)
                 .setMessage(context.getString(R.string.msg_remove_status, context.getString(R.string.collection_status_want_to_play)))
                 .setCancelable(true)
@@ -794,20 +1342,12 @@ private fun playMenuHandler(
 private fun acquireMenuHandler(
     context: android.content.Context,
     viewModel: CollectionDetailsViewModel,
-    activity: FragmentActivity
-) = { item: CollectionItem, menuItem: MenuItem ->
-    when (menuItem.itemId) {
+    dialogContext: android.content.Context,
+    onShowAcquireDialog: (CollectionItem) -> Unit,
+) = { item: CollectionItem, menuItemId: Int ->
+    when (menuItemId) {
         R.id.menu_acquire -> {
-            val dialog = CollectionDetailPrivateInfoDialogFragment.newInstance(
-                item.internalId,
-                item.collectionName,
-                item.pricePaidCurrency,
-                item.pricePaid,
-                item.quantity,
-                item.acquisitionDate,
-                item.acquiredFrom,
-            )
-            activity.showAndSurvive(dialog)
+            onShowAcquireDialog(item)
             true
         }
         R.id.menu_view_game -> {
@@ -819,19 +1359,19 @@ private fun acquireMenuHandler(
             true
         }
         R.id.menu_remove_preordered -> {
-            confirmRemoveStatus(activity, item, R.string.collection_status_preordered, CollectionStatus.Preordered, viewModel)
+            confirmRemoveStatus(dialogContext, item, R.string.collection_status_preordered, CollectionStatus.Preordered, viewModel)
             true
         }
         R.id.menu_remove_wishlist -> {
-            confirmRemoveStatus(activity, item, R.string.collection_status_wishlist, CollectionStatus.Wishlist, viewModel)
+            confirmRemoveStatus(dialogContext, item, R.string.collection_status_wishlist, CollectionStatus.Wishlist, viewModel)
             true
         }
         R.id.menu_remove_want_to_buy -> {
-            confirmRemoveStatus(activity, item, R.string.collection_status_want_to_buy, CollectionStatus.WantToBuy, viewModel)
+            confirmRemoveStatus(dialogContext, item, R.string.collection_status_want_to_buy, CollectionStatus.WantToBuy, viewModel)
             true
         }
         R.id.menu_remove_want_in_trade -> {
-            confirmRemoveStatus(activity, item, R.string.collection_status_want_in_trade, CollectionStatus.WantInTrade, viewModel)
+            confirmRemoveStatus(dialogContext, item, R.string.collection_status_want_in_trade, CollectionStatus.WantInTrade, viewModel)
             true
         }
         else -> false
@@ -841,11 +1381,12 @@ private fun acquireMenuHandler(
 private fun divestMenuHandler(
     context: android.content.Context,
     viewModel: CollectionDetailsViewModel,
-    activity: FragmentActivity
-) = { item: CollectionItem, menuItem: MenuItem ->
-    when (menuItem.itemId) {
+    dialogContext: android.content.Context,
+    onShowConditionDialog: (CollectionItem) -> Unit,
+) = { item: CollectionItem, menuItemId: Int ->
+    when (menuItemId) {
         R.id.menu_remove_for_trade -> {
-            activity.createThemedBuilder()
+            dialogContext.createThemedBuilder()
                 .setTitle(item.collectionName)
                 .setMessage(context.getString(R.string.msg_remove_status, context.getString(R.string.collection_status_for_trade)))
                 .setCancelable(true)
@@ -858,12 +1399,7 @@ private fun divestMenuHandler(
             true
         }
         R.id.menu_add_condition_text -> {
-            CollectionDetailsConditionDialogFragment.show(
-                activity.supportFragmentManager,
-                item.gameName,
-                item.internalId,
-                item.conditionText
-            )
+            onShowConditionDialog(item)
             true
         }
         R.id.menu_offer_trade -> {
@@ -871,7 +1407,7 @@ private fun divestMenuHandler(
             true
         }
         R.id.menu_trade -> {
-            activity.createThemedBuilder()
+            dialogContext.createThemedBuilder()
                 .setTitle(item.collectionName)
                 .setMessage(R.string.msg_confirm_trade)
                 .setCancelable(true)
@@ -897,9 +1433,10 @@ private fun divestMenuHandler(
 
 private fun analyzeMenuHandler(
     context: android.content.Context,
-    activity: FragmentActivity
-) = { item: CollectionItem, menuItem: MenuItem ->
-    when (menuItem.itemId) {
+    onShowRatingDialog: (CollectionItem) -> Unit,
+    onShowCommentDialog: (CollectionItem) -> Unit,
+) = { item: CollectionItem, menuItemId: Int ->
+    when (menuItemId) {
         R.id.menu_view_game -> {
             GameActivity.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
             true
@@ -909,18 +1446,11 @@ private fun analyzeMenuHandler(
             true
         }
         R.id.menu_rate_item -> {
-            val fragment = CollectionDetailsRatingNumberPadDialogFragment.newInstance(item.internalId, item.gameName)
-            activity.showAndSurvive(fragment)
+            onShowRatingDialog(item)
             true
         }
         R.id.menu_comment_item -> {
-            CollectionDetailsCommentDialogFragment.show(
-                activity.supportFragmentManager,
-                R.string.comment,
-                item.gameName,
-                item.internalId,
-                item.comment
-            )
+            onShowCommentDialog(item)
             true
         }
         else -> false
@@ -928,15 +1458,15 @@ private fun analyzeMenuHandler(
 }
 
 private fun confirmRemoveStatus(
-    activity: FragmentActivity,
+    context: android.content.Context,
     item: CollectionItem,
     statusResId: Int,
     status: CollectionStatus,
     viewModel: CollectionDetailsViewModel
 ) {
-    activity.createThemedBuilder()
+    context.createThemedBuilder()
         .setTitle(item.collectionName)
-        .setMessage(activity.getString(R.string.msg_remove_status, activity.getString(statusResId)))
+        .setMessage(context.getString(R.string.msg_remove_status, context.getString(statusResId)))
         .setCancelable(true)
         .setNegativeButton(R.string.cancel, null)
         .setPositiveButton(R.string.remove) { _: DialogInterface?, _: Int ->
