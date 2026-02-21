@@ -36,10 +36,10 @@ import com.boardgamegeek.ui.dialog.CollectionFilterDialogFragment
 import com.boardgamegeek.ui.dialog.CollectionSortDialogFragment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
@@ -51,6 +51,7 @@ import com.boardgamegeek.extensions.intentFor
 import com.boardgamegeek.extensions.newTask
 import com.boardgamegeek.extensions.toLongLabel
 import com.boardgamegeek.extensions.toShortLabel
+import com.boardgamegeek.ui.collectiondetails.CollectionDetailsActivity
 
 @AndroidEntryPoint
 class CollectionActivity : AppCompatActivity() {
@@ -136,7 +137,6 @@ class CollectionActivity : AppCompatActivity() {
             val currentFilters by viewModel.effectiveFilters.collectAsState()
             val views by viewModel.views.collectAsState()
             val selectedViewId by viewModel.selectedViewId.collectAsState()
-            val canDeleteView = views.any { it.id != CollectionViewPrefs.DEFAULT_DEFAULT_ID }
             val canSaveView = currentFilters.isNotEmpty() ||
                 currentSortType != com.boardgamegeek.sorter.CollectionSorterFactory.TYPE_DEFAULT
             val viewOptions = remember(views, defaultTitle) {
@@ -192,6 +192,14 @@ class CollectionActivity : AppCompatActivity() {
                 // topBarActions = { /* Spinner replacement or view selector UI */ }
                 topBarActions = {
                     IconButton(
+                        onClick = { startActivity(Intent(this@CollectionActivity, CollectionDetailsActivity::class.java)) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.LibraryBooks,
+                            contentDescription = stringResource(R.string.title_collection_details)
+                        )
+                    }
+                    IconButton(
                         onClick = {
                             showSaveViewDialog(
                                 if (selectedViewId <= 0) "" else finalTopBarTitle,
@@ -203,15 +211,6 @@ class CollectionActivity : AppCompatActivity() {
                         Icon(
                             imageVector = Icons.Filled.Save,
                             contentDescription = stringResource(R.string.menu_collection_view_save)
-                        )
-                    }
-                    IconButton(
-                        onClick = { showDeleteViewDialog() },
-                        enabled = canDeleteView
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Delete,
-                            contentDescription = stringResource(R.string.menu_collection_view_delete)
                         )
                     }
                     IconButton(onClick = { showSortDialog(currentSortType) }) {

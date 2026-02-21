@@ -4,6 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CollectionsBookmark
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
@@ -16,6 +20,7 @@ import com.boardgamegeek.extensions.intentFor
 import com.boardgamegeek.extensions.notifyLoggedPlay
 import com.boardgamegeek.ui.AppScreen
 import com.boardgamegeek.ui.SearchResultsActivity
+import com.boardgamegeek.ui.collection.CollectionActivity
 import com.boardgamegeek.ui.navigation.BottomNavItem
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -53,6 +58,16 @@ class CollectionDetailsActivity : ComponentActivity() {
                 onSearchClick = { startActivity(intentFor<SearchResultsActivity>()) },
                 drawerGesturesEnabled = false,
                 snackbarHostState = snackbarHostState,
+                topBarActions = {
+                    IconButton(
+                        onClick = { startActivity(intentFor<CollectionActivity>()) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.CollectionsBookmark,
+                            contentDescription = stringResource(R.string.title_collection)
+                        )
+                    }
+                }
             ) { paddingValues ->
                 CollectionDetailsScreen(viewModel = viewModel, paddingValues = paddingValues)
             }
