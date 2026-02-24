@@ -1,20 +1,27 @@
-package com.boardgamegeek.ui.viewmodel
+package com.boardgamegeek.ui.plays
 
 import android.app.Application
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.boardgamegeek.BggApplication
 import com.boardgamegeek.R
-import com.boardgamegeek.model.Play
 import com.boardgamegeek.extensions.PREFERENCES_KEY_SYNC_PLAYS
-import com.boardgamegeek.livedata.Event
-import com.boardgamegeek.livedata.EventLiveData
-import com.boardgamegeek.livedata.LiveSharedPreference
+import com.boardgamegeek.extensions.get
+import com.boardgamegeek.extensions.preferences
+import com.boardgamegeek.extensions.stateInWhileSubscribed
+import com.boardgamegeek.model.Play
 import com.boardgamegeek.model.PlayUploadResult
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.repository.PlayRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.lang.Exception
 import javax.inject.Inject
@@ -24,7 +31,8 @@ class PlaysViewModel @Inject constructor(
     application: Application,
     private val playRepository: PlayRepository,
 ) : AndroidViewModel(application) {
-    private val syncPlays: LiveData<Boolean?> = LiveSharedPreference(getApplication(), PREFERENCES_KEY_SYNC_PLAYS)
+    private val syncPlays: Boolean
+        get() = getApplication<Application>().preferences()[PREFERENCES_KEY_SYNC_PLAYS, false] == true
 
     private data class PlayInfo(
         val mode: Mode,
@@ -44,85 +52,79 @@ class PlaysViewModel @Inject constructor(
         DATE, LOCATION, GAME, LENGTH
     }
 
-    private val playInfo = MutableLiveData<PlayInfo>()
+    private val playInfo = MutableStateFlow<PlayInfo?>(null)
 
-    private val _updateMessage = MutableLiveData<Event<String>>()
-    val updateMessage: LiveData<Event<String>>
-        get() = _updateMessage
+    private val _updateMessageFlow = MutableStateFlow<String?>(null)
+    val updateMessageFlow: StateFlow<String?> = _updateMessageFlow.asStateFlow()
 
-    private val _errorMessage = EventLiveData()
-    val errorMessage: LiveData<Event<String>>
-        get() = _errorMessage
+    private val _errorMessageFlow = MutableStateFlow<String?>(null)
+    val errorMessageFlow: StateFlow<String?> = _errorMessageFlow.asStateFlow()
 
-    private val _loggedPlayResult = MutableLiveData<Event<PlayUploadResult>>()
-    val loggedPlayResult: LiveData<Event<PlayUploadResult>>
-        get() = _loggedPlayResult
+    private val _loggedPlayResultFlow = MutableStateFlow<PlayUploadResult?>(null)
+    val loggedPlayResultFlow: StateFlow<PlayUploadResult?> = _loggedPlayResultFlow.asStateFlow()
 
-    private val _isRefreshing = MutableLiveData<Boolean>()
-    val isRefreshing: LiveData<Boolean>
-        get() = _isRefreshing
+    private val _isRefreshingFlow = MutableStateFlow(false)
+    val isRefreshingFlow: StateFlow<Boolean> = _isRefreshingFlow.asStateFlow()
 
-    private val _plays = MediatorLiveData<List<Play>>()
-    val plays: LiveData<List<Play>>
-        get() = _plays
+    private val _filterType = MutableStateFlow(FilterType.ALL)
+    val filterType: StateFlow<FilterType> = _filterType.asStateFlow()
 
-    private val _filterType = MutableLiveData<FilterType>()
-    val filterType: LiveData<FilterType>
-        get() = _filterType
+    private val _sortType = MutableStateFlow(SortType.DATE)
+    val sortType: StateFlow<SortType> = _sortType.asStateFlow()
 
-    private val _sortType = MutableLiveData<SortType>()
-    val sortType: LiveData<SortType>
-        get() = _sortType
-
-    private val allPlays: LiveData<List<Play>> = playInfo.switchMap {
-        liveData {
-            val list: Flow<List<Play>> = when (it.mode) {
-                Mode.ALL -> playRepository.loadPlaysFlow()
-                Mode.GAME -> playRepository.loadPlaysByGameFlow(it.id)
-                Mode.LOCATION -> playRepository.loadPlaysByLocationFlow(it.name)
-                Mode.BUDDY -> playRepository.loadPlaysByUsernameFlow(it.name)
-                Mode.PLAYER -> playRepository.loadPlaysByPlayerNameFlow(it.name)
+    private val allPlays: StateFlow<List<Play>> = playInfo
+        .flatMapLatest {
+            if (it == null) {
+                emptyFlow()
+            } else {
+                when (it.mode) {
+                    Mode.ALL -> playRepository.loadPlaysFlow()
+                    Mode.GAME -> playRepository.loadPlaysByGameFlow(it.id)
+                    Mode.LOCATION -> playRepository.loadPlaysByLocationFlow(it.name)
+                    Mode.BUDDY -> playRepository.loadPlaysByUsernameFlow(it.name)
+                    Mode.PLAYER -> playRepository.loadPlaysByPlayerNameFlow(it.name)
+                }
             }
-            emitSource(list.distinctUntilChanged().asLiveData())
         }
+        .distinctUntilChanged()
+        .stateInWhileSubscribed(viewModelScope, emptyList())
+
+    val plays: StateFlow<List<Play>> = combine(allPlays, sortType, filterType) { list, sortType, filterType ->
+        filterAndSortPlays(list, sortType, filterType)
+    }.stateInWhileSubscribed(viewModelScope, emptyList())
+
+    val location: StateFlow<String> = playInfo
+        .map { if (it?.mode == Mode.LOCATION) it.name else "" }
+        .stateInWhileSubscribed(viewModelScope, "")
+
+    fun clearErrorMessage() {
+        _errorMessageFlow.value = null
     }
 
-    init {
-        _plays.addSource(allPlays) { list ->
-            filterAndSortPlays(list, sortType.value, filterType.value)
-        }
-        _plays.addSource(sortType) {
-            filterAndSortPlays(allPlays.value, it, filterType.value)
-        }
-        _plays.addSource(filterType) {
-            filterAndSortPlays(allPlays.value, sortType.value, it)
-        }
+    fun clearLoggedPlayResult() {
+        _loggedPlayResultFlow.value = null
+    }
+
+    fun clearUpdateMessage() {
+        _updateMessageFlow.value = null
     }
 
     private fun filterAndSortPlays(
-        list: List<Play>?,
-        sortType: SortType?,
-        filterType: FilterType?,
-    ) {
-        if (list == null) return
+        list: List<Play>,
+        sortType: SortType,
+        filterType: FilterType,
+    ): List<Play> {
         val filteredList = when (filterType) {
             FilterType.ALL -> list.filter { it.deleteTimestamp == 0L }
             FilterType.DIRTY -> list.filter { it.dirtyTimestamp > 0L }
             FilterType.PENDING -> list.filter { it.updateTimestamp > 0L || it.deleteTimestamp > 0L }
-            null -> list
         }
-        val sortedList = when (sortType) {
+        return when (sortType) {
             SortType.DATE -> filteredList.sortedByDescending { it.dateInMillis }
             SortType.LOCATION -> filteredList.sortedBy { it.location }
             SortType.GAME -> filteredList.sortedBy { it.gameName }
             SortType.LENGTH -> filteredList.sortedByDescending { it.length }
-            null -> filteredList.sortedByDescending { it.dateInMillis }
         }
-        _plays.postValue(sortedList)
-    }
-
-    val location: LiveData<String> = playInfo.map {
-        if (it.mode == Mode.LOCATION) it.name else ""
     }
 
     fun setAll() {
@@ -152,14 +154,14 @@ class PlaysViewModel @Inject constructor(
     }
 
     fun setSort(type: SortType) {
-        if (sortType.value != type) _sortType.value = type
+        if (_sortType.value != type) _sortType.value = type
     }
 
     fun renameLocation(oldLocationName: String, newLocationName: String) {
         viewModelScope.launch {
             val internalIds = playRepository.renameLocation(oldLocationName, newLocationName)
             playRepository.enqueueUploadRequest(internalIds)
-            _updateMessage.value = Event(
+            _updateMessageFlow.value =
                 getApplication<BggApplication>().resources.getQuantityString(
                     R.plurals.msg_play_location_change,
                     internalIds.size,
@@ -167,7 +169,6 @@ class PlaysViewModel @Inject constructor(
                     oldLocationName,
                     newLocationName
                 )
-            )
             setLocation(newLocationName)
         }
     }
@@ -175,8 +176,8 @@ class PlaysViewModel @Inject constructor(
     fun refresh() {
         viewModelScope.launch {
             try {
-                if (syncPlays.value == true && _isRefreshing.value != true) {
-                    _isRefreshing.postValue(true)
+                if (syncPlays && !_isRefreshingFlow.value) {
+                    _isRefreshingFlow.value = true
                     val id = playInfo.value?.id ?: 0
                     when (playInfo.value?.mode) {
                         Mode.GAME -> playRepository.refreshPlaysForGame(id)
@@ -184,9 +185,9 @@ class PlaysViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                _errorMessage.postMessage(e)
+                _errorMessageFlow.value = e.localizedMessage.orEmpty()
             } finally {
-                _isRefreshing.postValue(false)
+                _isRefreshingFlow.value = false
             }
         }
     }
@@ -194,16 +195,16 @@ class PlaysViewModel @Inject constructor(
     fun refreshPlaysByDate(timeInMillis: Long) {
         viewModelScope.launch {
             try {
-                if (syncPlays.value == true && _isRefreshing.value != true) {
-                    _isRefreshing.postValue(true)
+                if (syncPlays && !_isRefreshingFlow.value) {
+                    _isRefreshingFlow.value = true
                     playRepository.refreshPlaysForDate(timeInMillis)?.let {
-                        _errorMessage.postMessage(it)
+                        _errorMessageFlow.value = it
                     }
                 }
             } catch (e: Exception) {
-                _errorMessage.postMessage(e)
+                _errorMessageFlow.value = e.localizedMessage.orEmpty()
             } finally {
-                _isRefreshing.postValue(false)
+                _isRefreshingFlow.value = false
             }
         }
     }
@@ -211,12 +212,13 @@ class PlaysViewModel @Inject constructor(
     fun logQuickPlay(gameId: Int, gameName: String) {
         viewModelScope.launch {
             val result = playRepository.logQuickPlay(gameId, gameName)
-            if (result.isFailure)
-                result.exceptionOrNull()?.let { _errorMessage.setMessage(it) }
-            else {
+            if (result.isFailure) {
+                _errorMessageFlow.value = result.exceptionOrNull()?.localizedMessage.orEmpty()
+            } else {
                 result.getOrNull()?.let {
-                    if (it.play.playId != BggContract.INVALID_ID)
-                        _loggedPlayResult.value = Event(it)
+                    if (it.play.playId != BggContract.INVALID_ID) {
+                        _loggedPlayResultFlow.value = it
+                    }
                 }
             }
         }
@@ -226,8 +228,9 @@ class PlaysViewModel @Inject constructor(
         viewModelScope.launch {
             val idsToSend = mutableListOf<Long>()
             plays.forEach {
-                if (playRepository.markAsUpdated(it.internalId))
+                if (playRepository.markAsUpdated(it.internalId)) {
                     idsToSend += it.internalId
+                }
             }
             playRepository.enqueueUploadRequest(idsToSend)
         }
@@ -237,8 +240,9 @@ class PlaysViewModel @Inject constructor(
         viewModelScope.launch {
             val idsDeleted = mutableListOf<Long>()
             plays.forEach {
-                if (playRepository.markAsDeleted(it.internalId))
+                if (playRepository.markAsDeleted(it.internalId)) {
                     idsDeleted += it.internalId
+                }
             }
             playRepository.enqueueUploadRequest(idsDeleted)
         }

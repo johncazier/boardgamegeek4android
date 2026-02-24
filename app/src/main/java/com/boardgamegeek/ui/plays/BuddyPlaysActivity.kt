@@ -1,17 +1,21 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.plays
 
 import android.content.Context
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.setActionBarCount
 import com.boardgamegeek.extensions.startActivity
-import com.boardgamegeek.ui.viewmodel.PlaysViewModel
+import com.boardgamegeek.ui.BuddyActivity
+import com.boardgamegeek.ui.SimpleSinglePaneActivity
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class BuddyPlaysActivity : SimpleSinglePaneActivity() {
@@ -36,9 +40,15 @@ class BuddyPlaysActivity : SimpleSinglePaneActivity() {
         }
 
         viewModel.setUsername(buddyName)
-        viewModel.plays.observe(this) {
-            numberOfPlays = it?.sumOf { play -> play.quantity } ?: 0
-            invalidateOptionsMenu()
+        lifecycleScope.launch {
+            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.plays.collect {
+                        numberOfPlays = it.sumOf { play -> play.quantity }
+                        invalidateOptionsMenu()
+                    }
+                }
+            }
         }
     }
 

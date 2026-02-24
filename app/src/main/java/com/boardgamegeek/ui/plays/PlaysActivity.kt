@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.plays
 
 import android.app.DatePickerDialog
 import android.app.Dialog
@@ -8,15 +8,18 @@ import android.view.MenuItem
 import android.widget.DatePicker
 import androidx.activity.viewModels
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.longSnackbar
 import com.boardgamegeek.extensions.notifyLoggedPlay
 import com.boardgamegeek.extensions.setActionBarCount
-import com.boardgamegeek.ui.viewmodel.PlaysViewModel
+import com.boardgamegeek.ui.SimpleSinglePaneActivity
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.util.*
 
 @AndroidEntryPoint
@@ -35,37 +38,47 @@ class PlaysActivity : SimpleSinglePaneActivity(), DatePickerDialog.OnDateSetList
             }
         }
 
-        viewModel.errorMessage.observe(this) {
-            it.getContentIfNotHandled()?.let { message ->
-                if (message.isBlank()) {
-                    snackbar?.dismiss()
-                } else {
-                    snackbar = rootContainer?.longSnackbar(message)
+        lifecycleScope.launch {
+            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.errorMessageFlow.collect { message ->
+                        if (message.isNullOrBlank()) {
+                            snackbar?.dismiss()
+                        } else {
+                            snackbar = rootContainer?.longSnackbar(message)
+                            viewModel.clearErrorMessage()
+                        }
+                    }
+                }
+                launch {
+                    viewModel.loggedPlayResultFlow.collect { result ->
+                        result?.let {
+                            notifyLoggedPlay(it)
+                            viewModel.clearLoggedPlayResult()
+                        }
+                    }
+                }
+                launch {
+                    viewModel.plays.collect {
+                        invalidateOptionsMenu()
+                    }
+                }
+                launch {
+                    viewModel.filterType.collect { type ->
+                        supportActionBar?.subtitle = when (type) {
+                            PlaysViewModel.FilterType.PENDING -> getString(R.string.menu_plays_filter_pending)
+                            PlaysViewModel.FilterType.DIRTY -> getString(R.string.menu_plays_filter_in_progress)
+                            else -> ""
+                        }
+                        invalidateOptionsMenu()
+                    }
+                }
+                launch {
+                    viewModel.sortType.collect {
+                        invalidateOptionsMenu()
+                    }
                 }
             }
-        }
-
-        viewModel.loggedPlayResult.observe(this) { event ->
-            event.getContentIfNotHandled()?.let {
-                notifyLoggedPlay(it)
-            }
-        }
-
-        viewModel.plays.observe(this) {
-            invalidateOptionsMenu()
-        }
-
-        viewModel.filterType.observe(this) { type ->
-            supportActionBar?.subtitle = when (type) {
-                PlaysViewModel.FilterType.PENDING -> getString(R.string.menu_plays_filter_pending)
-                PlaysViewModel.FilterType.DIRTY -> getString(R.string.menu_plays_filter_in_progress)
-                else -> ""
-            }
-            invalidateOptionsMenu()
-        }
-
-        viewModel.sortType.observe(this) {
-            invalidateOptionsMenu()
         }
 
         viewModel.setAll()
@@ -76,13 +89,12 @@ class PlaysActivity : SimpleSinglePaneActivity(), DatePickerDialog.OnDateSetList
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         super.onPrepareOptionsMenu(menu)
 
-        val playCount = viewModel.plays.value?.sumOf { play -> play.quantity } ?: 0
+        val playCount = viewModel.plays.value.sumOf { play -> play.quantity }
         val sortName = when (viewModel.sortType.value) {
             PlaysViewModel.SortType.DATE -> getString(R.string.menu_plays_sort_date)
             PlaysViewModel.SortType.LOCATION -> getString(R.string.menu_plays_sort_location)
             PlaysViewModel.SortType.GAME -> getString(R.string.menu_plays_sort_game)
             PlaysViewModel.SortType.LENGTH -> getString(R.string.menu_plays_sort_length)
-            null -> getString(R.string.text_unknown)
         }
         menu.setActionBarCount(R.id.menu_list_count, playCount, getString(R.string.by_prefix, sortName))
 
@@ -91,7 +103,6 @@ class PlaysActivity : SimpleSinglePaneActivity(), DatePickerDialog.OnDateSetList
                 PlaysViewModel.FilterType.DIRTY -> R.id.menu_filter_in_progress
                 PlaysViewModel.FilterType.PENDING -> R.id.menu_filter_pending
                 PlaysViewModel.FilterType.ALL -> R.id.menu_filter_all
-                else -> R.id.menu_filter_all
             }
         )?.isChecked = true
         menu.findItem(
@@ -100,7 +111,6 @@ class PlaysActivity : SimpleSinglePaneActivity(), DatePickerDialog.OnDateSetList
                 PlaysViewModel.SortType.GAME -> R.id.menu_sort_game
                 PlaysViewModel.SortType.LENGTH -> R.id.menu_sort_length
                 PlaysViewModel.SortType.LOCATION -> R.id.menu_sort_location
-                else -> R.id.menu_sort_date
             }
         )?.isChecked = true
         return true

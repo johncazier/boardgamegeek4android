@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.plays
 
 import android.content.Context
 import android.content.Intent
@@ -8,13 +8,16 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.annotation.ColorInt
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.intentFor
 import com.boardgamegeek.extensions.setActionBarCount
 import com.boardgamegeek.provider.BggContract
+import com.boardgamegeek.ui.SimpleSinglePaneActivity
 import com.boardgamegeek.ui.game.GameActivity
-import com.boardgamegeek.ui.viewmodel.PlaysViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class GamePlaysActivity : SimpleSinglePaneActivity() {
@@ -41,9 +44,15 @@ class GamePlaysActivity : SimpleSinglePaneActivity() {
         }
 
         viewModel.setGame(gameId)
-        viewModel.plays.observe(this) {
-            playCount = it?.sumOf { play -> play.quantity } ?: 0
-            invalidateOptionsMenu()
+        lifecycleScope.launch {
+            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.plays.collect {
+                        playCount = it.sumOf { play -> play.quantity }
+                        invalidateOptionsMenu()
+                    }
+                }
+            }
         }
     }
 

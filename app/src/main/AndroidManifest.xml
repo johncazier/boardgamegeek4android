@@ -187,7 +187,7 @@
 			android:exported="false"
 			android:label="@string/title_collection" />
 		<activity
-			android:name=".ui.BuddyPlaysActivity"
+			android:name=".ui.plays.BuddyPlaysActivity"
 			android:exported="false"
 			android:label="@string/title_plays" />
 		<activity
@@ -202,7 +202,7 @@
 				android:value=".ui.HomeActivity" />
 		</activity>
 		<activity
-			android:name=".ui.PlaysActivity"
+			android:name=".ui.plays.PlaysActivity"
 			android:exported="false"
 			android:label="@string/title_plays">
 			<meta-data
@@ -239,10 +239,10 @@
 			android:label="@string/title_play">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.PlaysActivity" />
+				android:value=".ui.plays.PlaysActivity" />
 		</activity>
 		<activity
-			android:name=".ui.PlayerPlaysActivity"
+			android:name=".ui.plays.PlayerPlaysActivity"
 			android:exported="false"
 			android:label="@string/title_player">
 			<meta-data
@@ -250,7 +250,7 @@
 				android:value=".ui.PlayersActivity" />
 		</activity>
 		<activity
-			android:name=".ui.LocationActivity"
+			android:name=".ui.plays.LocationActivity"
 			android:exported="false"
 			android:label="@string/title_location">
 			<meta-data
@@ -290,7 +290,7 @@
 			android:name=".ui.GameCollectionItemActivity"
 			android:label="@string/title_collection" />
 		<activity
-			android:name=".ui.GamePlaysActivity"
+			android:name=".ui.plays.GamePlaysActivity"
 			android:label="@string/title_plays" />
 		<activity
 			android:name=".ui.playstats.GamePlayStatsActivity"

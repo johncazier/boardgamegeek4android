@@ -103,7 +103,7 @@ import com.boardgamegeek.ui.ForumActivity
 import com.boardgamegeek.ui.GameCollectionItemActivity
 import com.boardgamegeek.ui.GameColorsActivity
 import com.boardgamegeek.ui.GameDetailActivity
-import com.boardgamegeek.ui.GamePlaysActivity
+import com.boardgamegeek.ui.plays.GamePlaysActivity
 import com.boardgamegeek.ui.PersonActivity
 import com.boardgamegeek.ui.PlayActivity
 import com.boardgamegeek.ui.dialog.GameAgePollDialogFragment

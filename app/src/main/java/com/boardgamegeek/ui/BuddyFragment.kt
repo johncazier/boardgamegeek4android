@@ -13,6 +13,8 @@ import com.boardgamegeek.databinding.FragmentBuddyBinding
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.ui.dialog.RenamePlayerDialogFragment
 import com.boardgamegeek.ui.dialog.UpdateBuddyNicknameDialogFragment
+import com.boardgamegeek.ui.plays.BuddyPlaysActivity
+import com.boardgamegeek.ui.plays.PlayerPlaysActivity
 import com.boardgamegeek.ui.viewmodel.BuddyViewModel
 import dagger.hilt.android.AndroidEntryPoint
 

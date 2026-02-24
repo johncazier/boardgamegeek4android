@@ -3,7 +3,7 @@ package com.boardgamegeek.ui.dialog
 import androidx.core.os.bundleOf
 import androidx.fragment.app.activityViewModels
 import com.boardgamegeek.R
-import com.boardgamegeek.ui.viewmodel.PlaysViewModel
+import com.boardgamegeek.ui.plays.PlaysViewModel
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint

@@ -14,6 +14,7 @@ import com.boardgamegeek.databinding.RowLocationBinding
 import com.boardgamegeek.model.Location
 import com.boardgamegeek.extensions.inflate
 import com.boardgamegeek.ui.adapter.AutoUpdatableAdapter
+import com.boardgamegeek.ui.plays.LocationActivity
 import com.boardgamegeek.ui.viewmodel.LocationsViewModel
 import com.boardgamegeek.ui.widget.RecyclerSectionItemDecoration
 import com.boardgamegeek.ui.widget.RecyclerSectionItemDecoration.SectionCallback
