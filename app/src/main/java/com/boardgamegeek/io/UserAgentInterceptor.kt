@@ -11,9 +11,10 @@ class UserAgentInterceptor(private val context: Context? = null) : Interceptor {
     @Throws(IOException::class)
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
+        val userAgent = originalRequest.header("User-Agent") ?: constructUserAgent()
         val request = originalRequest.newBuilder()
-                .header("User-Agent", constructUserAgent())
-                .build()
+            .header("User-Agent", userAgent)
+            .build()
         return chain.proceed(request)
     }
 

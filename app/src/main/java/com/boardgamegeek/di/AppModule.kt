@@ -88,7 +88,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTopGameRepository() = TopGameRepository()
+    fun provideTopGameRepository(phpApi: PhpApi) = TopGameRepository(phpApi)
 
     @Provides
     @Singleton
