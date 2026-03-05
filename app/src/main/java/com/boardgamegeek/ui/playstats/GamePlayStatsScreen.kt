@@ -2,7 +2,6 @@ package com.boardgamegeek.ui.playstats
 
 import android.graphics.Color
 import android.text.format.DateUtils
-import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
@@ -1073,7 +1072,6 @@ private fun InfoDialog(
 
 @Composable
 private fun ScoreHelpDialog(onDismiss: () -> Unit) {
-    val context = LocalContext.current
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -1081,13 +1079,57 @@ private fun ScoreHelpDialog(onDismiss: () -> Unit) {
         },
         title = { Text(text = stringResource(R.string.title_scores)) },
         text = {
-            AndroidView(
-                factory = {
-                    LayoutInflater.from(context).inflate(R.layout.dialog_help_score, null, false)
-                }
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_half))) {
+                ScoreHelpLegendRow(
+                    iconRes = R.drawable.ic_baseline_thumb_down_18,
+                    labelRes = R.string.low_score,
+                    tint = MaterialTheme.colorScheme.error
+                )
+                ScoreHelpLegendRow(
+                    iconRes = R.drawable.ic_baseline_thumbs_up_down_18,
+                    labelRes = R.string.average_score,
+                    tint = MaterialTheme.colorScheme.tertiary
+                )
+                ScoreHelpLegendRow(
+                    iconRes = R.drawable.ic_baseline_star_18,
+                    labelRes = R.string.average_winning_score,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                ScoreHelpLegendRow(
+                    iconRes = R.drawable.ic_baseline_thumb_up_18,
+                    labelRes = R.string.high_score,
+                    tint = MaterialTheme.colorScheme.secondary
+                )
+            }
         }
     )
+}
+
+@Composable
+private fun ScoreHelpLegendRow(
+    @DrawableRes iconRes: Int,
+    @StringRes labelRes: Int,
+    tint: ComposeColor,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.width(dimensionResource(R.dimen.padding_standard)))
+        Text(
+            text = stringResource(labelRes),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
 }
 
 private fun resolveTint(color: ComposeColor, fallback: ComposeColor): ComposeColor {
