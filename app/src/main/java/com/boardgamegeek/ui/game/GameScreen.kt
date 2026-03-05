@@ -238,14 +238,14 @@ fun GameOverflowMenuAction(
                 }
             )
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.menu_log_play_quick_short)) },
+                text = { Text("${stringResource(R.string.menu_log_play)} (${stringResource(R.string.menu_log_play_quick_short)})") },
                 onClick = {
                     expanded = false
                     viewModel.logQuickPlay(gameId, gameName)
                 }
             )
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.menu_log_play_short)) },
+                text = { Text("${stringResource(R.string.menu_log_play)} (${stringResource(R.string.menu_log_play_short)})") },
                 onClick = {
                     expanded = false
                     LogPlayActivity.logPlay(
@@ -257,13 +257,6 @@ fun GameOverflowMenuAction(
                 )
             }
         )
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.menu_log_play_wizard_short)) },
-                onClick = {
-                    expanded = false
-                    NewPlayActivity.start(context, gameId, gameName)
-                }
-            )
         DropdownMenuItem(
             text = { Text(stringResource(R.string.menu_view_image)) },
             onClick = {
