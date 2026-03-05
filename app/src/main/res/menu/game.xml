@@ -20,10 +20,6 @@
 					android:title="@string/menu_log_play_short"
 					app:showAsAction="never" />
 				<item
-					android:id="@+id/menu_compose_log_play"
-					android:title="@string/compose_label"
-					app:showAsAction="never" />
-				<item
 					android:id="@+id/menu_log_play_wizard"
 					android:title="@string/menu_log_play_wizard_short"
 					app:showAsAction="never" />

@@ -34,7 +34,6 @@ import com.boardgamegeek.extensions.logPlayPreference
 import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.extensions.shareGame
 import com.boardgamegeek.extensions.showAndSurvive
-import com.boardgamegeek.ui.ComposeLogPlayActivity
 import com.boardgamegeek.ui.ImageActivity
 import com.boardgamegeek.ui.LogPlayActivity
 import com.boardgamegeek.ui.NewPlayActivity
@@ -265,13 +264,6 @@ fun GameOverflowMenuAction(
                     NewPlayActivity.start(context, gameId, gameName)
                 }
             )
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.compose_label)) },
-                onClick = {
-                    expanded = false
-                    ComposeLogPlayActivity.start(context, gameId, gameName, heroUrl.ifBlank { thumbnailUrl.ifBlank { imageUrl } })
-                }
-        )
         DropdownMenuItem(
             text = { Text(stringResource(R.string.menu_view_image)) },
             onClick = {
