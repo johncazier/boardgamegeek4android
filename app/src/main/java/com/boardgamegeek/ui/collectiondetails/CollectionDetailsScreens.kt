@@ -45,7 +45,6 @@ import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.GameCollectionItemActivity
 import com.boardgamegeek.ui.LogPlayActivity
 import com.boardgamegeek.ui.MechanicsActivity
-import com.boardgamegeek.ui.NewPlayActivity
 import com.boardgamegeek.ui.PublishersActivity
 import com.boardgamegeek.ui.startActivity
 import kotlinx.coroutines.launch
@@ -1318,7 +1317,13 @@ private fun playMenuHandler(
                         .setCancelable(true)
                         .show()
                 }
-                LOG_PLAY_TYPE_WIZARD -> NewPlayActivity.start(context, item.gameId, item.gameName)
+                else -> LogPlayActivity.logPlay(
+                    context,
+                    item.gameId,
+                    item.gameName,
+                    item.robustHeroImageUrl,
+                    item.arePlayersCustomSorted
+                )
             }
             true
         }

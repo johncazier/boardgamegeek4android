@@ -153,14 +153,13 @@ const val LOG_EDIT_PLAYER_PROMPTED = "logEditPlayerPrompted"
 const val LOG_EDIT_PLAYER = "logEditPlayer"
 const val LOG_PLAY_TYPE_FORM = "form"
 const val LOG_PLAY_TYPE_QUICK = "quick"
-const val LOG_PLAY_TYPE_WIZARD = "wizard"
 
 fun SharedPreferences.logPlayPreference(): String {
     return this.getString("logPlayType", null)
         ?: return when {
             showLogPlayField("logPlay", "logHideLog", true) -> LOG_PLAY_TYPE_FORM
             showLogPlayField("quickLogPlay", "logHideQuickLog", true) -> LOG_PLAY_TYPE_QUICK
-            else -> LOG_PLAY_TYPE_WIZARD
+            else -> LOG_PLAY_TYPE_FORM
         }
 }
 

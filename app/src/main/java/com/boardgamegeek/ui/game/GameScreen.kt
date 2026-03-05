@@ -28,7 +28,6 @@ import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.LOG_PLAY_TYPE_FORM
 import com.boardgamegeek.extensions.LOG_PLAY_TYPE_QUICK
-import com.boardgamegeek.extensions.LOG_PLAY_TYPE_WIZARD
 import com.boardgamegeek.extensions.linkToBgg
 import com.boardgamegeek.extensions.logPlayPreference
 import com.boardgamegeek.extensions.preferences
@@ -36,7 +35,6 @@ import com.boardgamegeek.extensions.shareGame
 import com.boardgamegeek.extensions.showAndSurvive
 import com.boardgamegeek.ui.ImageActivity
 import com.boardgamegeek.ui.LogPlayActivity
-import com.boardgamegeek.ui.NewPlayActivity
 import com.boardgamegeek.ui.dialog.CollectionStatusDialogFragment
 import com.boardgamegeek.ui.dialog.GameUsersDialogFragment
 import com.boardgamegeek.ui.game.GameViewModel
@@ -375,6 +373,12 @@ private fun logPlay(
             arePlayersCustomSorted
         )
         LOG_PLAY_TYPE_QUICK -> viewModel.logQuickPlay(gameId, gameName)
-        LOG_PLAY_TYPE_WIZARD -> NewPlayActivity.start(activity, gameId, gameName)
+        else -> LogPlayActivity.logPlay(
+            activity,
+            gameId,
+            gameName,
+            heroUrl.ifBlank { thumbnailUrl.ifBlank { imageUrl } },
+            arePlayersCustomSorted
+        )
     }
 }

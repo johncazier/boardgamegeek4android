@@ -46,7 +46,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.LOG_PLAY_TYPE_FORM
 import com.boardgamegeek.extensions.LOG_PLAY_TYPE_QUICK
-import com.boardgamegeek.extensions.LOG_PLAY_TYPE_WIZARD
 import com.boardgamegeek.extensions.PREFERENCES_KEY_SYNC_PLAYS
 import com.boardgamegeek.extensions.get
 import com.boardgamegeek.extensions.logPlayPreference
@@ -54,7 +53,6 @@ import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
 import com.boardgamegeek.ui.LogPlayActivity
-import com.boardgamegeek.ui.NewPlayActivity
 import com.boardgamegeek.ui.play.PlayActivity
 import com.boardgamegeek.util.XmlApiMarkupConverter
 import java.text.SimpleDateFormat
@@ -117,7 +115,7 @@ fun PlaysScreen(
                         when (context.preferences().logPlayPreference()) {
                             LOG_PLAY_TYPE_FORM -> LogPlayActivity.logPlay(context, gameId, gameName, heroImageUrl, arePlayersCustomSorted)
                             LOG_PLAY_TYPE_QUICK -> viewModel.logQuickPlay(gameId, gameName)
-                            LOG_PLAY_TYPE_WIZARD -> NewPlayActivity.start(context, gameId, gameName)
+                            else -> LogPlayActivity.logPlay(context, gameId, gameName, heroImageUrl, arePlayersCustomSorted)
                         }
                     },
                     containerColor = iconColor

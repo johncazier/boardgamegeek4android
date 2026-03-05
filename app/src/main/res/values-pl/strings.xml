@@ -156,8 +156,6 @@
 	<string name="title_buddy">Użytkownik</string>
 	<string name="title_log_play">Zapisz rozgrywkę</string>
 	<string name="title_log_player">Zapisz gracza</string>
-	<string name="title_new_play">Nowa Rozgrywka</string>
-	<string name="title_new_players">Nowi Gracze</string>
 	<string name="title_winners">Wyniki i Zwycięzcy</string>
 	<string name="title_add_players">Dodaj graczy</string>
 	<string name="title_comments">Komentarze</string>
@@ -240,11 +238,6 @@
 	<string name="empty_collection_sync_off">Jeśli chcesz zobaczyć swoją kolekcję, w Ustawieniach > Synchronizacja zaznacz jakieś statusy pod "Kolekcja".</string>
 	<string name="empty_collection_filter_on">Brak gier w kolekcji, które pasują do filtra. Spróbuj innego filtra.</string>
 	<string name="empty_collection_filter_on_sync_partial">Synchronizacja kolekcji jest wyłączona dla niektórych filtrowanych statusów. Spróbuj włączyć je w Ustawienia > Synchronizacja.</string>
-	<string name="empty_new_play_locations">Brak wcześniejszych lokalizacji. Dodaj nową.</string>
-	<string name="empty_new_play_locations_filter">Brak lokalizacji spełniających kryteria.</string>
-	<string name="empty_new_play_players">Brak wcześniejszych graczy. Dodaj nowego.</string>
-	<string name="empty_new_play_players_filter">Brak graczy spełniających kryteria.</string>
-	<string name="new_play_location_hint">Filtruj lub dodaj nowego.</string>
 	<string name="sync">Synchronizacja</string>
 	<string name="empty_game_collection">Ta gra nie jest w Twojej kolekcji.</string>
 	<string name="re_sync">Ponowna synchronizacja</string>
@@ -293,7 +286,6 @@
 	<string name="menu_view_in_browser">Pokaż w przeglądarce</string>
 	<string name="menu_log_play">Zapisz rozgrywkę</string>
 	<string name="menu_log_play_short">Formularz</string>
-	<string name="menu_log_play_wizard_short">Kreator</string>
 	<string name="menu_log_play_quick_short">Szybki</string>
 	<string name="menu_favorite">Dodaj do Ulubionych</string>
 	<string name="menu_unfavorite">Usuń z Ulubionych</string>

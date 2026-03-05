@@ -156,7 +156,6 @@ class SearchResultsFragment : Fragment(), ActionMode.Callback {
         val count = searchResultsAdapter.selectedItemCount
         if (Authenticator.isSignedIn(context)) {
             menu.findItem(R.id.menu_log_play_form)?.isVisible = count == 1
-            menu.findItem(R.id.menu_log_play_wizard)?.isVisible = count == 1
             menu.findItem(R.id.menu_log_play)?.isVisible = true
         } else {
             menu.findItem(R.id.menu_log_play)?.isVisible = false
@@ -189,12 +188,6 @@ class SearchResultsFragment : Fragment(), ActionMode.Callback {
                 )
                 searchResultsAdapter.getSelectedItems().forEach {
                     viewModel.logQuickPlay(it.id, it.name)
-                }
-                mode.finish()
-            }
-            R.id.menu_log_play_wizard -> {
-                game?.let {
-                    NewPlayActivity.start(requireContext(), it.id, it.name)
                 }
                 mode.finish()
             }
