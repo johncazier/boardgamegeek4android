@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.play
 
 import android.content.Context
 import android.content.Intent
@@ -10,6 +10,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -40,8 +41,9 @@ import com.boardgamegeek.model.Play
 import com.boardgamegeek.model.PlayPlayer
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
+import com.boardgamegeek.ui.LogPlayActivity
 import com.boardgamegeek.ui.theme.AppTheme
-import com.boardgamegeek.ui.viewmodel.PlayViewModel
+import com.boardgamegeek.ui.play.PlayViewModel
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
@@ -94,6 +96,26 @@ class PlayActivity : ComponentActivity() {
                     title = play?.gameName ?: stringResource(R.string.title_play),
                     onBack = { finish() },
                     menu = {
+                        play?.let { currentPlay ->
+                            IconButton(
+                                onClick = {
+                                    logDataManipulationAction("Edit", currentPlay)
+                                    LogPlayActivity.editPlay(
+                                        this,
+                                        currentPlay.internalId,
+                                        currentPlay.gameId,
+                                        currentPlay.gameName,
+                                        currentPlay.robustHeroImageUrl,
+                                    )
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Edit,
+                                    contentDescription = stringResource(R.string.menu_edit)
+                                )
+                            }
+                        }
+
                         PlayOverflowMenu(
                             play = play,
                             onDiscard = {
@@ -101,16 +123,6 @@ class PlayActivity : ComponentActivity() {
                                     logDataManipulationAction("Discard", play)
                                     viewModel.discard()
                                 }.show()
-                            },
-                            onEdit = { targetPlay ->
-                                logDataManipulationAction("Edit", targetPlay)
-                                LogPlayActivity.editPlay(
-                                    this,
-                                    targetPlay.internalId,
-                                    targetPlay.gameId,
-                                    targetPlay.gameName,
-                                    targetPlay.robustHeroImageUrl,
-                                )
                             },
                             onSend = { targetPlay ->
                                 logDataManipulationAction("Send", targetPlay)
@@ -321,7 +333,6 @@ private fun PlayScaffold(
 private fun PlayOverflowMenu(
     play: Play?,
     onDiscard: () -> Unit,
-    onEdit: (Play) -> Unit,
     onSend: (Play) -> Unit,
     onDelete: (Play) -> Unit,
     onRematch: (Play) -> Unit,
@@ -348,14 +359,6 @@ private fun PlayOverflowMenu(
         }
 
         play?.let { currentPlay ->
-            DropdownMenuItem(
-                text = { androidx.compose.material3.Text(stringResource(R.string.menu_edit)) },
-                onClick = {
-                    expanded = false
-                    onEdit(currentPlay)
-                }
-            )
-
             if (canSend) {
                 DropdownMenuItem(
                     text = { androidx.compose.material3.Text(stringResource(R.string.send)) },

@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.play
 
 import android.widget.Chronometer
 import androidx.compose.foundation.background
@@ -37,6 +37,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -56,8 +58,9 @@ import com.boardgamegeek.extensions.getTextColor
 import com.boardgamegeek.extensions.startTimerWithSystemTime
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.model.PlayPlayer
+import com.boardgamegeek.ui.BuddyActivity
 import com.boardgamegeek.ui.components.HtmlText
-import com.boardgamegeek.ui.viewmodel.PlayViewModel
+import com.boardgamegeek.ui.play.PlayViewModel
 import com.boardgamegeek.util.XmlApiMarkupConverter
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -152,13 +155,14 @@ private fun PlayContent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
+                    .height(dimensionResource(R.dimen.image_header_height))
                     .clickable { onThumbnailClicked(play) },
             ) {
                 AsyncImage(
                     model = play.robustHeroImageUrl,
                     contentDescription = play.gameName,
                     modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.FillBounds,
                 )
                 Box(
                     modifier = Modifier

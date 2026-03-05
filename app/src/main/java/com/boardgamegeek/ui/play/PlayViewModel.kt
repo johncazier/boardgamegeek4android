@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui.viewmodel
+package com.boardgamegeek.ui.play
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel

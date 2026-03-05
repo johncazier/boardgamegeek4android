@@ -15,6 +15,7 @@ import com.boardgamegeek.R
 import com.boardgamegeek.databinding.FragmentPlaysSummaryBinding
 import com.boardgamegeek.model.*
 import com.boardgamegeek.extensions.*
+import com.boardgamegeek.ui.play.PlayActivity
 import com.boardgamegeek.ui.plays.LocationActivity
 import com.boardgamegeek.ui.plays.PlaysActivity
 import com.boardgamegeek.ui.viewmodel.PlaysSummaryViewModel

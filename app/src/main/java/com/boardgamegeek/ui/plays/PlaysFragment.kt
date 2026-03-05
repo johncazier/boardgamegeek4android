@@ -61,7 +61,7 @@ import com.boardgamegeek.model.Play
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
 import com.boardgamegeek.ui.LogPlayActivity
 import com.boardgamegeek.ui.NewPlayActivity
-import com.boardgamegeek.ui.PlayActivity
+import com.boardgamegeek.ui.play.PlayActivity
 import com.boardgamegeek.ui.theme.AppTheme
 import com.boardgamegeek.util.XmlApiMarkupConverter
 import dagger.hilt.android.AndroidEntryPoint

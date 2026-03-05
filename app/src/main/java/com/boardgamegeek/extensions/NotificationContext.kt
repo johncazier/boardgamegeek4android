@@ -22,6 +22,7 @@ import com.boardgamegeek.model.Play
 import com.boardgamegeek.model.PlayUploadResult
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
 import com.boardgamegeek.ui.*
+import com.boardgamegeek.ui.play.PlayActivity
 import com.boardgamegeek.ui.plays.GamePlaysActivity
 import com.boardgamegeek.ui.plays.PlaysActivity
 import com.boardgamegeek.util.LargeIconLoader

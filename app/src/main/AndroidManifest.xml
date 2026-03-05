@@ -234,7 +234,7 @@
 				android:value=".ui.PlaysSummaryActivity" />
 		</activity>
 		<activity
-			android:name=".ui.PlayActivity"
+			android:name=".ui.play.PlayActivity"
 			android:exported="false"
 			android:label="@string/title_play">
 			<meta-data
