@@ -1,56 +1,76 @@
 package com.boardgamegeek.ui.plays
 
 import android.app.DatePickerDialog
-import android.app.Dialog
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
-import android.widget.DatePicker
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
-import com.boardgamegeek.extensions.longSnackbar
 import com.boardgamegeek.extensions.notifyLoggedPlay
-import com.boardgamegeek.extensions.setActionBarCount
-import com.boardgamegeek.ui.SimpleSinglePaneActivity
-import com.google.android.material.snackbar.Snackbar
+import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Calendar
+import java.util.GregorianCalendar
 
 @AndroidEntryPoint
-class PlaysActivity : SimpleSinglePaneActivity(), DatePickerDialog.OnDateSetListener {
+class PlaysActivity : AppCompatActivity() {
     private val viewModel by viewModels<PlaysViewModel>()
-    private var snackbar: Snackbar? = null
-
-    override val optionsMenuId: Int
-        get() = R.menu.plays
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         if (savedInstanceState == null) {
-            firebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM_LIST) {
+            FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.VIEW_ITEM_LIST) {
                 param(FirebaseAnalytics.Param.CONTENT_TYPE, "Plays")
             }
         }
 
-        lifecycleScope.launch {
-            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
-                launch {
+        viewModel.setAll()
+
+        setContent {
+            AppTheme {
+                val snackbarHostState = remember { SnackbarHostState() }
+                val plays by viewModel.plays.collectAsState()
+                val filterType by viewModel.filterType.collectAsState()
+                val sortType by viewModel.sortType.collectAsState()
+
+                LaunchedEffect(viewModel) {
                     viewModel.errorMessageFlow.collect { message ->
-                        if (message.isNullOrBlank()) {
-                            snackbar?.dismiss()
-                        } else {
-                            snackbar = rootContainer?.longSnackbar(message)
+                        if (!message.isNullOrBlank()) {
+                            snackbarHostState.showSnackbar(message)
                             viewModel.clearErrorMessage()
                         }
                     }
                 }
-                launch {
+
+                LaunchedEffect(viewModel) {
                     viewModel.loggedPlayResultFlow.collect { result ->
                         result?.let {
                             notifyLoggedPlay(it)
@@ -58,140 +78,160 @@ class PlaysActivity : SimpleSinglePaneActivity(), DatePickerDialog.OnDateSetList
                         }
                     }
                 }
-                launch {
-                    viewModel.plays.collect {
-                        invalidateOptionsMenu()
-                    }
-                }
-                launch {
-                    viewModel.filterType.collect { type ->
-                        supportActionBar?.subtitle = when (type) {
-                            PlaysViewModel.FilterType.PENDING -> getString(R.string.menu_plays_filter_pending)
-                            PlaysViewModel.FilterType.DIRTY -> getString(R.string.menu_plays_filter_in_progress)
-                            else -> ""
-                        }
-                        invalidateOptionsMenu()
-                    }
-                }
-                launch {
-                    viewModel.sortType.collect {
-                        invalidateOptionsMenu()
-                    }
+
+                PlaysActivityScaffold(
+                    playCount = plays.sumOf { it.quantity },
+                    filterType = filterType,
+                    sortType = sortType,
+                    snackbarHostState = snackbarHostState,
+                    onBack = { finish() },
+                    onFilter = ::filter,
+                    onSort = ::setSort,
+                    onRefreshOnDate = ::showDatePicker,
+                ) { paddingValues ->
+                    PlaysScreen(
+                        viewModel = viewModel,
+                        emptyStringResId = R.string.empty_plays,
+                        showGameName = true,
+                        gameId = com.boardgamegeek.provider.BggContract.INVALID_ID,
+                        gameName = "",
+                        heroImageUrl = "",
+                        arePlayersCustomSorted = false,
+                        iconColor = android.graphics.Color.TRANSPARENT,
+                        contentPadding = paddingValues,
+                    )
                 }
             }
         }
-
-        viewModel.setAll()
     }
 
-    override fun createPane() = PlaysFragment.newInstance()
-
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        super.onPrepareOptionsMenu(menu)
-
-        val playCount = viewModel.plays.value.sumOf { play -> play.quantity }
-        val sortName = when (viewModel.sortType.value) {
-            PlaysViewModel.SortType.DATE -> getString(R.string.menu_plays_sort_date)
-            PlaysViewModel.SortType.LOCATION -> getString(R.string.menu_plays_sort_location)
-            PlaysViewModel.SortType.GAME -> getString(R.string.menu_plays_sort_game)
-            PlaysViewModel.SortType.LENGTH -> getString(R.string.menu_plays_sort_length)
-        }
-        menu.setActionBarCount(R.id.menu_list_count, playCount, getString(R.string.by_prefix, sortName))
-
-        menu.findItem(
-            when (viewModel.filterType.value) {
-                PlaysViewModel.FilterType.DIRTY -> R.id.menu_filter_in_progress
-                PlaysViewModel.FilterType.PENDING -> R.id.menu_filter_pending
-                PlaysViewModel.FilterType.ALL -> R.id.menu_filter_all
-            }
-        )?.isChecked = true
-        menu.findItem(
-            when (viewModel.sortType.value) {
-                PlaysViewModel.SortType.DATE -> R.id.menu_sort_date
-                PlaysViewModel.SortType.GAME -> R.id.menu_sort_game
-                PlaysViewModel.SortType.LENGTH -> R.id.menu_sort_length
-                PlaysViewModel.SortType.LOCATION -> R.id.menu_sort_location
-            }
-        )?.isChecked = true
-        return true
+    private fun showDatePicker() {
+        val calendar = Calendar.getInstance()
+        DatePickerDialog(
+            this,
+            { _, year, month, day ->
+                viewModel.refreshPlaysByDate(GregorianCalendar(year, month, day).timeInMillis)
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH),
+        ).show()
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.menu_sort_date -> {
-                setSort(PlaysViewModel.SortType.DATE)
-                return true
-            }
-            R.id.menu_sort_location -> {
-                setSort(PlaysViewModel.SortType.LOCATION)
-                return true
-            }
-            R.id.menu_sort_game -> {
-                setSort(PlaysViewModel.SortType.GAME)
-                return true
-            }
-            R.id.menu_sort_length -> {
-                setSort(PlaysViewModel.SortType.LENGTH)
-                return true
-            }
-            R.id.menu_filter_all -> {
-                filter(PlaysViewModel.FilterType.ALL)
-                return true
-            }
-            R.id.menu_filter_in_progress -> {
-                filter(PlaysViewModel.FilterType.DIRTY)
-                return true
-            }
-            R.id.menu_filter_pending -> {
-                filter(PlaysViewModel.FilterType.PENDING)
-                return true
-            }
-            R.id.menu_refresh_on -> {
-                val datePickerFragment = DatePickerFragment()
-                datePickerFragment.setListener(this)
-                datePickerFragment.show(supportFragmentManager, "datePicker")
-                return true
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    fun setSort(type: PlaysViewModel.SortType) {
-        firebaseAnalytics.logEvent("Sort") {
+    private fun setSort(type: PlaysViewModel.SortType) {
+        FirebaseAnalytics.getInstance(this).logEvent("Sort") {
             param(FirebaseAnalytics.Param.CONTENT_TYPE, "Plays")
             param("SortBy", type.toString())
         }
         viewModel.setSort(type)
     }
 
-    fun filter(type: PlaysViewModel.FilterType) {
-        firebaseAnalytics.logEvent("Filter") {
+    private fun filter(type: PlaysViewModel.FilterType) {
+        FirebaseAnalytics.getInstance(this).logEvent("Filter") {
             param(FirebaseAnalytics.Param.CONTENT_TYPE, "Plays")
             bundle.putString("FilterBy", type.toString())
         }
         viewModel.setFilter(type)
     }
+}
 
-    class DatePickerFragment : DialogFragment() {
-        private var listener: DatePickerDialog.OnDateSetListener? = null
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PlaysActivityScaffold(
+    playCount: Int,
+    filterType: PlaysViewModel.FilterType,
+    sortType: PlaysViewModel.SortType,
+    snackbarHostState: SnackbarHostState,
+    onBack: () -> Unit,
+    onFilter: (PlaysViewModel.FilterType) -> Unit,
+    onSort: (PlaysViewModel.SortType) -> Unit,
+    onRefreshOnDate: () -> Unit,
+    content: @Composable (androidx.compose.foundation.layout.PaddingValues) -> Unit,
+) {
+    var showFilterMenu by remember { mutableStateOf(false) }
+    var showSortMenu by remember { mutableStateOf(false) }
 
-        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-            val calendar = Calendar.getInstance()
-            return DatePickerDialog(
-                requireContext(),
-                listener,
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH),
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Column {
+                        Text(text = stringResource(R.string.title_plays))
+                        Text(
+                            text = when (filterType) {
+                                PlaysViewModel.FilterType.PENDING -> stringResource(R.string.menu_plays_filter_pending)
+                                PlaysViewModel.FilterType.DIRTY -> stringResource(R.string.menu_plays_filter_in_progress)
+                                PlaysViewModel.FilterType.ALL -> when (sortType) {
+                                    PlaysViewModel.SortType.DATE -> stringResource(R.string.by_prefix, stringResource(R.string.menu_plays_sort_date))
+                                    PlaysViewModel.SortType.LOCATION -> stringResource(R.string.by_prefix, stringResource(R.string.menu_plays_sort_location))
+                                    PlaysViewModel.SortType.GAME -> stringResource(R.string.by_prefix, stringResource(R.string.menu_plays_sort_game))
+                                    PlaysViewModel.SortType.LENGTH -> stringResource(R.string.by_prefix, stringResource(R.string.menu_plays_sort_length))
+                                }
+                            },
+                        )
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.menu_back))
+                    }
+                },
+                actions = {
+                    Text(text = playCount.toString())
+                    IconButton(onClick = { showFilterMenu = true }) {
+                        Icon(Icons.Filled.FilterList, contentDescription = stringResource(R.string.menu_plays_filter))
+                    }
+                    DropdownMenu(expanded = showFilterMenu, onDismissRequest = { showFilterMenu = false }) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.menu_plays_filter_all)) },
+                            onClick = { showFilterMenu = false; onFilter(PlaysViewModel.FilterType.ALL) },
+                            trailingIcon = if (filterType == PlaysViewModel.FilterType.ALL) ({ Text("•") }) else null,
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.menu_plays_filter_in_progress)) },
+                            onClick = { showFilterMenu = false; onFilter(PlaysViewModel.FilterType.DIRTY) },
+                            trailingIcon = if (filterType == PlaysViewModel.FilterType.DIRTY) ({ Text("•") }) else null,
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.menu_plays_filter_pending)) },
+                            onClick = { showFilterMenu = false; onFilter(PlaysViewModel.FilterType.PENDING) },
+                            trailingIcon = if (filterType == PlaysViewModel.FilterType.PENDING) ({ Text("•") }) else null,
+                        )
+                    }
+
+                    IconButton(onClick = { showSortMenu = true }) {
+                        Icon(Icons.Filled.Sort, contentDescription = stringResource(R.string.menu_sort))
+                    }
+                    DropdownMenu(expanded = showSortMenu, onDismissRequest = { showSortMenu = false }) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.menu_plays_sort_date)) },
+                            onClick = { showSortMenu = false; onSort(PlaysViewModel.SortType.DATE) },
+                            trailingIcon = if (sortType == PlaysViewModel.SortType.DATE) ({ Text("•") }) else null,
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.menu_plays_sort_location)) },
+                            onClick = { showSortMenu = false; onSort(PlaysViewModel.SortType.LOCATION) },
+                            trailingIcon = if (sortType == PlaysViewModel.SortType.LOCATION) ({ Text("•") }) else null,
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.menu_plays_sort_game)) },
+                            onClick = { showSortMenu = false; onSort(PlaysViewModel.SortType.GAME) },
+                            trailingIcon = if (sortType == PlaysViewModel.SortType.GAME) ({ Text("•") }) else null,
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.menu_plays_sort_length)) },
+                            onClick = { showSortMenu = false; onSort(PlaysViewModel.SortType.LENGTH) },
+                            trailingIcon = if (sortType == PlaysViewModel.SortType.LENGTH) ({ Text("•") }) else null,
+                        )
+                    }
+
+                    IconButton(onClick = onRefreshOnDate) {
+                        Icon(Icons.Filled.DateRange, contentDescription = stringResource(R.string.menu_refresh_on))
+                    }
+                },
             )
-        }
-
-        fun setListener(listener: DatePickerDialog.OnDateSetListener) {
-            this.listener = listener
-        }
-    }
-
-    override fun onDateSet(view: DatePicker, year: Int, month: Int, day: Int) {
-        viewModel.refreshPlaysByDate(GregorianCalendar(year, month, day).timeInMillis)
-    }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        content = content,
+    )
 }

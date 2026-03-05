@@ -2,42 +2,47 @@ package com.boardgamegeek.ui.plays
 
 import android.content.Context
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
-import com.boardgamegeek.extensions.longSnackbar
-import com.boardgamegeek.extensions.setActionBarCount
-import com.boardgamegeek.extensions.showAndSurvive
 import com.boardgamegeek.extensions.startActivity
+import com.boardgamegeek.ui.LocationsActivity
 import com.boardgamegeek.ui.dialog.EditLocationNameDialogFragment
-import com.boardgamegeek.ui.SimpleSinglePaneActivity
-import com.google.android.material.snackbar.Snackbar
+import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class LocationActivity : SimpleSinglePaneActivity() {
+class LocationActivity : AppCompatActivity() {
     private val viewModel by viewModels<PlaysViewModel>()
 
     private var locationName = ""
-    private var playCount = -1
-    private var snackbar: Snackbar? = null
-
-    override val optionsMenuId: Int
-        get() = R.menu.location
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        setSubtitle()
+        readIntent()
 
         if (savedInstanceState == null) {
-            firebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM) {
+            FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.VIEW_ITEM) {
                 param(FirebaseAnalytics.Param.CONTENT_TYPE, "Location")
                 param(FirebaseAnalytics.Param.ITEM_NAME, locationName)
             }
@@ -45,57 +50,48 @@ class LocationActivity : SimpleSinglePaneActivity() {
 
         viewModel.setLocation(locationName)
 
-        lifecycleScope.launch {
-            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.location.collect {
-                        locationName = it
-                        intent.putExtra(KEY_LOCATION_NAME, locationName)
-                        setSubtitle()
-                    }
-                }
-                launch {
-                    viewModel.plays.collect {
-                        playCount = it.sumOf { play -> play.quantity }
-                        invalidateOptionsMenu()
-                    }
-                }
-                launch {
+        setContent {
+            AppTheme {
+                val snackbarHostState = remember { SnackbarHostState() }
+                val location by viewModel.location.collectAsState()
+                val plays by viewModel.plays.collectAsState()
+
+                LaunchedEffect(viewModel) {
                     viewModel.updateMessageFlow.collect { content ->
-                        if (content.isNullOrBlank()) {
-                            snackbar?.dismiss()
-                        } else {
-                            snackbar = rootContainer?.longSnackbar(content)
+                        if (!content.isNullOrBlank()) {
+                            snackbarHostState.showSnackbar(content)
                             viewModel.clearUpdateMessage()
                         }
                     }
+                }
+
+                LocationPlaysScaffold(
+                    subtitle = location.ifBlank { getString(R.string.no_location) },
+                    playCount = plays.sumOf { it.quantity },
+                    snackbarHostState = snackbarHostState,
+                    onBack = { finish() },
+                    onEdit = {
+                        EditLocationNameDialogFragment.newInstance(location).show(supportFragmentManager, "edit_location")
+                    },
+                ) { paddingValues ->
+                    PlaysScreen(
+                        viewModel = viewModel,
+                        emptyStringResId = R.string.empty_plays_location,
+                        showGameName = true,
+                        gameId = com.boardgamegeek.provider.BggContract.INVALID_ID,
+                        gameName = "",
+                        heroImageUrl = "",
+                        arePlayersCustomSorted = false,
+                        iconColor = android.graphics.Color.TRANSPARENT,
+                        contentPadding = paddingValues,
+                    )
                 }
             }
         }
     }
 
-    override fun readIntent() {
+    private fun readIntent() {
         locationName = intent.getStringExtra(KEY_LOCATION_NAME).orEmpty()
-    }
-
-    private fun setSubtitle() {
-        supportActionBar?.subtitle = locationName.ifBlank { getString(R.string.no_location) }
-    }
-
-    override fun createPane() = PlaysFragment.newInstanceForLocation()
-
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        super.onPrepareOptionsMenu(menu)
-        menu.setActionBarCount(R.id.menu_list_count, playCount)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.menu_edit) {
-            showAndSurvive(EditLocationNameDialogFragment.newInstance(locationName))
-            return true
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     companion object {
@@ -105,4 +101,38 @@ class LocationActivity : SimpleSinglePaneActivity() {
             context.startActivity<LocationActivity>(KEY_LOCATION_NAME to locationName)
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LocationPlaysScaffold(
+    subtitle: String,
+    playCount: Int,
+    snackbarHostState: SnackbarHostState,
+    onBack: () -> Unit,
+    onEdit: () -> Unit,
+    content: @Composable (androidx.compose.foundation.layout.PaddingValues) -> Unit,
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = stringResource(R.string.title_plays) + " - $subtitle")
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.menu_back))
+                    }
+                },
+                actions = {
+                    Text(text = playCount.toString())
+                    IconButton(onClick = onEdit) {
+                        Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.menu_edit))
+                    }
+                }
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        content = content,
+    )
 }

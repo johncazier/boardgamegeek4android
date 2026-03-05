@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -38,13 +39,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.LOG_PLAY_TYPE_FORM
@@ -52,114 +49,16 @@ import com.boardgamegeek.extensions.LOG_PLAY_TYPE_QUICK
 import com.boardgamegeek.extensions.LOG_PLAY_TYPE_WIZARD
 import com.boardgamegeek.extensions.PREFERENCES_KEY_SYNC_PLAYS
 import com.boardgamegeek.extensions.get
-import com.boardgamegeek.extensions.getIntOrElse
-import com.boardgamegeek.extensions.getBooleanOrElse
 import com.boardgamegeek.extensions.logPlayPreference
 import com.boardgamegeek.extensions.preferences
-import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
 import com.boardgamegeek.ui.LogPlayActivity
 import com.boardgamegeek.ui.NewPlayActivity
 import com.boardgamegeek.ui.play.PlayActivity
-import com.boardgamegeek.ui.theme.AppTheme
 import com.boardgamegeek.util.XmlApiMarkupConverter
-import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.Locale
-
-@AndroidEntryPoint
-open class PlaysFragment : Fragment() {
-    private val viewModel by activityViewModels<PlaysViewModel>()
-
-    private var gameId: Int = INVALID_ID
-    private var gameName: String? = null
-    private var heroImageUrl: String? = null
-    private var arePlayersCustomSorted: Boolean = false
-    private var emptyStringResId: Int = 0
-    private var showGameName = true
-
-    override fun onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup?, savedInstanceState: android.os.Bundle?): android.view.View {
-        emptyStringResId = arguments.getIntOrElse(KEY_EMPTY_STRING_RES_ID, R.string.empty_plays)
-        showGameName = arguments.getBooleanOrElse(KEY_SHOW_GAME_NAME, true)
-        gameId = arguments.getIntOrElse(KEY_GAME_ID, INVALID_ID)
-        gameName = arguments?.getString(KEY_GAME_NAME)
-        heroImageUrl = arguments?.getString(KEY_HERO_IMAGE_URL)
-        arePlayersCustomSorted = arguments.getBooleanOrElse(KEY_CUSTOM_PLAYER_SORT, false)
-        @ColorInt val iconColor = arguments.getIntOrElse(KEY_ICON_COLOR, Color.TRANSPARENT)
-
-        return ComposeView(requireContext()).apply {
-            setContent {
-                AppTheme {
-                    PlaysScreen(
-                        viewModel = viewModel,
-                        emptyStringResId = emptyStringResId,
-                        showGameName = showGameName,
-                        gameId = gameId,
-                        gameName = gameName.orEmpty(),
-                        heroImageUrl = heroImageUrl.orEmpty(),
-                        arePlayersCustomSorted = arePlayersCustomSorted,
-                        iconColor = iconColor,
-                    )
-                }
-            }
-        }
-    }
-
-    companion object {
-        private const val KEY_GAME_ID = "GAME_ID"
-        private const val KEY_GAME_NAME = "GAME_NAME"
-        private const val KEY_HERO_IMAGE_URL = "HERO_IMAGE_URL"
-        private const val KEY_CUSTOM_PLAYER_SORT = "CUSTOM_PLAYER_SORT"
-        private const val KEY_ICON_COLOR = "ICON_COLOR"
-        private const val KEY_EMPTY_STRING_RES_ID = "EMPTY_STRING_RES_ID"
-        private const val KEY_SHOW_GAME_NAME = "SHOW_GAME_NAME"
-
-        fun newInstance(): PlaysFragment {
-            return PlaysFragment().apply {
-                arguments = bundleOf(KEY_EMPTY_STRING_RES_ID to R.string.empty_plays)
-            }
-        }
-
-        fun newInstanceForGame(
-            gameId: Int,
-            gameName: String,
-            heroImageUrl: String,
-            arePlayersCustomSorted: Boolean,
-            @ColorInt iconColor: Int
-        ): PlaysFragment {
-            return PlaysFragment().apply {
-                arguments = bundleOf(
-                    KEY_EMPTY_STRING_RES_ID to R.string.empty_plays_game,
-                    KEY_SHOW_GAME_NAME to false,
-                    KEY_GAME_ID to gameId,
-                    KEY_GAME_NAME to gameName,
-                    KEY_HERO_IMAGE_URL to heroImageUrl,
-                    KEY_CUSTOM_PLAYER_SORT to arePlayersCustomSorted,
-                    KEY_ICON_COLOR to iconColor,
-                )
-            }
-        }
-
-        fun newInstanceForLocation(): PlaysFragment {
-            return PlaysFragment().apply {
-                arguments = bundleOf(KEY_EMPTY_STRING_RES_ID to R.string.empty_plays_location)
-            }
-        }
-
-        fun newInstanceForBuddy(): PlaysFragment {
-            return PlaysFragment().apply {
-                arguments = bundleOf(KEY_EMPTY_STRING_RES_ID to R.string.empty_plays_buddy)
-            }
-        }
-
-        fun newInstanceForPlayer(): PlaysFragment {
-            return PlaysFragment().apply {
-                arguments = bundleOf(KEY_EMPTY_STRING_RES_ID to R.string.empty_plays_player)
-            }
-        }
-    }
-}
 
 private sealed interface PlayListRow {
     data class Header(val text: String) : PlayListRow
@@ -168,7 +67,7 @@ private sealed interface PlayListRow {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun PlaysScreen(
+fun PlaysScreen(
     viewModel: PlaysViewModel,
     @StringRes emptyStringResId: Int,
     showGameName: Boolean,
@@ -177,6 +76,7 @@ private fun PlaysScreen(
     heroImageUrl: String,
     arePlayersCustomSorted: Boolean,
     @ColorInt iconColor: Int,
+    contentPadding: PaddingValues = PaddingValues(),
 ) {
     val context = LocalContext.current
     val plays by viewModel.plays.collectAsStateWithLifecycle()
@@ -208,6 +108,8 @@ private fun PlaysScreen(
     val rows = remember(plays, sortType) { buildPlayRows(context, plays, sortType) }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        modifier = Modifier.padding(contentPadding),
         floatingActionButton = {
             if (gameId != INVALID_ID && selectedIds.isEmpty()) {
                 FloatingActionButton(

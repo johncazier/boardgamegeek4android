@@ -4,23 +4,31 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.ColorInt
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.intentFor
-import com.boardgamegeek.extensions.setActionBarCount
 import com.boardgamegeek.provider.BggContract
-import com.boardgamegeek.ui.SimpleSinglePaneActivity
 import com.boardgamegeek.ui.game.GameActivity
+import com.boardgamegeek.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class GamePlaysActivity : SimpleSinglePaneActivity() {
+class GamePlaysActivity : AppCompatActivity() {
     private val viewModel by viewModels<PlaysViewModel>()
 
     private var gameId = BggContract.INVALID_ID
@@ -31,57 +39,47 @@ class GamePlaysActivity : SimpleSinglePaneActivity() {
 
     @ColorInt
     private var iconColor = Color.TRANSPARENT
-    private var playCount = -1
-
-    override val optionsMenuId: Int
-        get() = R.menu.text_only
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        if (gameName.isNotBlank()) {
-            supportActionBar?.subtitle = gameName
-        }
+        readIntent()
 
         viewModel.setGame(gameId)
-        lifecycleScope.launch {
-            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.plays.collect {
-                        playCount = it.sumOf { play -> play.quantity }
-                        invalidateOptionsMenu()
-                    }
+
+        setContent {
+            AppTheme {
+                val plays by viewModel.plays.collectAsState()
+                GamePlaysScaffold(
+                    subtitle = gameName,
+                    playCount = plays.sumOf { it.quantity },
+                    onBack = {
+                        GameActivity.startUp(this, gameId, gameName, thumbnailUrl, heroImageUrl)
+                        finish()
+                    },
+                ) { paddingValues ->
+                    PlaysScreen(
+                        viewModel = viewModel,
+                        emptyStringResId = R.string.empty_plays_game,
+                        showGameName = false,
+                        gameId = gameId,
+                        gameName = gameName,
+                        heroImageUrl = heroImageUrl,
+                        arePlayersCustomSorted = arePlayersCustomSorted,
+                        iconColor = iconColor,
+                        contentPadding = paddingValues,
+                    )
                 }
             }
         }
     }
 
-    override fun readIntent() {
+    private fun readIntent() {
         gameId = intent.getIntExtra(KEY_GAME_ID, BggContract.INVALID_ID)
         gameName = intent.getStringExtra(KEY_GAME_NAME).orEmpty()
         heroImageUrl = intent.getStringExtra(KEY_HERO_IMAGE_URL).orEmpty()
         thumbnailUrl = intent.getStringExtra(KEY_THUMBNAIL_URL).orEmpty()
         arePlayersCustomSorted = intent.getBooleanExtra(KEY_CUSTOM_PLAYER_SORT, false)
         iconColor = intent.getIntExtra(KEY_ICON_COLOR, Color.TRANSPARENT)
-    }
-
-    override fun createPane() = PlaysFragment.newInstanceForGame(gameId, gameName, heroImageUrl, arePlayersCustomSorted, iconColor)
-
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        super.onPrepareOptionsMenu(menu)
-        menu.setActionBarCount(R.id.menu_text, playCount)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                GameActivity.startUp(this, gameId, gameName, thumbnailUrl, heroImageUrl)
-                finish()
-                return true
-            }
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     companion object {
@@ -123,4 +121,32 @@ class GamePlaysActivity : SimpleSinglePaneActivity() {
             )
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun GamePlaysScaffold(
+    subtitle: String,
+    playCount: Int,
+    onBack: () -> Unit,
+    content: @Composable (androidx.compose.foundation.layout.PaddingValues) -> Unit,
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = stringResource(R.string.title_plays) + if (subtitle.isNotBlank()) " - $subtitle" else "")
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.menu_back))
+                    }
+                },
+                actions = {
+                    Text(text = playCount.toString())
+                }
+            )
+        },
+        content = content,
+    )
 }

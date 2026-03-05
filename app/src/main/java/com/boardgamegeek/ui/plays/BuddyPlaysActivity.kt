@@ -2,77 +2,76 @@ package com.boardgamegeek.ui.plays
 
 import android.content.Context
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
-import com.boardgamegeek.extensions.setActionBarCount
 import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.ui.BuddyActivity
-import com.boardgamegeek.ui.SimpleSinglePaneActivity
+import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class BuddyPlaysActivity : SimpleSinglePaneActivity() {
+class BuddyPlaysActivity : AppCompatActivity() {
     private val viewModel by viewModels<PlaysViewModel>()
     private var buddyName = ""
-    private var numberOfPlays = -1
-
-    override val optionsMenuId: Int
-        get() = R.menu.text_only
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        readIntent()
 
-        if (buddyName.isNotBlank()) {
-            supportActionBar?.subtitle = buddyName
-        }
         if (savedInstanceState == null) {
-            firebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM_LIST) {
+            FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.VIEW_ITEM_LIST) {
                 param(FirebaseAnalytics.Param.CONTENT_TYPE, "BuddyPlays")
                 param(FirebaseAnalytics.Param.ITEM_ID, buddyName)
             }
         }
 
         viewModel.setUsername(buddyName)
-        lifecycleScope.launch {
-            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.plays.collect {
-                        numberOfPlays = it.sumOf { play -> play.quantity }
-                        invalidateOptionsMenu()
-                    }
+
+        setContent {
+            AppTheme {
+                val plays by viewModel.plays.collectAsState()
+                SimplePlaysScaffold(
+                    subtitle = buddyName,
+                    playCount = plays.sumOf { it.quantity },
+                    onBack = {
+                        BuddyActivity.startUp(this, buddyName)
+                        finish()
+                    },
+                ) { paddingValues ->
+                    PlaysScreen(
+                        viewModel = viewModel,
+                        emptyStringResId = R.string.empty_plays_buddy,
+                        showGameName = true,
+                        gameId = com.boardgamegeek.provider.BggContract.INVALID_ID,
+                        gameName = "",
+                        heroImageUrl = "",
+                        arePlayersCustomSorted = false,
+                        iconColor = android.graphics.Color.TRANSPARENT,
+                        contentPadding = paddingValues,
+                    )
                 }
             }
         }
     }
 
-    override fun readIntent() {
+    private fun readIntent() {
         buddyName = intent.getStringExtra(KEY_BUDDY_NAME).orEmpty()
-    }
-
-    override fun createPane() = PlaysFragment.newInstanceForBuddy()
-
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        super.onPrepareOptionsMenu(menu)
-        menu.setActionBarCount(R.id.menu_text, numberOfPlays)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                BuddyActivity.startUp(this, buddyName)
-                finish()
-                return true
-            }
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     companion object {
@@ -84,4 +83,32 @@ class BuddyPlaysActivity : SimpleSinglePaneActivity() {
             )
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SimplePlaysScaffold(
+    subtitle: String,
+    playCount: Int,
+    onBack: () -> Unit,
+    content: @Composable (androidx.compose.foundation.layout.PaddingValues) -> Unit,
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = stringResource(R.string.title_plays) + if (subtitle.isNotBlank()) " - $subtitle" else "")
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.menu_back))
+                    }
+                },
+                actions = {
+                    Text(text = playCount.toString())
+                }
+            )
+        },
+        content = content,
+    )
 }
