@@ -9,6 +9,9 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.databinding.FragmentPollBinding
 import com.boardgamegeek.model.GameAgePoll
@@ -27,6 +30,7 @@ import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 
 @AndroidEntryPoint
@@ -77,8 +81,12 @@ class GameAgePollDialogFragment : DialogFragment() {
         }
 
         dialog?.setTitle(R.string.suggested_playerage)
-        viewModel.agePoll.observe(viewLifecycleOwner) {
-            it?.let { showAgeData(it) }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.agePoll.collect {
+                    it?.let { showAgeData(it) }
+                }
+            }
         }
     }
 

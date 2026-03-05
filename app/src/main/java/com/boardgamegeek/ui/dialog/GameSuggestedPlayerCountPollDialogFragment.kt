@@ -13,6 +13,9 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.databinding.FragmentPollSuggestedPlayerCountBinding
 import com.boardgamegeek.extensions.setViewBackground
@@ -20,6 +23,7 @@ import com.boardgamegeek.extensions.showAndSurvive
 import com.boardgamegeek.ui.game.GameViewModel
 import com.boardgamegeek.ui.widget.PlayerNumberRow
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class GameSuggestedPlayerCountPollDialogFragment : DialogFragment() {
@@ -43,45 +47,50 @@ class GameSuggestedPlayerCountPollDialogFragment : DialogFragment() {
         addKeyRow(R.color.recommended, R.string.recommended)
         addKeyRow(R.color.not_recommended, R.string.not_recommended)
 
-        viewModel.game.observe(viewLifecycleOwner) {
-            totalVoteCount = it?.suggestedPlayerCountPollVoteTotal ?: 0
-            binding.totalVoteView.text = resources.getQuantityString(R.plurals.votes_suffix, totalVoteCount, totalVoteCount)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.game.collect {
+                        totalVoteCount = it?.suggestedPlayerCountPollVoteTotal ?: 0
+                        binding.totalVoteView.text = resources.getQuantityString(R.plurals.votes_suffix, totalVoteCount, totalVoteCount)
 
-            binding.pollList.isVisible = totalVoteCount > 0
-            binding.keyContainer.isVisible = totalVoteCount > 0
-            binding.noVotesSwitch.isVisible = totalVoteCount > 0
-        }
-
-        viewModel.playerPoll.observe(viewLifecycleOwner) {
-            it?.let { entity ->
-                binding.pollList.removeAllViews()
-                for ((_, playerCount, bestVoteCount, recommendedVoteCount, notRecommendedVoteCount) in entity) {
-                    val row = PlayerNumberRow(requireContext()).apply {
-                        setText(playerCount)
-                        setVotes(bestVoteCount, recommendedVoteCount, notRecommendedVoteCount, totalVoteCount)
-                        setOnClickListener { view ->
-                            binding.pollList.children.forEach { v ->
-                                (v as? PlayerNumberRow)?.clearHighlight()
-                            }
-                            (view as? PlayerNumberRow)?.let { playerNumberRow ->
-                                playerNumberRow.setHighlight()
-                                binding.keyContainer.children.forEachIndexed { index, view ->
-                                    view.findViewById<TextView>(R.id.infoView).text = playerNumberRow.votes[index].toString()
+                        binding.pollList.isVisible = totalVoteCount > 0
+                        binding.keyContainer.isVisible = totalVoteCount > 0
+                        binding.noVotesSwitch.isVisible = totalVoteCount > 0
+                    }
+                }
+                launch {
+                    viewModel.playerPoll.collect { entity ->
+                        binding.pollList.removeAllViews()
+                        for ((_, playerCount, bestVoteCount, recommendedVoteCount, notRecommendedVoteCount) in entity) {
+                            val row = PlayerNumberRow(requireContext()).apply {
+                                setText(playerCount)
+                                setVotes(bestVoteCount, recommendedVoteCount, notRecommendedVoteCount, totalVoteCount)
+                                setOnClickListener { view ->
+                                    binding.pollList.children.forEach { v ->
+                                        (v as? PlayerNumberRow)?.clearHighlight()
+                                    }
+                                    (view as? PlayerNumberRow)?.let { playerNumberRow ->
+                                        playerNumberRow.setHighlight()
+                                        binding.keyContainer.children.forEachIndexed { index, rowView ->
+                                            rowView.findViewById<TextView>(R.id.infoView).text = playerNumberRow.votes[index].toString()
+                                        }
+                                    }
                                 }
                             }
+                            binding.pollList.addView(row)
                         }
-                    }
-                    binding.pollList.addView(row)
-                }
 
-                binding.noVotesSwitch.setOnClickListener {
-                    binding.pollList.children.forEach { row ->
-                        (row as? PlayerNumberRow)?.showNoVotes(binding.noVotesSwitch.isChecked)
+                        binding.noVotesSwitch.setOnClickListener {
+                            binding.pollList.children.forEach { row ->
+                                (row as? PlayerNumberRow)?.showNoVotes(binding.noVotesSwitch.isChecked)
+                            }
+                        }
+
+                        binding.progressView.hide()
+                        binding.scrollView.isVisible = true
                     }
                 }
-
-                binding.progressView.hide()
-                binding.scrollView.isVisible = true
             }
         }
     }

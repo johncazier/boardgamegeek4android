@@ -7,11 +7,15 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.boardgamegeek.databinding.FragmentGameDetailsBinding
 import com.boardgamegeek.ui.adapter.GameDetailAdapter
 import com.boardgamegeek.ui.game.GameViewModel
 import com.boardgamegeek.ui.game.GameViewModel.ProducerType
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class GameDetailFragment : Fragment() {
@@ -33,15 +37,22 @@ class GameDetailFragment : Fragment() {
         binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.adapter = adapter
 
-        viewModel.producerType.observe(viewLifecycleOwner) {
-            adapter.type = it ?: ProducerType.UNKNOWN
-        }
-
-        viewModel.producers.observe(viewLifecycleOwner) {
-            adapter.items = it.orEmpty()
-            binding.emptyMessage.isVisible = it.isNullOrEmpty()
-            binding.recyclerView.isVisible = !it.isNullOrEmpty()
-            binding.progressView.hide()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.producerType.collect {
+                        adapter.type = it
+                    }
+                }
+                launch {
+                    viewModel.producers.collect {
+                        adapter.items = it
+                        binding.emptyMessage.isVisible = it.isEmpty()
+                        binding.recyclerView.isVisible = it.isNotEmpty()
+                        binding.progressView.hide()
+                    }
+                }
+            }
         }
     }
 

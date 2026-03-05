@@ -13,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.palette.graphics.Palette
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
@@ -59,11 +59,11 @@ fun GameScreen(
 ) {
     val context = LocalContext.current
     val activity = context as FragmentActivity
-    val game by viewModel.game.observeAsState()
-    val username by viewModel.username.observeAsState()
-    val syncCollectionPref by viewModel.syncCollectionPreference.observeAsState()
-    val syncPlaysPref by viewModel.syncPlaysPreference.observeAsState()
-    val errorEvent by viewModel.errorMessage.observeAsState()
+    val game by viewModel.game.collectAsStateWithLifecycle()
+    val username by viewModel.username.collectAsStateWithLifecycle()
+    val syncCollectionPref by viewModel.syncCollectionPreference.collectAsStateWithLifecycle()
+    val syncPlaysPref by viewModel.syncPlaysPreference.collectAsStateWithLifecycle()
+    val errorEvent by viewModel.errorMessage.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
 
     val gameName = game?.name ?: initialGameName
@@ -74,6 +74,7 @@ fun GameScreen(
     val isFavorite = game?.isFavorite ?: initialIsFavorite
     val isUserMenuEnabled = (game?.maxUsers ?: if (initialIsUserMenuEnabled) 1 else 0) > 0
     val iconColor = game?.iconColor ?: Color.Transparent.value.toInt()
+    val (fabContainerColor, fabContentColor) = rememberGameFabColors(iconColor)
 
     val isSignedIn = !username.isNullOrBlank()
     val shouldShowCollection = !syncCollectionPref.isNullOrEmpty()
@@ -153,8 +154,8 @@ fun GameScreen(
         tabs.getOrNull(pagerState.currentPage)?.fabIconRes?.let { fabRes ->
             FloatingActionButton(
                 onClick = { tabs.getOrNull(pagerState.currentPage)?.onFabClick?.invoke() },
-                containerColor = Color(iconColor),
-                contentColor = MaterialTheme.colorScheme.onPrimary,
+                containerColor = fabContainerColor,
+                contentColor = fabContentColor,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp)
@@ -339,20 +340,20 @@ private fun buildGameTabs(
         onFabClick = { viewModel.updateFavorite(!isFavorite) },
         content = { GameDescriptionTab(viewModel) }
     )
-    if (isSignedIn && shouldShowCollection) {
-        tabs += GameTab(
-            titleResId = R.string.title_my_games,
-            fabIconRes = R.drawable.ic_baseline_add_24,
-            onFabClick = { activity.showAndSurvive(CollectionStatusDialogFragment()) },
-            content = { GameCollectionTab(viewModel) }
-        )
-    }
     if (isSignedIn && shouldShowPlays) {
         tabs += GameTab(
             titleResId = R.string.title_plays,
             fabIconRes = R.drawable.ic_baseline_event_available_24,
             onFabClick = { logPlay(activity, viewModel, gameId, gameName, heroUrl, thumbnailUrl, imageUrl, arePlayersCustomSorted) },
             content = { GamePlaysTab(viewModel) }
+        )
+    }
+    if (isSignedIn && shouldShowCollection) {
+        tabs += GameTab(
+            titleResId = R.string.title_my_games,
+            fabIconRes = R.drawable.ic_baseline_add_24,
+            onFabClick = { activity.showAndSurvive(CollectionStatusDialogFragment()) },
+            content = { GameCollectionTab(viewModel) }
         )
     }
     tabs += GameTab(

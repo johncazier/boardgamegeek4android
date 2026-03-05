@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
@@ -34,6 +35,7 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -51,9 +53,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
@@ -121,16 +125,16 @@ import java.text.NumberFormat
 @Composable
 fun GameInfoTab(viewModel: GameViewModel) {
     val context = LocalContext.current
-    val game by viewModel.game.observeAsState()
-    val subtypes by viewModel.subtypes.observeAsState(emptyList())
-    val families by viewModel.families.observeAsState(emptyList())
-    val languagePoll by viewModel.languagePoll.observeAsState()
-    val agePoll by viewModel.agePoll.observeAsState()
-    val playerPoll by viewModel.playerPoll.observeAsState(emptyList())
-    val isRefreshing by viewModel.gameIsRefreshing.observeAsState(false)
+    val game by viewModel.game.collectAsStateWithLifecycle()
+    val subtypes by viewModel.subtypes.collectAsStateWithLifecycle()
+    val families by viewModel.families.collectAsStateWithLifecycle()
+    val languagePoll by viewModel.languagePoll.collectAsStateWithLifecycle()
+    val agePoll by viewModel.agePoll.collectAsStateWithLifecycle()
+    val playerPoll by viewModel.playerPoll.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.gameIsRefreshing.collectAsStateWithLifecycle()
 
     val pullRefreshState = rememberPullRefreshState(
-        refreshing = isRefreshing == true,
+        refreshing = isRefreshing,
         onRefresh = { viewModel.refreshGame() }
     )
 
@@ -165,6 +169,7 @@ private fun GameInfoContent(
     playerPoll: List<GamePlayerPollResults>,
 ) {
     val context = LocalContext.current
+    val gameIconTint = rememberGameIconTint(game.iconColor)
     val scoreFormat = remember { DecimalFormat("#,##0.00") }
     val rankSeparator = " \u2022 "
 
@@ -197,7 +202,7 @@ private fun GameInfoContent(
     val ratingColor = Color(game.rating.toColor(BggColors.ratingColors))
     val ratingVotes = context.getQuantityText(R.plurals.ratings_suffix, game.numberOfRatings, game.numberOfRatings)
     val commentVotes = context.getQuantityText(R.plurals.comments_suffix, game.numberOfComments, game.numberOfComments)
-    val ratingDetail = context.getString(R.string.ampersand, ratingVotes, commentVotes)
+    val ratingDetail = stringResource(R.string.ampersand, ratingVotes, commentVotes)
 
     val weightText = game.averageWeight.toDescription(context, R.array.game_weight, R.string.unknown_weight)
     val weightScore = if (game.averageWeight == Game.UNWEIGHTED) "" else game.averageWeight.asScore(context, format = scoreFormat)
@@ -225,21 +230,31 @@ private fun GameInfoContent(
     }.orEmpty()
 
     val activity = context as FragmentActivity
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(rankText, familyText) {
+        if ((rankText.isNotBlank() || familyText.isNotBlank()) && listState.firstVisibleItemIndex > 0) {
+            listState.scrollToItem(0)
+        }
+    }
 
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxSize(),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp),
     ) {
-        item {
+        item(key = "rank_row") {
             if (rankText.isNotBlank() || familyText.isNotBlank()) {
                 InfoRow(
                     iconRes = R.drawable.ic_baseline_emoji_events_24,
                     title = rankText,
                     subtitle = familyText.takeIf { it.isNotBlank() },
-                    iconTint = Color(game.iconColor),
+                    iconTint = gameIconTint,
                     onClick = { activity.showAndSurvive(GameRanksDialogFragment()) }
                 )
-                Divider()
+                HorizontalDivider()
+            } else {
+                Spacer(modifier = Modifier.height(0.dp))
             }
         }
         item {
@@ -247,7 +262,7 @@ private fun GameInfoContent(
                 iconRes = R.drawable.ic_baseline_star_rate_24,
                 title = ratingText,
                 subtitle = ratingDetail,
-                iconTint = Color(game.iconColor),
+                iconTint = gameIconTint,
                 trailing = {
                     ValueBadge(text = ratingText, background = ratingColor)
                 },
@@ -257,16 +272,16 @@ private fun GameInfoContent(
                     }
                 }
             )
-            Divider()
+            HorizontalDivider()
         }
         item {
             InfoRow(
                 iconRes = R.drawable.ic_baseline_calendar_today_24,
                 title = game.yearPublished.asYear(context),
                 subtitle = stringResource(R.string.year_published),
-                iconTint = Color(game.iconColor)
+                iconTint = gameIconTint
             )
-            Divider()
+            HorizontalDivider()
         }
         item {
             val playTime = context.getQuantityText(
@@ -278,9 +293,9 @@ private fun GameInfoContent(
                 iconRes = R.drawable.ic_outline_timer_24,
                 title = playTime,
                 subtitle = stringResource(R.string.title_play_time),
-                iconTint = Color(game.iconColor)
+                iconTint = gameIconTint
             )
-            Divider()
+            HorizontalDivider()
         }
         item {
             val subtitle = listOfNotNull(
@@ -291,7 +306,7 @@ private fun GameInfoContent(
                 iconRes = R.drawable.ic_baseline_group_24,
                 title = playerRange,
                 subtitle = subtitle,
-                iconTint = Color(game.iconColor),
+                iconTint = gameIconTint,
                 onClick = {
                     if (game.suggestedPlayerCountPollVoteTotal > 0) {
                         activity.showAndSurvive(GameSuggestedPlayerCountPollDialogFragment().apply {
@@ -300,7 +315,7 @@ private fun GameInfoContent(
                     }
                 }
             )
-            Divider()
+            HorizontalDivider()
         }
         item {
             val subtitle = listOfNotNull(
@@ -311,7 +326,7 @@ private fun GameInfoContent(
                 iconRes = R.drawable.ic_baseline_face_24,
                 title = game.minimumAge.asAge(context),
                 subtitle = subtitle,
-                iconTint = Color(game.iconColor),
+                iconTint = gameIconTint,
                 onClick = {
                     if (ageVotes > 0) {
                         activity.showAndSurvive(GameAgePollDialogFragment().apply {
@@ -320,28 +335,28 @@ private fun GameInfoContent(
                     }
                 }
             )
-            Divider()
+            HorizontalDivider()
         }
         item {
             InfoRow(
                 iconRes = R.drawable.ic_baseline_scale_24,
                 title = weightText,
                 subtitle = listOfNotNull(weightScore.takeIf { it.isNotBlank() }, weightVotes.takeIf { it.isNotBlank() }).joinToString(" \u2022 "),
-                iconTint = Color(game.iconColor),
+                iconTint = gameIconTint,
                 trailing = {
                     if (weightScore.isNotBlank()) {
                         ValueBadge(text = weightScore, background = weightColor, textColor = weightTextColor)
                     }
                 }
             )
-            Divider()
+            HorizontalDivider()
         }
         item {
             InfoRow(
                 iconRes = R.drawable.ic_baseline_language_24,
                 title = languageText,
                 subtitle = listOfNotNull(languageScoreText.takeIf { it.isNotBlank() }, languageVotesText.takeIf { it.isNotBlank() }).joinToString(" \u2022 "),
-                iconTint = Color(game.iconColor),
+                iconTint = gameIconTint,
                 trailing = {
                     if (languageScoreText.isNotBlank()) {
                         ValueBadge(text = languageScoreText, background = languageColor, textColor = languageTextColor)
@@ -386,13 +401,13 @@ private fun List<GamePlayerPollResults>.asRange(comma: String = ", ", dash: Stri
 
 @Composable
 fun GameCreditsTab(viewModel: GameViewModel) {
-    val game by viewModel.game.observeAsState()
-    val designers by viewModel.designers.observeAsState(emptyList())
-    val artists by viewModel.artists.observeAsState(emptyList())
-    val publishers by viewModel.publishers.observeAsState(emptyList())
-    val categories by viewModel.categories.observeAsState(emptyList())
-    val mechanics by viewModel.mechanics.observeAsState(emptyList())
-    val isRefreshing by viewModel.gameIsRefreshing.observeAsState(false)
+    val game by viewModel.game.collectAsStateWithLifecycle()
+    val designers by viewModel.designers.collectAsStateWithLifecycle()
+    val artists by viewModel.artists.collectAsStateWithLifecycle()
+    val publishers by viewModel.publishers.collectAsStateWithLifecycle()
+    val categories by viewModel.categories.collectAsStateWithLifecycle()
+    val mechanics by viewModel.mechanics.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.gameIsRefreshing.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.refreshDesignerImages(4)
@@ -409,6 +424,7 @@ fun GameCreditsTab(viewModel: GameViewModel) {
         if (game == null) {
             EmptyMessage(message = stringResource(R.string.empty_game))
         } else {
+            val gameIconTint = rememberGameIconTint(game!!.iconColor)
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp)
@@ -421,10 +437,10 @@ fun GameCreditsTab(viewModel: GameViewModel) {
                         type = GameViewModel.ProducerType.DESIGNER,
                         gameId = game!!.id,
                         gameName = game!!.name,
-                        iconColor = Color(game!!.iconColor)
+                        iconColor = gameIconTint
                     )
                 }
-                item { CreditsDivider() }
+                item { CreditsHorizontalDivider() }
                 item {
                     CreditsSection(
                         titleRes = R.string.artists,
@@ -433,10 +449,10 @@ fun GameCreditsTab(viewModel: GameViewModel) {
                         type = GameViewModel.ProducerType.ARTIST,
                         gameId = game!!.id,
                         gameName = game!!.name,
-                        iconColor = Color(game!!.iconColor)
+                        iconColor = gameIconTint
                     )
                 }
-                item { CreditsDivider() }
+                item { CreditsHorizontalDivider() }
                 item {
                     CreditsSection(
                         titleRes = R.string.publishers,
@@ -445,10 +461,10 @@ fun GameCreditsTab(viewModel: GameViewModel) {
                         type = GameViewModel.ProducerType.PUBLISHER,
                         gameId = game!!.id,
                         gameName = game!!.name,
-                        iconColor = Color(game!!.iconColor)
+                        iconColor = gameIconTint
                     )
                 }
-                item { CreditsDivider() }
+                item { CreditsHorizontalDivider() }
                 item {
                     CreditsSection(
                         titleRes = R.string.categories,
@@ -457,10 +473,10 @@ fun GameCreditsTab(viewModel: GameViewModel) {
                         type = GameViewModel.ProducerType.CATEGORY,
                         gameId = game!!.id,
                         gameName = game!!.name,
-                        iconColor = Color(game!!.iconColor)
+                        iconColor = gameIconTint
                     )
                 }
-                item { CreditsDivider() }
+                item { CreditsHorizontalDivider() }
                 item {
                     CreditsSection(
                         titleRes = R.string.mechanics,
@@ -469,7 +485,7 @@ fun GameCreditsTab(viewModel: GameViewModel) {
                         type = GameViewModel.ProducerType.MECHANIC,
                         gameId = game!!.id,
                         gameName = game!!.name,
-                        iconColor = Color(game!!.iconColor)
+                        iconColor = gameIconTint
                     )
                 }
                 item {
@@ -488,8 +504,8 @@ fun GameCreditsTab(viewModel: GameViewModel) {
 
 @Composable
 fun GameDescriptionTab(viewModel: GameViewModel) {
-    val game by viewModel.game.observeAsState()
-    val isRefreshing by viewModel.gameIsRefreshing.observeAsState(false)
+    val game by viewModel.game.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.gameIsRefreshing.collectAsStateWithLifecycle()
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing == true,
         onRefresh = { viewModel.refreshGame() }
@@ -523,8 +539,8 @@ fun GameDescriptionTab(viewModel: GameViewModel) {
 @Composable
 fun GameCollectionTab(viewModel: GameViewModel) {
     val context = LocalContext.current
-    val items by viewModel.collectionItems.observeAsState()
-    val isRefreshing by viewModel.itemsAreRefreshing.observeAsState(false)
+    val items by viewModel.collectionItems.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.itemsAreRefreshing.collectAsStateWithLifecycle()
     val xmlConverter = remember { XmlApiMarkupConverter(context) }
 
     val pullRefreshState = rememberPullRefreshState(
@@ -534,10 +550,7 @@ fun GameCollectionTab(viewModel: GameViewModel) {
 
     Box(modifier = Modifier.fillMaxSize().pullRefresh(pullRefreshState)) {
         when {
-            items == null -> {
-                EmptyMessage(message = stringResource(R.string.empty_game_collection))
-            }
-            items!!.isEmpty() -> {
+            items.isEmpty() -> {
                 EmptyMessage(message = stringResource(R.string.empty_game_collection))
             }
             else -> {
@@ -545,12 +558,12 @@ fun GameCollectionTab(viewModel: GameViewModel) {
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp)
                 ) {
-                    items(items!!, key = { it.collectionId }) { item ->
+                    items(items, key = { it.collectionId }) { item ->
                         CollectionItemRow(item = item, xmlConverter = xmlConverter)
-                        Divider()
+                        HorizontalDivider()
                     }
                     item {
-                        val syncTimestamp = items!!.minByOrNull { it.syncTimestamp }?.syncTimestamp ?: 0L
+                        val syncTimestamp = items.minByOrNull { it.syncTimestamp }?.syncTimestamp ?: 0L
                         Spacer(modifier = Modifier.height(8.dp))
                         TimestampFooter(timestamp = syncTimestamp)
                     }
@@ -567,11 +580,11 @@ fun GameCollectionTab(viewModel: GameViewModel) {
 
 @Composable
 fun GamePlaysTab(viewModel: GameViewModel) {
-    val context = LocalContext.current
-    val game by viewModel.game.observeAsState()
-    val plays by viewModel.plays.observeAsState(emptyList())
-    val playColors by viewModel.playColors.observeAsState(emptyList())
-    val isRefreshing by viewModel.playsAreRefreshing.observeAsState(false)
+
+    val game by viewModel.game.collectAsStateWithLifecycle()
+    val plays by viewModel.plays.collectAsStateWithLifecycle()
+    val playColors by viewModel.playColors.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.playsAreRefreshing.collectAsStateWithLifecycle()
 
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing == true,
@@ -588,19 +601,19 @@ fun GamePlaysTab(viewModel: GameViewModel) {
             ) {
                 item {
                     PlaysSummarySection(game = game!!, plays = plays)
-                    Divider()
+                    HorizontalDivider()
                 }
                 item {
                     InProgressSection(plays = plays)
-                    Divider()
+                    HorizontalDivider()
                 }
                 item {
                     LastPlaySection(plays = plays)
-                    Divider()
+                    HorizontalDivider()
                 }
                 item {
                     StatsSection(game = game!!, plays = plays)
-                    Divider()
+                    HorizontalDivider()
                 }
                 item {
                     ColorsSection(game = game!!, colors = playColors)
@@ -617,10 +630,10 @@ fun GamePlaysTab(viewModel: GameViewModel) {
 
 @Composable
 fun GameLinkedItemsTab(viewModel: GameViewModel) {
-    val game by viewModel.game.observeAsState()
-    val expansions by viewModel.expansions.observeAsState(emptyList())
-    val baseGames by viewModel.baseGames.observeAsState(emptyList())
-    val isRefreshing by viewModel.gameIsRefreshing.observeAsState(false)
+    val game by viewModel.game.collectAsStateWithLifecycle()
+    val expansions by viewModel.expansions.collectAsStateWithLifecycle()
+    val baseGames by viewModel.baseGames.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.gameIsRefreshing.collectAsStateWithLifecycle()
 
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing == true,
@@ -631,6 +644,7 @@ fun GameLinkedItemsTab(viewModel: GameViewModel) {
         if (game == null) {
             EmptyMessage(message = stringResource(R.string.empty_game))
         } else {
+            val gameIconTint = rememberGameIconTint(game!!.iconColor)
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp)
@@ -643,10 +657,10 @@ fun GameLinkedItemsTab(viewModel: GameViewModel) {
                         type = GameViewModel.ProducerType.EXPANSION,
                         gameId = game!!.id,
                         gameName = game!!.name,
-                        iconColor = Color(game!!.iconColor)
+                        iconColor = gameIconTint
                     )
                 }
-                item { CreditsDivider() }
+                item { CreditsHorizontalDivider() }
                 item {
                     LinkedItemsSection(
                         titleRes = R.string.base_games,
@@ -655,7 +669,7 @@ fun GameLinkedItemsTab(viewModel: GameViewModel) {
                         type = GameViewModel.ProducerType.BASE_GAME,
                         gameId = game!!.id,
                         gameName = game!!.name,
-                        iconColor = Color(game!!.iconColor)
+                        iconColor = gameIconTint
                     )
                 }
                 item {
@@ -675,8 +689,8 @@ fun GameLinkedItemsTab(viewModel: GameViewModel) {
 @Composable
 fun GameLinksTab(viewModel: GameViewModel) {
     val context = LocalContext.current
-    val game by viewModel.game.observeAsState()
-    val iconColor = Color(game?.iconColor ?: 0)
+    val game by viewModel.game.collectAsStateWithLifecycle()
+    val iconColor = rememberGameIconTint(game?.iconColor ?: 0)
 
     if (game == null) {
         EmptyMessage(message = stringResource(R.string.empty_game))
@@ -694,7 +708,7 @@ fun GameLinksTab(viewModel: GameViewModel) {
                 iconTint = iconColor,
                 onClick = { context.linkToBgg("geekbuddy/analyze/thing", game!!.id) }
             )
-            Divider()
+            HorizontalDivider()
         }
         item {
             LinkRow(
@@ -703,7 +717,7 @@ fun GameLinksTab(viewModel: GameViewModel) {
                 iconTint = iconColor,
                 onClick = { context.linkBgg(game!!.id) }
             )
-            Divider()
+            HorizontalDivider()
         }
         item {
             LinkRow(
@@ -712,7 +726,7 @@ fun GameLinksTab(viewModel: GameViewModel) {
                 iconTint = iconColor,
                 onClick = { context.linkCamelCamelCamel(game!!.name) }
             )
-            Divider()
+            HorizontalDivider()
         }
         item {
             LinkRow(
@@ -721,7 +735,7 @@ fun GameLinksTab(viewModel: GameViewModel) {
                 iconTint = iconColor,
                 onClick = { context.linkAmazon(game!!.name, LINK_AMAZON_COM) }
             )
-            Divider()
+            HorizontalDivider()
         }
         item {
             LinkRow(
@@ -730,7 +744,7 @@ fun GameLinksTab(viewModel: GameViewModel) {
                 iconTint = iconColor,
                 onClick = { context.linkAmazon(game!!.name, LINK_AMAZON_UK) }
             )
-            Divider()
+            HorizontalDivider()
         }
         item {
             LinkRow(
@@ -739,7 +753,7 @@ fun GameLinksTab(viewModel: GameViewModel) {
                 iconTint = iconColor,
                 onClick = { context.linkAmazon(game!!.name, LINK_AMAZON_DE) }
             )
-            Divider()
+            HorizontalDivider()
         }
         item {
             LinkRow(
@@ -840,7 +854,7 @@ fun GameForumsTab(gameId: Int, gameName: String) {
                                         }
                                     }
                                 }
-                                Divider()
+                                HorizontalDivider()
                             }
                         }
                     }
@@ -1037,23 +1051,25 @@ private fun LinkedItemChip(producer: GameDetail) {
 }
 
 @Composable
-private fun CreditsDivider() {
+private fun CreditsHorizontalDivider() {
     Spacer(modifier = Modifier.height(8.dp))
-    Divider()
+    HorizontalDivider()
     Spacer(modifier = Modifier.height(8.dp))
 }
 
 @Composable
 private fun HtmlText(text: String, modifier: Modifier = Modifier) {
+    val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
     AndroidView(
         modifier = modifier.fillMaxWidth(),
         factory = { context ->
             TextView(context).apply {
                 textSize = 16f
-                setTextColor(android.graphics.Color.BLACK)
+                setTextColor(textColor)
             }
         },
         update = { view ->
+            view.setTextColor(textColor)
             view.setTextMaybeHtml(text)
         }
     )
@@ -1147,9 +1163,9 @@ private fun describeStatuses(item: CollectionItem, ctx: android.content.Context)
 private fun TimestampFooter(timestamp: Long) {
     val context = LocalContext.current
     val formatted = if (timestamp <= 0) {
-        context.getString(R.string.needs_updating)
+        stringResource(R.string.needs_updating)
     } else {
-        context.getString(R.string.synced_prefix, timestamp.formatTimestamp(context))
+        stringResource(R.string.synced_prefix, timestamp.formatTimestamp(context))
     }
     Text(
         text = formatted,
@@ -1164,9 +1180,9 @@ private fun TimestampFooter(timestamp: Long) {
 private fun GameFooter(gameId: Int, updated: Long) {
     val context = LocalContext.current
     val syncedText = if (updated <= 0) {
-        context.getString(R.string.needs_updating)
+        stringResource(R.string.needs_updating)
     } else {
-        context.getString(R.string.synced_prefix, updated.formatTimestamp(context))
+        stringResource(R.string.synced_prefix, updated.formatTimestamp(context))
     }
     Row(
         modifier = Modifier
@@ -1254,7 +1270,7 @@ private fun InProgressSection(plays: List<Play>) {
         Spacer(modifier = Modifier.height(8.dp))
         inProgressPlays.take(3).forEach { play ->
             InProgressRow(play = play)
-            Divider()
+            HorizontalDivider()
         }
     }
 }
@@ -1312,7 +1328,7 @@ private fun StatsSection(game: Game, plays: List<Play>) {
             Icon(
                 painter = painterResource(R.drawable.ic_baseline_pie_chart_24),
                 contentDescription = null,
-                tint = Color(game.iconColor)
+                tint = rememberGameIconTint(game.iconColor)
             )
         },
         headlineContent = { Text(text = stringResource(R.string.title_play_stats)) },

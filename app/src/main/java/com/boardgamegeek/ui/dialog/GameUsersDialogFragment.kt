@@ -7,11 +7,15 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.databinding.DialogGameUsersBinding
 import com.boardgamegeek.extensions.showAndSurvive
 import com.boardgamegeek.ui.game.GameViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class GameUsersDialogFragment : DialogFragment() {
@@ -29,21 +33,25 @@ class GameUsersDialogFragment : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val viewModel by activityViewModels<GameViewModel>()
-        viewModel.game.observe(this) {
-            it?.let { game ->
-                listOf(
-                    binding.numberOwningBar,
-                    binding.numberTradingBar,
-                    binding.numberWantingBar,
-                    binding.numberWishingBar,
-                ).forEach { bar -> bar.colorize(game.darkColor) }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.game.collect {
+                    it?.let { game ->
+                        listOf(
+                            binding.numberOwningBar,
+                            binding.numberTradingBar,
+                            binding.numberWantingBar,
+                            binding.numberWishingBar,
+                        ).forEach { bar -> bar.colorize(game.darkColor) }
 
-                val maxUsers = game.maxUsers.toDouble()
+                        val maxUsers = game.maxUsers.toDouble()
 
-                binding.numberOwningBar.setBar(R.string.owning_meter_text, game.numberOfUsersOwned.toDouble(), maxUsers)
-                binding.numberTradingBar.setBar(R.string.trading_meter_text, game.numberOfUsersTrading.toDouble(), maxUsers)
-                binding.numberWantingBar.setBar(R.string.wanting_meter_text, game.numberOfUsersWanting.toDouble(), maxUsers)
-                binding.numberWishingBar.setBar(R.string.wishing_meter_text, game.numberOfUsersWishListing.toDouble(), maxUsers)
+                        binding.numberOwningBar.setBar(R.string.owning_meter_text, game.numberOfUsersOwned.toDouble(), maxUsers)
+                        binding.numberTradingBar.setBar(R.string.trading_meter_text, game.numberOfUsersTrading.toDouble(), maxUsers)
+                        binding.numberWantingBar.setBar(R.string.wanting_meter_text, game.numberOfUsersWanting.toDouble(), maxUsers)
+                        binding.numberWishingBar.setBar(R.string.wishing_meter_text, game.numberOfUsersWishListing.toDouble(), maxUsers)
+                    }
+                }
             }
         }
     }

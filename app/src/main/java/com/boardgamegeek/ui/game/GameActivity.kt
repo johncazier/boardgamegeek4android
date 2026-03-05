@@ -10,6 +10,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -32,6 +36,7 @@ import com.boardgamegeek.ui.game.GameViewModel
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -61,21 +66,26 @@ class GameActivity : AppCompatActivity(), CollectionStatusDialogFragment.Listene
         changeImage(intent.getStringExtra(KEY_HERO_IMAGE_URL).orEmpty(), intent.getStringExtra(KEY_THUMBNAIL_URL).orEmpty())
         viewModel.setId(gameId)
 
-        viewModel.game.observe(this) {
-            it?.let { game ->
-                changeName(game.name)
-                changeImage(game.heroImageUrl, game.thumbnailUrl)
-                isFavorite = game.isFavorite
-                isUserMenuEnabled = game.maxUsers > 0
-                thumbnailUrl = game.thumbnailUrl
-                imageUrl = game.imageUrl
-                arePlayersCustomSorted = game.customPlayerSort
-            }
-        }
-
-        viewModel.loggedPlayResult.observe(this) { event ->
-            event.getContentIfNotHandled()?.let {
-                notifyLoggedPlay(it)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.game.collect { game ->
+                        game?.let {
+                            changeName(it.name)
+                            changeImage(it.heroImageUrl, it.thumbnailUrl)
+                            isFavorite = it.isFavorite
+                            isUserMenuEnabled = it.maxUsers > 0
+                            thumbnailUrl = it.thumbnailUrl
+                            imageUrl = it.imageUrl
+                            arePlayersCustomSorted = it.customPlayerSort
+                        }
+                    }
+                }
+                launch {
+                    viewModel.loggedPlayResult.collect { event ->
+                        event?.getContentIfNotHandled()?.let { notifyLoggedPlay(it) }
+                    }
+                }
             }
         }
 
@@ -89,7 +99,7 @@ class GameActivity : AppCompatActivity(), CollectionStatusDialogFragment.Listene
 
         setContent {
             val snackbarHostState = remember { SnackbarHostState() }
-            val gameState by viewModel.game.observeAsState()
+            val gameState by viewModel.game.collectAsStateWithLifecycle()
             val title = gameState?.name ?: gameName
             val heroUrl = gameState?.heroImageUrl ?: heroImageUrl
             val thumbUrl = gameState?.thumbnailUrl ?: thumbnailUrl
