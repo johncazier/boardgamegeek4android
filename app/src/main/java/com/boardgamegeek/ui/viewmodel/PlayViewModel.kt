@@ -1,58 +1,65 @@
 package com.boardgamegeek.ui.viewmodel
 
 import android.app.Application
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.asFlow
+import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.boardgamegeek.model.Play
+import com.boardgamegeek.extensions.stateInWhileSubscribed
 import com.boardgamegeek.extensions.isOlderThan
-import com.boardgamegeek.livedata.Event
-import com.boardgamegeek.livedata.EventLiveData
 import com.boardgamegeek.repository.PlayRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.hours
 
 @HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
 class PlayViewModel @Inject constructor(
     application: Application,
     private val repository: PlayRepository,
 ) : AndroidViewModel(application) {
     private val arePlaysRefreshing = AtomicBoolean()
     private val forceRefresh = AtomicBoolean()
-    private val internalId = MutableLiveData<Long>()
+    private val internalId = MutableStateFlow<Long?>(null)
 
-    private val _isDownloading = MutableLiveData(false)
-    private val _isUploading = WorkManager.getInstance(getApplication()).getWorkInfosByTagLiveData(WORK_TAG).map { list ->
-        list.any { workInfo -> !workInfo.state.isFinished }
-    }
+    private val isDownloading = MutableStateFlow(false)
+    private val isUploading: StateFlow<Boolean> = WorkManager.getInstance(getApplication())
+        .getWorkInfosByTagLiveData(WORK_TAG)
+        .asFlow()
+        .map { list -> list.any { workInfo -> !workInfo.state.isFinished } }
+        .stateInWhileSubscribed(viewModelScope, false)
 
-    private val _isRefreshing = MediatorLiveData<Boolean>()
-    val isRefreshing: LiveData<Boolean>
-        get() = _isRefreshing
+    val isRefreshingFlow: StateFlow<Boolean> = combine(isDownloading, isUploading) { downloading, uploading ->
+        downloading || uploading
+    }.stateInWhileSubscribed(viewModelScope, false)
 
-    private val _errorMessage = EventLiveData()
-    val errorMessage: LiveData<Event<String>>
-        get() = _errorMessage
+    private val _errorMessageEvents = MutableSharedFlow<String>(replay = 0)
+    val errorMessageEvents: SharedFlow<String> = _errorMessageEvents.asSharedFlow()
 
-    init {
-        _isRefreshing.addSource(_isDownloading) {
-            _isRefreshing.value = it || (_isUploading.value ?: false)
+    val play: StateFlow<Play?> = internalId
+        .filterNotNull()
+        .distinctUntilChanged()
+        .flatMapLatest { id ->
+            repository.loadPlayFlow(id)
+                .distinctUntilChanged()
+                .onStart { attemptRefresh() }
         }
-        _isRefreshing.addSource(_isUploading) {
-            _isRefreshing.value = it || (_isDownloading.value ?: false)
-        }
-    }
-
-    val play: LiveData<Play?> = internalId.switchMap { id ->
-        liveData {
-            emitSource(repository.loadPlayFlow(id).distinctUntilChanged().asLiveData().also {
-                attemptRefresh()
-            })
-        }
-    }
+        .stateInWhileSubscribed(viewModelScope, null)
 
     fun setId(id: Long) {
         if (internalId.value != id) internalId.value = id
@@ -69,11 +76,14 @@ class PlayViewModel @Inject constructor(
                 play.value?.let { play ->
                     if (forceRefresh.compareAndSet(true, false) ||
                         play.syncTimestamp.isOlderThan(2.hours)) {
-                        _isDownloading.value = true
-                        repository.refreshPlay(play)?.let {
-                            _errorMessage.postMessage(it)
+                        isDownloading.value = true
+                        try {
+                            repository.refreshPlay(play)?.let {
+                                _errorMessageEvents.emit(it)
+                            }
+                        } finally {
+                            isDownloading.value = false
                         }
-                        _isDownloading.value = false
                     }
                 }
                 arePlaysRefreshing.set(false)
@@ -82,7 +92,7 @@ class PlayViewModel @Inject constructor(
     }
 
     fun reload() {
-        internalId.value = internalId.value
+        attemptRefresh()
     }
 
     fun discard() {
