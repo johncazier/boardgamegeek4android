@@ -39,7 +39,7 @@ import com.boardgamegeek.extensions.*
 import com.boardgamegeek.model.CollectionItem
 import com.boardgamegeek.model.CollectionStatus
 import com.boardgamegeek.ui.ArtistsActivity
-import com.boardgamegeek.ui.CategoriesActivity
+import com.boardgamegeek.ui.categories.CategoriesActivity
 import com.boardgamegeek.ui.DesignersActivity
 import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.GameCollectionItemActivity
