@@ -24,7 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.startActivity
-import com.boardgamegeek.ui.LocationsActivity
+import com.boardgamegeek.ui.locations.LocationsActivity
 import com.boardgamegeek.ui.dialog.EditLocationNameDialogFragment
 import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics

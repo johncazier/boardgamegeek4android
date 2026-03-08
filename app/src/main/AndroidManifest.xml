@@ -210,7 +210,7 @@
 				android:value=".ui.PlaysSummaryActivity" />
 		</activity>
 		<activity
-			android:name=".ui.LocationsActivity"
+			android:name=".ui.locations.LocationsActivity"
 			android:exported="false"
 			android:label="@string/title_locations">
 			<meta-data
@@ -247,7 +247,7 @@
 			android:label="@string/title_location">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.LocationsActivity" />
+				android:value=".ui.locations.LocationsActivity" />
 		</activity>
 		<activity
 			android:name=".ui.SearchResultsActivity"
