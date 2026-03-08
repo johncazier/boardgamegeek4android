@@ -43,7 +43,7 @@ import com.boardgamegeek.ui.CategoriesActivity
 import com.boardgamegeek.ui.DesignersActivity
 import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.GameCollectionItemActivity
-import com.boardgamegeek.ui.LogPlayActivity
+import com.boardgamegeek.ui.logplay.LogPlayActivity
 import com.boardgamegeek.ui.MechanicsActivity
 import com.boardgamegeek.ui.PublishersActivity
 import com.boardgamegeek.ui.startActivity

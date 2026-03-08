@@ -272,7 +272,7 @@
 				android:resource="@xml/searchable" />
 		</activity>
 		<activity
-			android:name=".ui.LogPlayActivity"
+			android:name=".ui.logplay.LogPlayActivity"
 			android:label="@string/title_log_play"
 			android:launchMode="singleTop" />
 		<activity

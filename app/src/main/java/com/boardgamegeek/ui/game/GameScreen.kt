@@ -34,7 +34,7 @@ import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.extensions.shareGame
 import com.boardgamegeek.extensions.showAndSurvive
 import com.boardgamegeek.ui.ImageActivity
-import com.boardgamegeek.ui.LogPlayActivity
+import com.boardgamegeek.ui.logplay.LogPlayActivity
 import com.boardgamegeek.ui.dialog.CollectionStatusDialogFragment
 import com.boardgamegeek.ui.dialog.GameUsersDialogFragment
 import com.boardgamegeek.ui.game.GameViewModel

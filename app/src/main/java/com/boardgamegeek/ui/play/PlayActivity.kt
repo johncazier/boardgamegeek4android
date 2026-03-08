@@ -41,7 +41,7 @@ import com.boardgamegeek.model.Play
 import com.boardgamegeek.model.PlayPlayer
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
-import com.boardgamegeek.ui.LogPlayActivity
+import com.boardgamegeek.ui.logplay.LogPlayActivity
 import com.boardgamegeek.ui.theme.AppTheme
 import com.boardgamegeek.ui.play.PlayViewModel
 import com.google.firebase.analytics.FirebaseAnalytics

@@ -2,7 +2,7 @@ package com.boardgamegeek.ui.dialog
 
 import androidx.fragment.app.activityViewModels
 import com.boardgamegeek.R
-import com.boardgamegeek.ui.viewmodel.LogPlayViewModel
+import com.boardgamegeek.ui.logplay.LogPlayViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

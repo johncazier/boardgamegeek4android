@@ -15,6 +15,7 @@ import com.boardgamegeek.model.Status
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.ui.adapter.SearchResultsAdapter
 import com.boardgamegeek.ui.adapter.SearchResultsAdapter.Callback
+import com.boardgamegeek.ui.logplay.LogPlayActivity
 import com.boardgamegeek.ui.viewmodel.SearchViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.analytics.FirebaseAnalytics

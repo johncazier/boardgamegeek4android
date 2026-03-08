@@ -52,7 +52,7 @@ import com.boardgamegeek.extensions.logPlayPreference
 import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
-import com.boardgamegeek.ui.LogPlayActivity
+import com.boardgamegeek.ui.logplay.LogPlayActivity
 import com.boardgamegeek.ui.play.PlayActivity
 import com.boardgamegeek.util.XmlApiMarkupConverter
 import java.text.SimpleDateFormat
