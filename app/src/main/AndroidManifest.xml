@@ -75,7 +75,7 @@
 				android:value=".ui.HomeActivity" />
 		</activity>
 		<activity
-			android:name=".ui.MechanicsActivity"
+			android:name=".ui.mechanics.MechanicsActivity"
 			android:label="@string/title_mechanics">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
