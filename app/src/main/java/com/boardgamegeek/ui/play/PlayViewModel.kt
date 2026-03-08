@@ -61,6 +61,13 @@ class PlayViewModel @Inject constructor(
         }
         .stateInWhileSubscribed(viewModelScope, null)
 
+    val relatedExpansionPlays: StateFlow<List<Play>> = play
+        .filterNotNull()
+        .flatMapLatest { currentPlay ->
+            repository.loadRelatedExpansionPlaysFlow(currentPlay)
+        }
+        .stateInWhileSubscribed(viewModelScope, emptyList())
+
     fun setId(id: Long) {
         if (internalId.value != id) internalId.value = id
     }

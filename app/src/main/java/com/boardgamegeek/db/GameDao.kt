@@ -173,6 +173,9 @@ interface GameDao {
     suspend fun delete(gameId: Int): Int
 
     @Query("SELECT games_expansions.*, games.thumbnail_url AS thumbnailUrl FROM games_expansions LEFT OUTER JOIN games ON games.game_id = games_expansions.expansion_id WHERE inbound=0 AND games_expansions.game_id = :gameId")
+    suspend fun loadExpansionsForGame(gameId: Int): List<GameExpansionWithGame>
+
+    @Query("SELECT games_expansions.*, games.thumbnail_url AS thumbnailUrl FROM games_expansions LEFT OUTER JOIN games ON games.game_id = games_expansions.expansion_id WHERE inbound=0 AND games_expansions.game_id = :gameId")
     fun loadExpansionsForGameFlow(gameId: Int): Flow<List<GameExpansionWithGame>>
 
     @Query("SELECT games_expansions.*, games.thumbnail_url AS thumbnailUrl FROM games_expansions LEFT OUTER JOIN games ON games.game_id = games_expansions.expansion_id WHERE inbound=1 AND games_expansions.game_id = :gameId")

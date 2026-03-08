@@ -73,6 +73,7 @@ fun PlayScreen(
 ) {
     val context = LocalContext.current
     val play by viewModel.play.collectAsStateWithLifecycle()
+    val relatedExpansionPlays by viewModel.relatedExpansionPlays.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshingFlow.collectAsStateWithLifecycle()
     val markupConverter = remember(context) { XmlApiMarkupConverter(context) }
 
@@ -105,6 +106,7 @@ fun PlayScreen(
             play != null -> {
                 PlayContent(
                     play = play!!,
+                    relatedExpansionPlays = relatedExpansionPlays,
                     markupConverter = markupConverter,
                     onThumbnailClicked = onThumbnailClicked,
                     onEndTimerClicked = onEndTimerClicked,
@@ -141,6 +143,7 @@ fun PlayScreen(
 @Composable
 private fun PlayContent(
     play: Play,
+    relatedExpansionPlays: List<Play>,
     markupConverter: XmlApiMarkupConverter,
     onThumbnailClicked: (Play) -> Unit,
     onEndTimerClicked: (Play) -> Unit,
@@ -273,6 +276,30 @@ private fun PlayContent(
 
             items(play.sortedPlayers, key = { it.uiId }) { player ->
                 PlayPlayerRow(player = player)
+            }
+        }
+
+        if (relatedExpansionPlays.isNotEmpty()) {
+            item {
+                HorizontalDivider(modifier = Modifier.padding(top = 12.dp))
+                Text(
+                    text = stringResource(R.string.expansions),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 8.dp),
+                )
+                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    relatedExpansionPlays
+                        .map { it.gameName }
+                        .distinct()
+                        .sorted()
+                        .forEach { expansionName ->
+                            Text(
+                                text = expansionName,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(bottom = 4.dp),
+                            )
+                        }
+                }
             }
         }
 

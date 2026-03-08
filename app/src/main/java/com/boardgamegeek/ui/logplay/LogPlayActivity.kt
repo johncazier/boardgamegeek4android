@@ -70,6 +70,7 @@ import com.boardgamegeek.extensions.showLogPlayPlayerList
 import com.boardgamegeek.extensions.showLogPlayQuantity
 import com.boardgamegeek.extensions.toast
 import com.boardgamegeek.extensions.fromLocalToUtc
+import com.boardgamegeek.model.GameExpansion
 import com.boardgamegeek.model.PlayPlayer
 import com.boardgamegeek.model.Player
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
@@ -136,6 +137,8 @@ class LogPlayActivity : AppCompatActivity() {
     private var incomplete by mutableStateOf(false)
     private var noWinStats by mutableStateOf(false)
     private var comments by mutableStateOf("")
+    private var expansions by mutableStateOf(emptyList<GameExpansion>())
+    private var selectedExpansionIds by mutableStateOf(emptySet<Int>())
     private var playersHaveStartingPositions = false
     private var players by mutableStateOf(emptyList<PlayPlayer>())
     private var shouldCustomSortPlayers by mutableStateOf(false)
@@ -219,6 +222,8 @@ class LogPlayActivity : AppCompatActivity() {
                     noWinStats = noWinStats,
                     showComments = showComments(),
                     comments = comments,
+                    expansions = expansions,
+                    selectedExpansionIds = selectedExpansionIds,
                     showPlayers = showPlayers(),
                     playersLabel = if (players.isEmpty()) getString(R.string.title_players) else getString(R.string.title_players_with_count, players.size),
                     canAssignColors = players.isNotEmpty(),
@@ -269,6 +274,9 @@ class LogPlayActivity : AppCompatActivity() {
                     onCommentsChange = {
                         comments = it
                         viewModel.updateComments(it)
+                    },
+                    onExpansionToggle = { expansionId, isSelected ->
+                        viewModel.toggleExpansion(expansionId, isSelected)
                     },
                     onAssignColorsClick = { assignColors() },
                     onSortPlayersClick = { showPlayerSortMenu() },
@@ -405,6 +413,12 @@ class LogPlayActivity : AppCompatActivity() {
                 }
                 launch {
                     viewModel.comments.collect { comments = it }
+                }
+                launch {
+                    viewModel.loggableExpansions.collect { expansions = it }
+                }
+                launch {
+                    viewModel.selectedExpansionIds.collect { selectedExpansionIds = it }
                 }
                 launch {
                     viewModel.players.collect { value ->

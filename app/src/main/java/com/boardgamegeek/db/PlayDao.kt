@@ -79,6 +79,64 @@ interface PlayDao {
     suspend fun loadDeletingPlays(): List<PlayWithPlayersEntity>
 
     @Transaction
+    @Query(
+        "SELECT * FROM plays " +
+            "WHERE _id != :excludeInternalId " +
+            "AND object_id IN (:gameIds) " +
+            "AND date = :date " +
+            "AND quantity = :quantity " +
+            "AND length = :length " +
+            "AND incomplete = :incomplete " +
+            "AND no_win_stats = :noWinStats " +
+            "AND IFNULL(location, '') = :location " +
+            "AND IFNULL(comments, '') = :comments " +
+            "AND IFNULL(start_time, 0) = :startTime " +
+            "AND (delete_timestamp = 0 OR delete_timestamp IS NULL) " +
+            "ORDER BY date DESC, play_id DESC"
+    )
+    suspend fun loadMatchingPlays(
+        excludeInternalId: Long,
+        gameIds: List<Int>,
+        date: String,
+        quantity: Int,
+        length: Int,
+        incomplete: Boolean,
+        noWinStats: Boolean,
+        location: String,
+        comments: String,
+        startTime: Long,
+    ): List<PlayWithPlayersEntity>
+
+    @Transaction
+    @Query(
+        "SELECT * FROM plays " +
+            "WHERE _id != :excludeInternalId " +
+            "AND object_id IN (:gameIds) " +
+            "AND date = :date " +
+            "AND quantity = :quantity " +
+            "AND length = :length " +
+            "AND incomplete = :incomplete " +
+            "AND no_win_stats = :noWinStats " +
+            "AND IFNULL(location, '') = :location " +
+            "AND IFNULL(comments, '') = :comments " +
+            "AND IFNULL(start_time, 0) = :startTime " +
+            "AND (delete_timestamp = 0 OR delete_timestamp IS NULL) " +
+            "ORDER BY date DESC, play_id DESC"
+    )
+    fun loadMatchingPlaysFlow(
+        excludeInternalId: Long,
+        gameIds: List<Int>,
+        date: String,
+        quantity: Int,
+        length: Int,
+        incomplete: Boolean,
+        noWinStats: Boolean,
+        location: String,
+        comments: String,
+        startTime: Long,
+    ): Flow<List<PlayWithPlayersEntity>>
+
+    @Transaction
     @Query("SELECT plays.*, games.image_url AS gameImageUrl, games.thumbnail_url As gameThumbnailUrl, games.hero_image_url AS gameHeroImageUrl FROM plays LEFT JOIN games ON games.game_id = plays.object_id WHERE plays._id = :internalId")
     suspend fun loadPlayWithPlayers(internalId: Long): PlayWithPlayersAndImagesEntity?
 

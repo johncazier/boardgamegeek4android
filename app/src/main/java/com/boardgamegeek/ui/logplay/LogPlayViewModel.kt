@@ -14,6 +14,7 @@ import com.boardgamegeek.extensions.howManyHoursOld
 import com.boardgamegeek.extensions.howManyMinutesOld
 import com.boardgamegeek.extensions.isSameDay
 import com.boardgamegeek.extensions.preferences
+import com.boardgamegeek.model.GameExpansion
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.model.PlayPlayer
 import com.boardgamegeek.model.Player
@@ -25,6 +26,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,6 +45,7 @@ import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
 class LogPlayViewModel @Inject constructor(
     application: Application,
     private val gameRepository: GameRepository,
@@ -91,11 +94,19 @@ class LogPlayViewModel @Inject constructor(
     private val _players = MutableStateFlow<List<PlayPlayer>>(emptyList())
     val players: StateFlow<List<PlayPlayer>> = _players.asStateFlow()
 
+    private val _loggableExpansions = MutableStateFlow<List<GameExpansion>>(emptyList())
+    val loggableExpansions: StateFlow<List<GameExpansion>> = _loggableExpansions.asStateFlow()
+
+    private val _selectedExpansionIds = MutableStateFlow<Set<Int>>(emptySet())
+    val selectedExpansionIds: StateFlow<Set<Int>> = _selectedExpansionIds.asStateFlow()
+
     private val _startTime = MutableStateFlow(0L)
     val startTime: StateFlow<Long> = _startTime.asStateFlow()
 
     private val _customPlayerSort = MutableStateFlow(false)
     val customPlayerSort: StateFlow<Boolean> = _customPlayerSort.asStateFlow()
+
+    private var relatedExpansionPlays = emptyMap<Int, Play>()
 
     val colors: StateFlow<List<String>> = _game
         .filterNotNull()
@@ -154,6 +165,8 @@ class LogPlayViewModel @Inject constructor(
 
                 _players.value = seatedPlayers
                 originalPlay = buildPlay().copy()
+                relatedExpansionPlays = emptyMap()
+                _selectedExpansionIds.value = emptySet()
             } else {
                 playRepository.loadPlay(internalId)?.let { play ->
                     if (originalPlay == null) originalPlay = play.copy()
@@ -181,6 +194,14 @@ class LogPlayViewModel @Inject constructor(
                         _players.value = play.sortedPlayers
                     }
                     _location.value = play.location
+                    val existingExpansionPlayIds = playRepository.loadRelatedExpansionPlays(play).associateBy { it.gameId }
+                    if (isRequestingRematch || isChangingGame) {
+                        relatedExpansionPlays = emptyMap()
+                        _selectedExpansionIds.value = existingExpansionPlayIds.keys
+                    } else {
+                        relatedExpansionPlays = existingExpansionPlayIds
+                        _selectedExpansionIds.value = relatedExpansionPlays.keys
+                    }
                     when {
                         isRequestingToEndPlay -> {
                             _length.value = play.length + if (play.startTime > 0) play.startTime.howManyMinutesOld() else 0
@@ -200,6 +221,8 @@ class LogPlayViewModel @Inject constructor(
                     _customPlayerSort.value = gameSupportsCustomSort || play.arePlayersCustomSorted()
                 }
             }
+
+            _loggableExpansions.value = playRepository.loadLoggableExpansions(gameId, _selectedExpansionIds.value)
 
             _isLoading.value = false
         }
@@ -285,8 +308,15 @@ class LogPlayViewModel @Inject constructor(
                 it.incomplete != _incomplete.value ||
                 it.noWinStats != _doNotCountWinStats.value ||
                 it.comments != _comments.value ||
-                it.players != _players.value
+                it.players != _players.value ||
+                relatedExpansionPlays.keys != _selectedExpansionIds.value
         } ?: false
+    }
+
+    fun toggleExpansion(expansionId: Int, isSelected: Boolean) {
+        _selectedExpansionIds.value = _selectedExpansionIds.value.toMutableSet().apply {
+            if (isSelected) add(expansionId) else remove(expansionId)
+        }
     }
 
     fun addPlayers(players: List<Player>) {
@@ -464,7 +494,9 @@ class LogPlayViewModel @Inject constructor(
         viewModelScope.launch {
             val play = buildPlay(updateTimestamp = System.currentTimeMillis())
             val newInternalId = playRepository.upsert(play)
-            playRepository.logPlay(play.copy(internalId = newInternalId))
+            val savedPlay = play.copy(internalId = newInternalId)
+            playRepository.logPlay(savedPlay)
+            syncExpansionPlays(savedPlay, markForUpload = true)
             if (internalIdToDelete != INVALID_ID.toLong()) {
                 if (playRepository.markAsDeleted(internalIdToDelete)) {
                     playRepository.enqueueUploadRequest(internalIdToDelete)
@@ -477,7 +509,10 @@ class LogPlayViewModel @Inject constructor(
 
     fun saveDraft(wantToFinish: Boolean = true) {
         viewModelScope.launch {
-            _internalId.value = playRepository.upsert(buildPlay(dirtyTimestamp = System.currentTimeMillis()))
+            val play = buildPlay(dirtyTimestamp = System.currentTimeMillis())
+            val newInternalId = playRepository.upsert(play)
+            syncExpansionPlays(play.copy(internalId = newInternalId), markForUpload = false)
+            _internalId.value = newInternalId
             if (wantToFinish) _canFinish.tryEmit(Unit)
         }
     }
@@ -485,6 +520,11 @@ class LogPlayViewModel @Inject constructor(
     fun deletePlay() {
         viewModelScope.launch {
             val play = buildPlay(deleteTimestamp = System.currentTimeMillis())
+            relatedExpansionPlays.values.forEach { expansionPlay ->
+                if (playRepository.markAsDeleted(expansionPlay.internalId)) {
+                    playRepository.enqueueUploadRequest(expansionPlay.internalId)
+                }
+            }
             playRepository.enqueueUploadRequest(play.internalId)
             _canFinish.tryEmit(Unit)
         }
@@ -512,6 +552,48 @@ class LogPlayViewModel @Inject constructor(
         updateTimestamp = updateTimestamp,
         deleteTimestamp = deleteTimestamp,
     )
+
+    private suspend fun syncExpansionPlays(play: Play, markForUpload: Boolean) {
+        val timestamp = when {
+            play.updateTimestamp > 0L -> play.updateTimestamp
+            play.dirtyTimestamp > 0L -> play.dirtyTimestamp
+            else -> System.currentTimeMillis()
+        }
+        val selectedExpansionIds = _selectedExpansionIds.value
+        val refreshedExpansionPlays = mutableMapOf<Int, Play>()
+
+        selectedExpansionIds.forEach { expansionId ->
+            val existing = relatedExpansionPlays[expansionId]
+            val expansionName = _loggableExpansions.value.find { it.id == expansionId }?.name ?: existing?.gameName.orEmpty()
+            val expansionPlay = play.copy(
+                internalId = existing?.internalId ?: INVALID_ID.toLong(),
+                playId = existing?.playId ?: INVALID_ID,
+                gameId = expansionId,
+                gameName = expansionName,
+                dirtyTimestamp = if (markForUpload) 0L else timestamp,
+                updateTimestamp = if (markForUpload) timestamp else 0L,
+                deleteTimestamp = 0L,
+            )
+            val newInternalId = playRepository.upsert(expansionPlay)
+            val savedExpansionPlay = expansionPlay.copy(internalId = newInternalId)
+            if (markForUpload) {
+                playRepository.logPlay(savedExpansionPlay)
+            }
+            refreshedExpansionPlays[expansionId] = savedExpansionPlay
+        }
+
+        relatedExpansionPlays
+            .filterKeys { it !in selectedExpansionIds }
+            .values
+            .forEach { removedPlay ->
+                if (playRepository.markAsDeleted(removedPlay.internalId)) {
+                    playRepository.enqueueUploadRequest(removedPlay.internalId)
+                }
+            }
+
+        relatedExpansionPlays = refreshedExpansionPlays
+        _loggableExpansions.value = playRepository.loadLoggableExpansions(play.gameId, selectedExpansionIds)
+    }
 
     private fun today(): Long {
         val calendar = Calendar.getInstance()

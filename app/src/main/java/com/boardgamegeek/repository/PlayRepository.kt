@@ -32,8 +32,11 @@ import com.boardgamegeek.ui.PlayStatsActivity
 import com.boardgamegeek.work.PlayUploadWorker
 import com.boardgamegeek.work.SyncPlaysWorker
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -91,6 +94,75 @@ class PlayRepository(
     suspend fun loadPlay(internalId: Long): Play? = withContext(Dispatchers.Default) {
         if (internalId == INVALID_ID.toLong()) null
         else withContext(Dispatchers.IO) { playDao.loadPlayWithPlayers(internalId) }?.mapToModel()
+    }
+
+    suspend fun loadLoggableExpansions(gameId: Int, includedExpansionIds: Set<Int> = emptySet()): List<GameExpansion> = withContext(Dispatchers.Default) {
+        if (gameId == INVALID_ID) {
+            emptyList()
+        } else {
+            gameDao.loadExpansionsForGame(gameId)
+                .map { entity ->
+                    val items = collectionDao.loadForGame(entity.gameExpansionEntity.expansionId).map { it.mapToModel() }
+                    entity.mapToModel(items)
+                }
+                .filter { it.own || includedExpansionIds.contains(it.id) }
+                .sortedBy { it.name.lowercase() }
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun loadRelatedExpansionPlaysFlow(play: Play): Flow<List<Play>> {
+        if (play.gameId == INVALID_ID) return flowOf(emptyList())
+        return gameDao.loadExpansionsForGameFlow(play.gameId)
+            .map { list -> list.map { it.gameExpansionEntity.expansionId } }
+            .flatMapLatest { expansionIds ->
+                if (expansionIds.isEmpty()) {
+                    flowOf(emptyList())
+                } else {
+                    playDao.loadMatchingPlaysFlow(
+                        excludeInternalId = play.internalId,
+                        gameIds = expansionIds,
+                        date = play.dateForDatabase(),
+                        quantity = play.quantity,
+                        length = play.length,
+                        incomplete = play.incomplete,
+                        noWinStats = play.noWinStats,
+                        location = play.location,
+                        comments = play.comments,
+                        startTime = play.startTime,
+                    )
+                        .map { list ->
+                            list.map { it.mapToModel() }
+                                .filter { candidate -> candidate.hasSameLoggedData(play, includeGameId = false) }
+                        }
+                }
+            }
+            .flowOn(Dispatchers.Default)
+    }
+
+    suspend fun loadRelatedExpansionPlays(play: Play): List<Play> = withContext(Dispatchers.Default) {
+        if (play.gameId == INVALID_ID) {
+            emptyList()
+        } else {
+            val expansionIds = gameDao.loadExpansionsForGame(play.gameId).map { it.gameExpansionEntity.expansionId }
+            if (expansionIds.isEmpty()) {
+                emptyList()
+            } else {
+                playDao.loadMatchingPlays(
+                    excludeInternalId = play.internalId,
+                    gameIds = expansionIds,
+                    date = play.dateForDatabase(),
+                    quantity = play.quantity,
+                    length = play.length,
+                    incomplete = play.incomplete,
+                    noWinStats = play.noWinStats,
+                    location = play.location,
+                    comments = play.comments,
+                    startTime = play.startTime,
+                ).map { it.mapToModel() }
+                    .filter { candidate -> candidate.hasSameLoggedData(play, includeGameId = false) }
+            }
+        }
     }
 
     fun loadPlayFlow(internalId: Long): Flow<Play?> {

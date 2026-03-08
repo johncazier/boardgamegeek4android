@@ -22,15 +22,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -71,6 +72,7 @@ import com.boardgamegeek.extensions.asPersonalRating
 import com.boardgamegeek.extensions.asScore
 import com.boardgamegeek.extensions.getTextColor
 import com.boardgamegeek.extensions.startTimerWithSystemTime
+import com.boardgamegeek.model.GameExpansion
 import com.boardgamegeek.model.PlayPlayer
 import java.text.DecimalFormat
 
@@ -105,6 +107,8 @@ fun LogPlayScreen(
     noWinStats: Boolean,
     showComments: Boolean,
     comments: String,
+    expansions: List<GameExpansion>,
+    selectedExpansionIds: Set<Int>,
     showPlayers: Boolean,
     playersLabel: String,
     canAssignColors: Boolean,
@@ -122,6 +126,7 @@ fun LogPlayScreen(
     onIncompleteChange: (Boolean) -> Unit,
     onNoWinStatsChange: (Boolean) -> Unit,
     onCommentsChange: (String) -> Unit,
+    onExpansionToggle: (Int, Boolean) -> Unit,
     onAssignColorsClick: () -> Unit,
     onSortPlayersClick: () -> Unit,
     onAddField: (AddLogPlayField) -> Unit,
@@ -327,6 +332,34 @@ fun LogPlayScreen(
                     )
                 }
 
+                if (expansions.isNotEmpty()) {
+                    HorizontalDivider(modifier = Modifier.padding(top = 8.dp))
+                    Text(
+                        text = stringResource(R.string.title_owned_expansions),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 8.dp),
+                    )
+                    expansions.forEach { expansion ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onExpansionToggle(expansion.id, !selectedExpansionIds.contains(expansion.id)) }
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Checkbox(
+                                checked = selectedExpansionIds.contains(expansion.id),
+                                onCheckedChange = { onExpansionToggle(expansion.id, it) },
+                            )
+                            Text(
+                                text = expansion.name,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(start = 8.dp),
+                            )
+                        }
+                    }
+                }
+
                 if (showPlayers) {
                     Row(
                         modifier = Modifier
@@ -343,7 +376,7 @@ fun LogPlayScreen(
                             modifier = Modifier.weight(1f),
                         )
                         IconButton(onClick = onSortPlayersClick) {
-                            Icon(Icons.Filled.Sort, contentDescription = stringResource(R.string.sort))
+                            Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = stringResource(R.string.sort))
                         }
                     }
 

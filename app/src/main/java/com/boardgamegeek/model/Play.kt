@@ -104,6 +104,24 @@ data class Play(
         return sb.toString().hashCode()
     }
 
+    fun hasSamePlayerData(other: Play): Boolean {
+        return players.map { it.toMatchablePlayer() }.sortedBy { it.toString() } ==
+            other.players.map { it.toMatchablePlayer() }.sortedBy { it.toString() }
+    }
+
+    fun hasSameLoggedData(other: Play, includeGameId: Boolean = true): Boolean {
+        return (!includeGameId || gameId == other.gameId) &&
+            dateInMillis == other.dateInMillis &&
+            quantity == other.quantity &&
+            length == other.length &&
+            location == other.location &&
+            incomplete == other.incomplete &&
+            noWinStats == other.noWinStats &&
+            comments == other.comments &&
+            startTime == other.startTime &&
+            hasSamePlayerData(other)
+    }
+
     fun describe(context: Context, includeDate: Boolean = false): String {
         val info = StringBuilder()
         if (quantity > 1) info.append(context.resources.getQuantityString(R.plurals.play_description_quantity_segment, quantity, quantity))
@@ -129,3 +147,27 @@ data class Play(
         private val databaseFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     }
 }
+
+private data class MatchablePlayer(
+    val name: String,
+    val username: String,
+    val startingPosition: String,
+    val color: String,
+    val score: String,
+    val rating: Double,
+    val userId: Int?,
+    val isNew: Boolean,
+    val isWin: Boolean,
+)
+
+private fun PlayPlayer.toMatchablePlayer() = MatchablePlayer(
+    name = name,
+    username = username,
+    startingPosition = startingPosition,
+    color = color,
+    score = score,
+    rating = rating,
+    userId = userId,
+    isNew = isNew,
+    isWin = isWin,
+)
