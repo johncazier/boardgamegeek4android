@@ -54,7 +54,7 @@
 				android:value=".ui.HomeActivity" />
 		</activity>
 		<activity
-			android:name=".ui.DesignersActivity"
+			android:name=".ui.designers.DesignersActivity"
 			android:label="@string/title_designers">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"

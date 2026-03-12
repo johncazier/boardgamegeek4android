@@ -20,6 +20,7 @@ import com.boardgamegeek.provider.BggContract
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -152,6 +153,23 @@ class DesignerRepository(
         }
         context.preferences()[PREFERENCES_KEY_STATS_CALCULATED_TIMESTAMP_DESIGNERS] = System.currentTimeMillis()
         progress.postValue(0 to 0)
+    }
+
+    suspend fun calculateStats(progress: MutableStateFlow<Pair<Int, Int>?>) = withContext(Dispatchers.Default) {
+        val designers = withContext(Dispatchers.IO) { designerDao.loadDesigners() }
+            .map { it.mapToModel() }
+            .sortedWith(
+                compareBy<Person> { it.statsUpdatedTimestamp }
+                    .thenByDescending { it.itemCount }
+            )
+        val maxProgress = designers.size
+        designers.forEachIndexed { i, designer ->
+            progress.value = i to maxProgress
+            calculateStats(designer.id, designer.whitmoreScore)
+            Timber.i("Updated stats for designer $designer")
+        }
+        context.preferences()[PREFERENCES_KEY_STATS_CALCULATED_TIMESTAMP_DESIGNERS] = System.currentTimeMillis()
+        progress.value = 0 to 0
     }
 
     suspend fun calculateStats(designerId: Int, whitmoreScore: Int? = null): PersonStats? = withContext(Dispatchers.Default) {
