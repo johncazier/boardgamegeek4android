@@ -61,7 +61,7 @@
 				android:value=".ui.HomeActivity" />
 		</activity>
 		<activity
-			android:name=".ui.ArtistsActivity"
+			android:name=".ui.artists.ArtistsActivity"
 			android:label="@string/title_artists">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
