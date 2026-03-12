@@ -18,6 +18,7 @@ import com.boardgamegeek.model.HIndex
 import com.boardgamegeek.model.PlayStats
 import com.boardgamegeek.model.PlayerStats
 import com.boardgamegeek.ui.dialog.PlayStatsIncludeSettingsDialogFragment
+import com.boardgamegeek.ui.players.PlayersActivity
 import com.boardgamegeek.ui.viewmodel.PlayStatsViewModel
 import com.boardgamegeek.ui.widget.PlayStatRow
 import com.boardgamegeek.work.SyncCollectionWorker

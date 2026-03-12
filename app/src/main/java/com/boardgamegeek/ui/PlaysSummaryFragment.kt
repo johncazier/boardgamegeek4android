@@ -17,6 +17,7 @@ import com.boardgamegeek.model.*
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.ui.locations.LocationsActivity
 import com.boardgamegeek.ui.play.PlayActivity
+import com.boardgamegeek.ui.players.PlayersActivity
 import com.boardgamegeek.ui.plays.LocationActivity
 import com.boardgamegeek.ui.plays.PlaysActivity
 import com.boardgamegeek.ui.viewmodel.PlaysSummaryViewModel

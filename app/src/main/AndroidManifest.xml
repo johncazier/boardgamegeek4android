@@ -202,7 +202,7 @@
 				android:value=".ui.PlaysSummaryActivity" />
 		</activity>
 		<activity
-			android:name=".ui.PlayersActivity"
+			android:name=".ui.players.PlayersActivity"
 			android:exported="false"
 			android:label="@string/title_players">
 			<meta-data
@@ -239,7 +239,7 @@
 			android:label="@string/title_player">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.PlayersActivity" />
+				android:value=".ui.players.PlayersActivity" />
 		</activity>
 		<activity
 			android:name=".ui.plays.LocationActivity"
