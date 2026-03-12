@@ -20,6 +20,7 @@ import com.boardgamegeek.provider.BggContract
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -144,6 +145,23 @@ class PublisherRepository(
         }
         context.preferences()[PREFERENCES_KEY_STATS_CALCULATED_TIMESTAMP_PUBLISHERS] = System.currentTimeMillis()
         progress.postValue(0 to 0)
+    }
+
+    suspend fun calculateStats(progress: MutableStateFlow<Pair<Int, Int>?>) = withContext(Dispatchers.Default) {
+        val publishers = withContext(Dispatchers.IO) { publisherDao.loadPublishers() }
+            .map { it.mapToModel() }
+            .sortedWith(
+                compareBy<Company> { it.statsUpdatedTimestamp }
+                    .thenByDescending { it.itemCount }
+            )
+        val maxProgress = publishers.size
+        publishers.forEachIndexed { i, publisher ->
+            progress.value = i to maxProgress
+            calculateStats(publisher.id, publisher.whitmoreScore)
+            Timber.i("Updated stats for publisher $publisher")
+        }
+        context.preferences()[PREFERENCES_KEY_STATS_CALCULATED_TIMESTAMP_PUBLISHERS] = System.currentTimeMillis()
+        progress.value = 0 to 0
     }
 
     suspend fun calculateStats(publisherId: Int, whitmoreScore: Int? = null): PersonStats? = withContext(Dispatchers.Default) {

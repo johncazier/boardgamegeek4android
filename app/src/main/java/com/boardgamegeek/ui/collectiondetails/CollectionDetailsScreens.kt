@@ -45,7 +45,7 @@ import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.GameCollectionItemActivity
 import com.boardgamegeek.ui.logplay.LogPlayActivity
 import com.boardgamegeek.ui.mechanics.MechanicsActivity
-import com.boardgamegeek.ui.PublishersActivity
+import com.boardgamegeek.ui.publishers.PublishersActivity
 import com.boardgamegeek.ui.startActivity
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat

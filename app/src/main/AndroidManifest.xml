@@ -68,7 +68,7 @@
 				android:value=".ui.HomeActivity" />
 		</activity>
 		<activity
-			android:name=".ui.PublishersActivity"
+			android:name=".ui.publishers.PublishersActivity"
 			android:label="@string/title_publishers">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"

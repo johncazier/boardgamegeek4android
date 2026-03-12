@@ -12,6 +12,7 @@ import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.adapter.PersonPagerAdapter
 import com.boardgamegeek.ui.artists.ArtistsActivity
 import com.boardgamegeek.ui.designers.DesignersActivity
+import com.boardgamegeek.ui.publishers.PublishersActivity
 import com.boardgamegeek.ui.viewmodel.PersonViewModel
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
