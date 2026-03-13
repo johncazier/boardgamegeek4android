@@ -1,33 +1,45 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.gamedetail
 
 import android.content.Context
 import android.os.Bundle
-import android.view.MenuItem
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.boardgamegeek.R
 import com.boardgamegeek.extensions.getSerializableCompat
 import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.game.GameViewModel
 import com.boardgamegeek.ui.game.GameViewModel.ProducerType
+import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class GameDetailActivity : SimpleSinglePaneActivity() {
+class GameDetailActivity : ComponentActivity() {
     private var title: String = ""
     private var gameId: Int = BggContract.INVALID_ID
     private var gameName: String = ""
     private var type: ProducerType = ProducerType.UNKNOWN
 
     private val viewModel by viewModels<GameViewModel>()
+    private val firebaseAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        supportActionBar?.title = gameName
-        supportActionBar?.subtitle = title
+        readIntent()
 
         if (savedInstanceState == null) {
             firebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM_LIST) {
@@ -45,29 +57,43 @@ class GameDetailActivity : SimpleSinglePaneActivity() {
             ProducerType.PUBLISHER -> viewModel.refreshPublisherImages()
             else -> {}
         }
+
+        setContent {
+            AppTheme {
+                Scaffold(
+                    topBar = {
+                        TopAppBar(
+                            title = { GameDetailTitle(gameName, title) },
+                            navigationIcon = {
+                                IconButton(onClick = ::navigateUp) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = stringResource(R.string.menu_back)
+                                    )
+                                }
+                            }
+                        )
+                    }
+                ) { paddingValues ->
+                    GameDetailScreen(viewModel = viewModel, paddingValues = paddingValues)
+                }
+            }
+        }
     }
 
-    override fun readIntent() {
+    private fun readIntent() {
         title = intent.getStringExtra(KEY_TITLE).orEmpty()
         gameId = intent.getIntExtra(KEY_GAME_ID, BggContract.INVALID_ID)
         gameName = intent.getStringExtra(KEY_GAME_NAME).orEmpty()
         type = intent.getSerializableCompat(KEY_TYPE) ?: ProducerType.UNKNOWN
     }
 
-    override fun createPane() = GameDetailFragment()
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                when (gameId) {
-                    BggContract.INVALID_ID -> finish()
-                    else -> GameActivity.startUp(this, gameId, gameName)
-                }
-                finish()
-                return true
-            }
+    private fun navigateUp() {
+        when (gameId) {
+            BggContract.INVALID_ID -> finish()
+            else -> GameActivity.startUp(this, gameId, gameName)
         }
-        return super.onOptionsItemSelected(item)
+        finish()
     }
 
     companion object {
@@ -83,6 +109,16 @@ class GameDetailActivity : SimpleSinglePaneActivity() {
                 KEY_GAME_NAME to gameName,
                 KEY_TYPE to type,
             )
+        }
+    }
+}
+
+@Composable
+private fun GameDetailTitle(title: String, subtitle: String) {
+    Column {
+        Text(text = title)
+        if (subtitle.isNotBlank()) {
+            Text(text = subtitle, style = androidx.compose.material3.MaterialTheme.typography.bodySmall)
         }
     }
 }
