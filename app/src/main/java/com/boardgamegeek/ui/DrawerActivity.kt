@@ -21,6 +21,7 @@ import com.boardgamegeek.model.User
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.ui.buddies.BuddiesActivity
 import com.boardgamegeek.ui.search.SearchResultsActivity
+import com.boardgamegeek.ui.sync.SyncActivity
 import com.boardgamegeek.ui.data.DataActivity
 import com.boardgamegeek.pref.SettingsActivity
 import com.boardgamegeek.ui.forums.ForumsActivity

@@ -22,6 +22,7 @@ import com.boardgamegeek.ui.buddies.BuddiesActivity
 import com.boardgamegeek.ui.data.DataActivity
 import com.boardgamegeek.ui.collection.CollectionActivity
 import com.boardgamegeek.ui.geeklists.GeekListsActivity
+import com.boardgamegeek.ui.sync.SyncActivity
 import com.boardgamegeek.ui.hotness.HotnessActivity
 import com.boardgamegeek.ui.navigation.AppBottomNavigationBar
 import com.boardgamegeek.ui.navigation.BottomNavItem

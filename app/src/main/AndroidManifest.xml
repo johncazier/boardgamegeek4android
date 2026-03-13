@@ -327,7 +327,7 @@
 			android:name=".ui.article.ArticleActivity"
 			android:label="Article" />
 		<activity
-			android:name=".ui.SyncActivity"
+			android:name=".ui.sync.SyncActivity"
 			android:label="@string/title_sync">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
