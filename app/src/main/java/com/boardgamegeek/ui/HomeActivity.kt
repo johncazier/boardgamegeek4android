@@ -5,6 +5,7 @@ import com.boardgamegeek.auth.Authenticator
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.ui.buddies.BuddiesActivity
 import com.boardgamegeek.ui.hotness.HotnessActivity
+import com.boardgamegeek.ui.playssummary.PlaysSummaryActivity
 
 class HomeActivity : TopLevelActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {

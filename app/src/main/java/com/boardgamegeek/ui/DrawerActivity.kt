@@ -23,6 +23,7 @@ import com.boardgamegeek.ui.buddies.BuddiesActivity
 import com.boardgamegeek.ui.search.SearchResultsActivity
 import com.boardgamegeek.ui.sync.SyncActivity
 import com.boardgamegeek.ui.data.DataActivity
+import com.boardgamegeek.ui.playssummary.PlaysSummaryActivity
 import com.boardgamegeek.pref.SettingsActivity
 import com.boardgamegeek.ui.forums.ForumsActivity
 import com.boardgamegeek.ui.geeklists.GeekListsActivity
