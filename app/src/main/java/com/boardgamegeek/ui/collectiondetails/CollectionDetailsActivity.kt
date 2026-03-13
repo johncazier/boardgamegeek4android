@@ -20,7 +20,7 @@ import com.boardgamegeek.extensions.intentFor
 import com.boardgamegeek.extensions.notifyLoggedPlay
 import com.boardgamegeek.ui.AppScreen
 import com.boardgamegeek.ui.DrawerRoute
-import com.boardgamegeek.ui.SearchResultsActivity
+import com.boardgamegeek.ui.search.SearchResultsActivity
 import com.boardgamegeek.ui.collection.CollectionActivity
 import com.boardgamegeek.ui.navigation.BottomNavItem
 import dagger.hilt.android.AndroidEntryPoint

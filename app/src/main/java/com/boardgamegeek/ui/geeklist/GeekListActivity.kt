@@ -27,7 +27,7 @@ import com.boardgamegeek.model.RefreshableResource
 import com.boardgamegeek.model.Status
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.AppScreen
-import com.boardgamegeek.ui.SearchResultsActivity
+import com.boardgamegeek.ui.search.SearchResultsActivity
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics

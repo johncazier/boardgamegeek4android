@@ -250,7 +250,7 @@
 				android:value=".ui.locations.LocationsActivity" />
 		</activity>
 		<activity
-			android:name=".ui.SearchResultsActivity"
+			android:name=".ui.search.SearchResultsActivity"
 			android:configChanges="keyboardHidden|orientation"
 			android:exported="true"
 			android:label=""
@@ -414,7 +414,7 @@
 
 		<meta-data
 			android:name="android.app.default_searchable"
-			android:value=".ui.SearchResultsActivity" />
+			android:value=".ui.search.SearchResultsActivity" />
 		<meta-data
 			android:name="com.crashlytics.ApiKey"
 			android:value="ce3b2fdec1306105cd9f867446334e513aa09208" />

@@ -30,7 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.model.Location
-import com.boardgamegeek.ui.SearchResultsActivity
+import com.boardgamegeek.ui.search.SearchResultsActivity
 import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics

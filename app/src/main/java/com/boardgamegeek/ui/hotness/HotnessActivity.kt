@@ -7,10 +7,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
-import com.boardgamegeek.extensions.linkBgg
-import com.boardgamegeek.extensions.shareGame
-import com.boardgamegeek.extensions.shareGames
-import com.boardgamegeek.ui.*
+import com.boardgamegeek.ui.AppScreen
+import com.boardgamegeek.ui.search.SearchResultsActivity
 import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.navigation.BottomNavItem
 import dagger.hilt.android.AndroidEntryPoint

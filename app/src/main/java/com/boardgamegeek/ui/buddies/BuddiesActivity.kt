@@ -24,7 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.model.User
 import com.boardgamegeek.ui.AppScreen
-import com.boardgamegeek.ui.SearchResultsActivity
+import com.boardgamegeek.ui.search.SearchResultsActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

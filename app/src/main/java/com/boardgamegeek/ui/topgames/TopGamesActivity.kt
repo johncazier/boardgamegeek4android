@@ -9,7 +9,7 @@ import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
 import com.boardgamegeek.ui.AppScreen
 import com.boardgamegeek.ui.game.GameActivity
-import com.boardgamegeek.ui.SearchResultsActivity
+import com.boardgamegeek.ui.search.SearchResultsActivity
 import com.boardgamegeek.ui.navigation.BottomNavItem
 import com.boardgamegeek.ui.topgames.TopGamesViewModel
 import dagger.hilt.android.AndroidEntryPoint

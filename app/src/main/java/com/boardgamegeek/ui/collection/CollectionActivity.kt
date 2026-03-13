@@ -30,7 +30,7 @@ import com.boardgamegeek.model.PlayUploadResult
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.AppScreen
 import com.boardgamegeek.ui.game.GameActivity
-import com.boardgamegeek.ui.SearchResultsActivity
+import com.boardgamegeek.ui.search.SearchResultsActivity
 import com.boardgamegeek.ui.navigation.BottomNavItem
 import com.boardgamegeek.ui.dialog.CollectionFilterDialogFragment
 import com.boardgamegeek.ui.dialog.CollectionSortDialogFragment

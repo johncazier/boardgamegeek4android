@@ -8,7 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
 import com.boardgamegeek.ui.AppScreen
-import com.boardgamegeek.ui.SearchResultsActivity
+import com.boardgamegeek.ui.search.SearchResultsActivity
 import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
