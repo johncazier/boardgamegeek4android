@@ -324,7 +324,7 @@
 			android:name=".ui.thread.ThreadActivity"
 			android:label="@string/title_thread" />
 		<activity
-			android:name=".ui.ArticleActivity"
+			android:name=".ui.article.ArticleActivity"
 			android:label="Article" />
 		<activity
 			android:name=".ui.SyncActivity"

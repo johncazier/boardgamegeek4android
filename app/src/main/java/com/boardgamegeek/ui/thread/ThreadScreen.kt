@@ -38,7 +38,7 @@ import com.boardgamegeek.extensions.formatTimestamp
 import com.boardgamegeek.model.Article
 import com.boardgamegeek.model.Forum
 import com.boardgamegeek.model.Status
-import com.boardgamegeek.ui.ArticleActivity
+import com.boardgamegeek.ui.article.ArticleActivity
 import com.boardgamegeek.ui.components.BggHtmlText
 import com.boardgamegeek.util.XmlApi2TagHandler
 import kotlin.math.abs
