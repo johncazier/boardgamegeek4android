@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui.viewmodel
+package com.boardgamegeek.ui.data
 
 import android.annotation.SuppressLint
 import android.app.Application
@@ -6,16 +6,17 @@ import android.net.Uri
 import android.os.ParcelFileDescriptor
 import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.boardgamegeek.BggApplication
 import com.boardgamegeek.R
 import com.boardgamegeek.export.Constants
-import com.boardgamegeek.export.model.*
-import com.boardgamegeek.livedata.Event
+import com.boardgamegeek.export.model.CollectionViewForExport
+import com.boardgamegeek.export.model.ColorForExport
+import com.boardgamegeek.export.model.ExportModel
+import com.boardgamegeek.export.model.GameForExport
+import com.boardgamegeek.export.model.PlayerColorForExport
+import com.boardgamegeek.export.model.UserForExport
 import com.boardgamegeek.livedata.ProgressData
-import com.boardgamegeek.livedata.ProgressLiveData
 import com.boardgamegeek.mappers.mapToModel
 import com.boardgamegeek.mappers.mapForExport
 import com.boardgamegeek.repository.CollectionViewRepository
@@ -28,12 +29,20 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import java.io.*
-import javax.inject.Inject
 
 @HiltViewModel
 class DataPortViewModel @Inject constructor(
@@ -48,21 +57,17 @@ class DataPortViewModel @Inject constructor(
         .excludeFieldsWithoutExposeAnnotation()
         .create()
 
-    private val _message = MutableLiveData<Event<String>>()
-    val message: LiveData<Event<String>>
-        get() = _message
+    private val _message = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val message = _message.asSharedFlow()
 
-    private val _collectionViewProgress = ProgressLiveData()
-    val collectionViewProgress: LiveData<ProgressData>
-        get() = _collectionViewProgress
+    private val _collectionViewProgress = MutableStateFlow(ProgressData())
+    val collectionViewProgress: StateFlow<ProgressData> = _collectionViewProgress
 
-    private val _gameProgress = ProgressLiveData()
-    val gameProgress: LiveData<ProgressData>
-        get() = _gameProgress
+    private val _gameProgress = MutableStateFlow(ProgressData())
+    val gameProgress: StateFlow<ProgressData> = _gameProgress
 
-    private val _userProgress = ProgressLiveData()
-    val userProgress: LiveData<ProgressData>
-        get() = _userProgress
+    private val _userProgress = MutableStateFlow(ProgressData())
+    val userProgress: StateFlow<ProgressData> = _userProgress
 
     fun exportCollectionViews(uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -139,7 +144,7 @@ class DataPortViewModel @Inject constructor(
         uri: Uri,
         typeDescription: String,
         version: Int,
-        progress: ProgressLiveData,
+        progress: MutableStateFlow<ProgressData>,
         list: List<T>,
         writeJsonRecord: (record: T, writer: JsonWriter) -> Unit,
     ) = withContext(Dispatchers.IO) {
@@ -179,7 +184,7 @@ class DataPortViewModel @Inject constructor(
     }
 
     private fun postMessage(@StringRes resId: Int, vararg formatArgs: Any?) {
-        _message.postValue(Event(getApplication<BggApplication>().getString(resId, *formatArgs)))
+        _message.tryEmit(getApplication<BggApplication>().getString(resId, *formatArgs))
     }
 
     fun importCollectionViews(uri: Uri) {
@@ -214,7 +219,7 @@ class DataPortViewModel @Inject constructor(
                 Constants.TYPE_USERS_DESCRIPTION,
                 _userProgress,
                 { reader: JsonReader -> gson.fromJson(reader, UserForExport::class.java) },
-                { item: UserForExport, _ -> playRepository.savePlayerColors( item.name, PlayRepository.PlayerType.USER, item.colors.sortedBy { it.sort }.map { it.color }) },
+                { item: UserForExport, _ -> playRepository.savePlayerColors(item.name, PlayRepository.PlayerType.USER, item.colors.sortedBy { it.sort }.map { it.color }) },
             )
         }
     }
@@ -240,7 +245,7 @@ class DataPortViewModel @Inject constructor(
     private suspend fun <T> import(
         uri: Uri,
         typeDescription: String,
-        progress: ProgressLiveData,
+        progress: MutableStateFlow<ProgressData>,
         parseItem: (reader: JsonReader) -> T,
         importRecord: suspend (item: T, version: Int) -> Unit,
         initializeImport: suspend () -> Unit = {},
@@ -260,14 +265,9 @@ class DataPortViewModel @Inject constructor(
                     reader.endArray()
                 } else {
                     reader.beginObject()
-                    while (reader.hasNext() && shouldContinue) {
+                    while (shouldContinue) {
                         when (reader.nextName()) {
-                            NAME_TYPE -> reader.nextString().also {
-                                if (it != typeDescription) {
-                                    postMessage(R.string.msg_import_failed_wrong_type, typeDescription, it!!)
-                                    shouldContinue = false
-                                }
-                            }
+                            NAME_TYPE -> shouldContinue = reader.nextString() == typeDescription
                             NAME_VERSION -> version = reader.nextInt()
                             NAME_ITEMS -> {
                                 reader.beginArray()
@@ -278,35 +278,43 @@ class DataPortViewModel @Inject constructor(
                             }
                             else -> reader.skipValue()
                         }
+                        if (reader.peek() == JsonToken.END_OBJECT) break
                     }
-                    if (shouldContinue) reader.endObject()
+                    reader.endObject()
                 }
-
-                if (shouldContinue) {
+                if (!shouldContinue) {
+                    postMessage(R.string.msg_import_failed_invalid_type)
+                } else {
                     initializeImport()
-                    items.forEachIndexed { i, item ->
-                        progress.update(i)
+                    progress.start(items.size)
+                    items.forEachIndexed { index, item ->
+                        progress.update(index)
                         importRecord(item, version)
                     }
                     postMessage(R.string.msg_import_success)
                 }
             } catch (e: Exception) {
-                Timber.w(e, "Importing %s JSON file.", typeDescription)
-                postMessage(R.string.msg_import_failed_parse_json)
+                Timber.e(e)
+                postMessage(R.string.msg_import_failed_read_json)
             } finally {
                 progress.complete()
-                try {
-                    reader.close()
-                } catch (e: IOException) {
-                    Timber.w(e, "Failed trying to close the JsonReader")
-                }
             }
         }
     }
 
-    companion object {
-        const val NAME_TYPE = "type"
-        const val NAME_VERSION = "version"
-        const val NAME_ITEMS = "items"
+    private fun MutableStateFlow<ProgressData>.start() {
+        value = ProgressData(mode = ProgressData.Mode.INDETERMINATE)
+    }
+
+    private fun MutableStateFlow<ProgressData>.start(max: Int) {
+        value = ProgressData(0, max, ProgressData.Mode.DETERMINATE)
+    }
+
+    private fun MutableStateFlow<ProgressData>.update(current: Int) {
+        value = value.copy(current = current)
+    }
+
+    private fun MutableStateFlow<ProgressData>.complete() {
+        value = value.copy(current = value.max, mode = ProgressData.Mode.OFF)
     }
 }

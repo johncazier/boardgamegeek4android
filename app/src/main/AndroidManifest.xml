@@ -334,7 +334,7 @@
 				android:value=".ui.HomeActivity" />
 		</activity>
 		<activity
-			android:name=".ui.DataActivity"
+			android:name=".ui.data.DataActivity"
 			android:label="@string/title_backup">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
