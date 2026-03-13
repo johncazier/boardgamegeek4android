@@ -46,7 +46,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -114,7 +113,7 @@ import com.boardgamegeek.ui.dialog.GameAgePollDialogFragment
 import com.boardgamegeek.ui.dialog.GameLanguagePollDialogFragment
 import com.boardgamegeek.ui.dialog.GameRanksDialogFragment
 import com.boardgamegeek.ui.dialog.GameSuggestedPlayerCountPollDialogFragment
-import com.boardgamegeek.ui.viewmodel.ForumsViewModel
+import com.boardgamegeek.ui.forums.ForumsViewModel
 import com.boardgamegeek.ui.game.GameViewModel
 import com.boardgamegeek.util.XmlApiMarkupConverter
 import androidx.fragment.app.FragmentActivity
@@ -770,7 +769,7 @@ fun GameLinksTab(viewModel: GameViewModel) {
 fun GameForumsTab(gameId: Int, gameName: String) {
     val context = LocalContext.current
     val viewModel: ForumsViewModel = viewModel()
-    val forumsState by viewModel.forums.observeAsState()
+    val forumsState by viewModel.forums.collectAsStateWithLifecycle()
     val numberFormat = remember { NumberFormat.getNumberInstance() }
 
     LaunchedEffect(gameId) {

@@ -294,7 +294,7 @@
 			android:name=".ui.CommentsActivity"
 			android:label="@string/title_comments" />
 		<activity
-			android:name=".ui.ForumsActivity"
+			android:name=".ui.forums.ForumsActivity"
 			android:label="@string/title_forums">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"

@@ -1,10 +1,11 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.forums
 
 import android.content.Context
 import androidx.fragment.app.Fragment
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.clearTop
 import com.boardgamegeek.extensions.intentFor
+import com.boardgamegeek.ui.TopLevelSinglePaneActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

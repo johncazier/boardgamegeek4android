@@ -6,6 +6,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.boardgamegeek.R
 import com.boardgamegeek.ui.*
+import com.boardgamegeek.ui.forums.ForumsFragment
 
 class PersonPagerAdapter(
     private val activity: FragmentActivity,

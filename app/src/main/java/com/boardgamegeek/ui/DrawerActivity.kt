@@ -21,6 +21,7 @@ import com.boardgamegeek.model.User
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.ui.buddies.BuddiesActivity
 import com.boardgamegeek.pref.SettingsActivity
+import com.boardgamegeek.ui.forums.ForumsActivity
 import com.boardgamegeek.ui.geeklists.GeekListsActivity
 import com.boardgamegeek.ui.hotness.HotnessActivity
 import com.boardgamegeek.ui.topgames.TopGamesActivity
