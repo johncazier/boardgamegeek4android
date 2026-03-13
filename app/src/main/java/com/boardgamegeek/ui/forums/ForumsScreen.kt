@@ -37,6 +37,7 @@ fun ForumsScreen(
     forumType: Forum.Type,
     objectId: Int,
     objectName: String,
+    paddingValues: PaddingValues = PaddingValues(0.dp),
 ) {
     val context = LocalContext.current
     val forumsState by viewModel.forums.collectAsStateWithLifecycle()
@@ -54,31 +55,53 @@ fun ForumsScreen(
 
     when (val result = forumsState) {
         null -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator()
             }
         }
         else -> {
             when (result.status) {
                 Status.REFRESHING -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        contentAlignment = Alignment.Center
+                    ) {
                         CircularProgressIndicator()
                     }
                 }
                 Status.ERROR -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text(text = result.message ?: stringResource(R.string.empty_forums))
                     }
                 }
                 Status.SUCCESS -> {
                     val forums = result.data.orEmpty()
                     if (forums.isEmpty()) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Text(text = stringResource(R.string.empty_forums))
                         }
                     } else {
                         LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues),
                             contentPadding = PaddingValues(bottom = 24.dp)
                         ) {
                             items(forums) { forum ->
