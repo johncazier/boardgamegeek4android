@@ -218,7 +218,7 @@
 				android:value=".ui.playssummary.PlaysSummaryActivity" />
 		</activity>
 		<activity
-			android:name=".ui.PlayStatsActivity"
+			android:name=".ui.playstats.PlayStatsActivity"
 			android:exported="false"
 			android:label="@string/title_play_stats">
 			<meta-data

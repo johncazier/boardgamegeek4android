@@ -28,7 +28,7 @@ import com.boardgamegeek.pref.SyncPrefs
 import com.boardgamegeek.pref.SyncPrefs.Companion.TIMESTAMP_PLAYS_OLDEST_DATE
 import com.boardgamegeek.pref.clearPlaysTimestamps
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
-import com.boardgamegeek.ui.PlayStatsActivity
+import com.boardgamegeek.ui.playstats.PlayStatsActivity
 import com.boardgamegeek.work.PlayUploadWorker
 import com.boardgamegeek.work.SyncPlaysWorker
 import kotlinx.coroutines.Dispatchers
