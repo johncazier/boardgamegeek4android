@@ -2,24 +2,39 @@ package com.boardgamegeek.ui.comments
 
 import android.content.Context
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.provider.BggContract
-import com.boardgamegeek.ui.SimpleSinglePaneActivity
 import com.boardgamegeek.ui.game.GameActivity
+import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class CommentsActivity : SimpleSinglePaneActivity() {
+class CommentsActivity : ComponentActivity() {
     private var gameId = BggContract.INVALID_ID
     private var gameName = ""
     private var sortType = SORT_TYPE_USER
@@ -39,11 +54,78 @@ class CommentsActivity : SimpleSinglePaneActivity() {
         viewModel.setGameId(gameId)
         viewModel.setSort(if (sortType == SORT_TYPE_USER) GameCommentsViewModel.SortType.USER else GameCommentsViewModel.SortType.RATING)
 
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.sort.collect { sort ->
-                    sortType = if (sort == GameCommentsViewModel.SortType.RATING) SORT_TYPE_RATING else SORT_TYPE_USER
-                    invalidateOptionsMenu()
+        setContent {
+            AppTheme {
+                val sort by viewModel.sort.collectAsStateWithLifecycle()
+                var showSortMenu by remember { mutableStateOf(false) }
+
+                Scaffold(
+                    topBar = {
+                        TopAppBar(
+                            title = {
+                                Text(
+                                    text = if (sort == GameCommentsViewModel.SortType.RATING) {
+                                        if (gameName.isNotEmpty()) gameName else stringResource(R.string.title_ratings)
+                                    } else {
+                                        if (gameName.isNotEmpty()) gameName else stringResource(R.string.title_comments)
+                                    }
+                                )
+                            },
+                            navigationIcon = {
+                                IconButton(onClick = ::navigateUp) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = stringResource(R.string.menu_back)
+                                    )
+                                }
+                            },
+                            actions = {
+                                Box {
+                                    IconButton(onClick = { showSortMenu = true }) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.Sort,
+                                            contentDescription = stringResource(R.string.menu_sort)
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = showSortMenu,
+                                        onDismissRequest = { showSortMenu = false }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(R.string.title_comments)) },
+                                            onClick = {
+                                                sortType = SORT_TYPE_USER
+                                                viewModel.setSort(GameCommentsViewModel.SortType.USER)
+                                                showSortMenu = false
+                                            },
+                                            trailingIcon = {
+                                                if (sort == GameCommentsViewModel.SortType.USER) {
+                                                    Text("\u2713")
+                                                }
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(R.string.title_ratings)) },
+                                            onClick = {
+                                                sortType = SORT_TYPE_RATING
+                                                viewModel.setSort(GameCommentsViewModel.SortType.RATING)
+                                                showSortMenu = false
+                                            },
+                                            trailingIcon = {
+                                                if (sort == GameCommentsViewModel.SortType.RATING) {
+                                                    Text("\u2713")
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                    }
+                ) { paddingValues ->
+                    Box(modifier = Modifier.padding(paddingValues)) {
+                        CommentsScreen(viewModel = viewModel)
+                    }
                 }
             }
         }
@@ -55,45 +137,9 @@ class CommentsActivity : SimpleSinglePaneActivity() {
         sortType = intent.getIntExtra(KEY_SORT_TYPE, SORT_TYPE_USER)
     }
 
-    override fun createPane() = CommentsFragment()
-
-    override val optionsMenuId = R.menu.game_comments
-
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        if (gameName.isNotEmpty()) {
-            supportActionBar?.title = gameName
-            supportActionBar?.setSubtitle(if (sortType == SORT_TYPE_RATING) R.string.title_ratings else R.string.title_comments)
-        } else {
-            supportActionBar?.setTitle(if (sortType == SORT_TYPE_RATING) R.string.title_ratings else R.string.title_comments)
-        }
-
-        if (sortType == SORT_TYPE_RATING) {
-            menu.findItem(R.id.menu_sort_rating)?.isChecked = true
-        } else {
-            menu.findItem(R.id.menu_sort_comments)?.isChecked = true
-        }
-        return super.onPrepareOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                GameActivity.startUp(this, gameId, gameName)
-                finish()
-            }
-            R.id.menu_sort_comments -> {
-                sortType = SORT_TYPE_USER
-                invalidateOptionsMenu()
-                viewModel.setSort(GameCommentsViewModel.SortType.USER)
-            }
-            R.id.menu_sort_rating -> {
-                sortType = SORT_TYPE_RATING
-                invalidateOptionsMenu()
-                viewModel.setSort(GameCommentsViewModel.SortType.RATING)
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-        return true
+    private fun navigateUp() {
+        GameActivity.startUp(this, gameId, gameName)
+        finish()
     }
 
     companion object {
