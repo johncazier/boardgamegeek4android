@@ -288,7 +288,7 @@
 			android:name=".ui.playstats.GamePlayStatsActivity"
 			android:label="@string/title_play_stats" />
 		<activity
-			android:name=".ui.GameColorsActivity"
+			android:name=".ui.gamecolors.GameColorsActivity"
 			android:label="@string/title_colors" />
 		<activity
 			android:name=".ui.comments.CommentsActivity"

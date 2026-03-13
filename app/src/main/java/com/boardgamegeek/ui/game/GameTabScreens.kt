@@ -104,7 +104,7 @@ import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.comments.CommentsActivity
 import com.boardgamegeek.ui.forum.ForumActivity
 import com.boardgamegeek.ui.GameCollectionItemActivity
-import com.boardgamegeek.ui.GameColorsActivity
+import com.boardgamegeek.ui.gamecolors.GameColorsActivity
 import com.boardgamegeek.ui.gamedetail.GameDetailActivity
 import com.boardgamegeek.ui.plays.GamePlaysActivity
 import com.boardgamegeek.ui.PersonActivity
