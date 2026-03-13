@@ -148,7 +148,7 @@
 			android:exported="true"
 			android:label="@string/title_game" />
 		<activity
-			android:name=".ui.ImageActivity"
+			android:name=".ui.image.ImageActivity"
 			android:label="@string/title_image"
 			android:theme="@style/Theme.MaterialComponents.NoActionBar" />
 		<activity
