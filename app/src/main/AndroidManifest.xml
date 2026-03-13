@@ -301,7 +301,7 @@
 				android:value=".ui.HomeActivity" />
 		</activity>
 		<activity
-			android:name=".ui.ForumActivity"
+			android:name=".ui.forum.ForumActivity"
 			android:label="@string/title_forum" />
 		<activity
 			android:name=".ui.geeklists.GeekListsActivity"

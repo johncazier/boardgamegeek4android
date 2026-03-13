@@ -28,7 +28,7 @@ import com.boardgamegeek.R
 import com.boardgamegeek.extensions.formatTimestamp
 import com.boardgamegeek.model.Forum
 import com.boardgamegeek.model.Status
-import com.boardgamegeek.ui.ForumActivity
+import com.boardgamegeek.ui.forum.ForumActivity
 import java.text.NumberFormat
 
 @Composable

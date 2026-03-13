@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.forum
 
 import android.content.Context
 import android.content.Intent
@@ -11,6 +11,7 @@ import com.boardgamegeek.extensions.intentFor
 import com.boardgamegeek.extensions.getSerializableCompat
 import com.boardgamegeek.extensions.linkToBgg
 import com.boardgamegeek.provider.BggContract
+import com.boardgamegeek.ui.SimpleSinglePaneActivity
 import com.boardgamegeek.ui.forums.ForumsActivity.Companion.startUp
 import com.boardgamegeek.ui.game.GameActivity.Companion.startUp
 import com.boardgamegeek.ui.PersonActivity.Companion.startUpForArtist
