@@ -3,6 +3,7 @@ package com.boardgamegeek.ui
 import android.os.Bundle
 import com.boardgamegeek.auth.Authenticator
 import com.boardgamegeek.extensions.*
+import com.boardgamegeek.ui.buddies.BuddiesActivity
 import com.boardgamegeek.ui.hotness.HotnessActivity
 
 class HomeActivity : TopLevelActivity() {

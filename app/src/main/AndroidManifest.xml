@@ -159,7 +159,7 @@
 			android:exported="false"
 			android:label="@string/title_artist" />
 		<activity
-			android:name=".ui.BuddiesActivity"
+			android:name=".ui.buddies.BuddiesActivity"
 			android:exported="false"
 			android:label="@string/title_buddies">
 			<meta-data
@@ -172,7 +172,7 @@
 			android:label="@string/title_buddy">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.BuddiesActivity" />
+				android:value=".ui.buddies.BuddiesActivity" />
 		</activity>
 		<activity
 			android:name=".ui.BuddyCollectionActivity"
