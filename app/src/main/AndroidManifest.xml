@@ -321,7 +321,7 @@
 			android:name=".ui.geeklistitem.GeekListItemActivity"
 			android:label="@string/title_geeklist" />
 		<activity
-			android:name=".ui.ThreadActivity"
+			android:name=".ui.thread.ThreadActivity"
 			android:label="@string/title_thread" />
 		<activity
 			android:name=".ui.ArticleActivity"

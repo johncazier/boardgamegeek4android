@@ -8,6 +8,7 @@ import com.boardgamegeek.model.Article
 import com.boardgamegeek.model.Forum
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.provider.BggContract
+import com.boardgamegeek.ui.thread.ThreadActivity
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import timber.log.Timber

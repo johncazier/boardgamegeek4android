@@ -1,4 +1,4 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.thread
 
 import android.content.Context
 import android.content.Intent
@@ -6,8 +6,14 @@ import android.os.Bundle
 import android.view.MenuItem
 import com.boardgamegeek.R
 import com.boardgamegeek.model.Forum
-import com.boardgamegeek.extensions.*
+import com.boardgamegeek.extensions.clearTop
+import com.boardgamegeek.extensions.createBggUri
+import com.boardgamegeek.extensions.getSerializableCompat
+import com.boardgamegeek.extensions.intentFor
+import com.boardgamegeek.extensions.linkToBgg
+import com.boardgamegeek.extensions.share
 import com.boardgamegeek.provider.BggContract
+import com.boardgamegeek.ui.SimpleSinglePaneActivity
 import com.boardgamegeek.ui.forum.ForumActivity
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
@@ -79,16 +85,8 @@ class ThreadActivity : SimpleSinglePaneActivity() {
                     $link
                     """.trimIndent(), R.string.title_share
                 )
-                firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SHARE) {
-                    param(FirebaseAnalytics.Param.CONTENT_TYPE, "Thread")
-                    param(FirebaseAnalytics.Param.ITEM_ID, threadId.toString())
-                    param(
-                        FirebaseAnalytics.Param.ITEM_NAME,
-                        if (objectName.isBlank()) "$forumTitle | $threadSubject" else "$objectName | $forumTitle | $threadSubject"
-                    )
-                }
             }
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
         return true
     }
@@ -136,7 +134,7 @@ class ThreadActivity : SimpleSinglePaneActivity() {
             forumTitle: String,
             objectId: Int,
             objectName: String,
-            objectType: Forum.Type,
+            objectType: Forum.Type
         ): Intent {
             return context.intentFor<ThreadActivity>(
                 KEY_THREAD_ID to threadId,
