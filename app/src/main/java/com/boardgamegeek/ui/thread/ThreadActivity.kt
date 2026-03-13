@@ -3,24 +3,48 @@ package com.boardgamegeek.ui.thread
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.MenuItem
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
 import com.boardgamegeek.model.Forum
 import com.boardgamegeek.extensions.clearTop
 import com.boardgamegeek.extensions.createBggUri
+import com.boardgamegeek.extensions.get
 import com.boardgamegeek.extensions.getSerializableCompat
 import com.boardgamegeek.extensions.intentFor
 import com.boardgamegeek.extensions.linkToBgg
+import com.boardgamegeek.extensions.preferences
+import com.boardgamegeek.extensions.set
 import com.boardgamegeek.extensions.share
 import com.boardgamegeek.provider.BggContract
-import com.boardgamegeek.ui.SimpleSinglePaneActivity
 import com.boardgamegeek.ui.forum.ForumActivity
+import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 @AndroidEntryPoint
-class ThreadActivity : SimpleSinglePaneActivity() {
+class ThreadActivity : ComponentActivity() {
     private var threadId = BggContract.INVALID_ID
     private var threadSubject = ""
     private var forumId = BggContract.INVALID_ID
@@ -28,16 +52,18 @@ class ThreadActivity : SimpleSinglePaneActivity() {
     private var objectId = BggContract.INVALID_ID
     private var objectName = ""
     private var objectType = Forum.Type.REGION
+    private val viewModel by viewModels<ThreadViewModel>()
+    private var latestArticleId by mutableStateOf(INVALID_ARTICLE_ID)
+    private var articleCount by mutableStateOf(0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        readIntent()
 
         if (objectName.isBlank()) {
-            supportActionBar?.title = forumTitle
-            supportActionBar?.subtitle = threadSubject
+            title = forumTitle
         } else {
-            supportActionBar?.title = "$threadSubject - $forumTitle"
-            supportActionBar?.subtitle = objectName
+            title = "$threadSubject - $forumTitle"
         }
 
         if (savedInstanceState == null) {
@@ -47,9 +73,94 @@ class ThreadActivity : SimpleSinglePaneActivity() {
                 param(FirebaseAnalytics.Param.ITEM_NAME, threadSubject)
             }
         }
+
+        setContent {
+            AppTheme {
+                val scrollCommands = remember { MutableSharedFlow<ThreadScrollCommand>(extraBufferCapacity = 1) }
+                val listState = rememberLazyListState()
+
+                Scaffold(
+                    topBar = {
+                        TopAppBar(
+                            title = { ThreadTitle(threadSubject = threadSubject, forumTitle = forumTitle, objectName = objectName) },
+                            navigationIcon = {
+                                IconButton(onClick = ::navigateUp) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = stringResource(R.string.menu_back)
+                                    )
+                                }
+                            },
+                            actions = {
+                                if (latestArticleId != INVALID_ARTICLE_ID && articleCount > 0) {
+                                    IconButton(onClick = { scrollCommands.tryEmit(ThreadScrollCommand.ScrollToLatest(latestArticleId)) }) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.ic_baseline_south_24),
+                                            contentDescription = stringResource(R.string.menu_scroll_to_last_read)
+                                        )
+                                    }
+                                }
+                                if (articleCount > 0) {
+                                    IconButton(onClick = { scrollCommands.tryEmit(ThreadScrollCommand.ScrollToBottom) }) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.ic_baseline_vertical_align_bottom_24),
+                                            contentDescription = stringResource(R.string.menu_scroll_to_bottom)
+                                        )
+                                    }
+                                }
+                                IconButton(onClick = { linkToBgg("thread", threadId) }) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_baseline_open_in_browser_24),
+                                        contentDescription = stringResource(R.string.menu_view_in_browser)
+                                    )
+                                }
+                                IconButton(onClick = ::shareThread) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_baseline_share_24),
+                                        contentDescription = stringResource(R.string.menu_share)
+                                    )
+                                }
+                            }
+                        )
+                    }
+                ) { paddingValues ->
+                    Box(modifier = Modifier.padding(paddingValues)) {
+                        ThreadScreen(
+                            viewModel = viewModel,
+                            threadId = threadId,
+                            forumId = forumId,
+                            forumTitle = forumTitle,
+                            objectId = objectId,
+                            objectName = objectName,
+                            objectType = objectType,
+                            listState = listState,
+                            scrollCommands = scrollCommands,
+                            onLatestArticleSeen = ::updateLatestArticle,
+                            onArticleCountChanged = { articleCount = it },
+                        )
+                    }
+                }
+            }
+        }
     }
 
-    override fun readIntent() {
+    override fun onResume() {
+        super.onResume()
+        latestArticleId = getThreadKey(threadId)?.let { key ->
+            preferences()[key, INVALID_ARTICLE_ID] ?: INVALID_ARTICLE_ID
+        } ?: INVALID_ARTICLE_ID
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (latestArticleId != INVALID_ARTICLE_ID) {
+            getThreadKey(threadId)?.let { key ->
+                preferences()[key] = latestArticleId
+            }
+        }
+    }
+
+    private fun readIntent() {
         threadId = intent.getIntExtra(KEY_THREAD_ID, BggContract.INVALID_ID)
         threadSubject = intent.getStringExtra(KEY_THREAD_SUBJECT).orEmpty()
         forumId = intent.getIntExtra(KEY_FORUM_ID, BggContract.INVALID_ID)
@@ -59,36 +170,35 @@ class ThreadActivity : SimpleSinglePaneActivity() {
         objectType = intent.getSerializableCompat(KEY_OBJECT_TYPE) ?: Forum.Type.REGION
     }
 
-    override fun createPane() = ThreadFragment.newInstance(threadId, forumId, forumTitle, objectId, objectName, objectType)
-
-    override val optionsMenuId = R.menu.view_share
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                ForumActivity.startUp(this, forumId, forumTitle, objectId, objectName, objectType)
-                finish()
-            }
-            R.id.menu_view -> {
-                linkToBgg("thread", threadId)
-            }
-            R.id.menu_share -> {
-                val description = if (objectName.isBlank())
-                    String.format(getString(R.string.share_thread_text), threadSubject, forumTitle)
-                else
-                    String.format(getString(R.string.share_thread_game_text), threadSubject, forumTitle, objectName)
-                val link = createBggUri("thread", threadId).toString()
-                share(
-                    getString(R.string.share_thread_subject), """
-                    $description
-                    
-                    $link
-                    """.trimIndent(), R.string.title_share
-                )
-            }
-            else -> super.onOptionsItemSelected(item)
+    private fun updateLatestArticle(articleId: Int) {
+        if (articleId > latestArticleId) {
+            latestArticleId = articleId
         }
-        return true
+    }
+
+    private fun navigateUp() {
+        ForumActivity.startUp(this, forumId, forumTitle, objectId, objectName, objectType)
+        finish()
+    }
+
+    private fun shareThread() {
+        val description = if (objectName.isBlank())
+            String.format(getString(R.string.share_thread_text), threadSubject, forumTitle)
+        else
+            String.format(getString(R.string.share_thread_game_text), threadSubject, forumTitle, objectName)
+        val link = createBggUri("thread", threadId).toString()
+        share(
+            getString(R.string.share_thread_subject), """
+            $description
+            
+            $link
+            """.trimIndent(), R.string.title_share
+        )
+    }
+
+    private fun getThreadKey(threadId: Int): String? {
+        if (threadId == BggContract.INVALID_ID) return null
+        return "THREAD-$threadId"
     }
 
     companion object {
@@ -145,6 +255,21 @@ class ThreadActivity : SimpleSinglePaneActivity() {
                 KEY_OBJECT_NAME to objectName,
                 KEY_OBJECT_TYPE to objectType,
             )
+        }
+    }
+}
+
+@Composable
+private fun ThreadTitle(threadSubject: String, forumTitle: String, objectName: String) {
+    if (objectName.isBlank()) {
+        Column {
+            Text(text = forumTitle)
+            Text(text = threadSubject, style = androidx.compose.material3.MaterialTheme.typography.bodySmall)
+        }
+    } else {
+        Column {
+            Text(text = "$threadSubject - $forumTitle")
+            Text(text = objectName, style = androidx.compose.material3.MaterialTheme.typography.bodySmall)
         }
     }
 }
