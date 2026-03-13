@@ -30,7 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.model.Mechanic
-import com.boardgamegeek.ui.MechanicActivity
+import com.boardgamegeek.ui.mechanic.MechanicActivity
 import com.boardgamegeek.ui.search.SearchResultsActivity
 import com.boardgamegeek.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint

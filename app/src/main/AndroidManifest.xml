@@ -82,7 +82,7 @@
 				android:value=".ui.HomeActivity" />
 		</activity>
 		<activity
-			android:name=".ui.MechanicActivity"
+			android:name=".ui.mechanic.MechanicActivity"
 			android:label="@string/title_mechanic">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
@@ -96,7 +96,7 @@
 				android:value=".ui.HomeActivity" />
 		</activity>
 		<activity
-			android:name=".ui.CategoryActivity"
+			android:name=".ui.category.CategoryActivity"
 			android:label="@string/title_category">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
