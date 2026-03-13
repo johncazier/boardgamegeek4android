@@ -1,18 +1,22 @@
-package com.boardgamegeek.ui
+package com.boardgamegeek.ui.comments
 
 import android.content.Context
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.provider.BggContract
+import com.boardgamegeek.ui.SimpleSinglePaneActivity
 import com.boardgamegeek.ui.game.GameActivity
-import com.boardgamegeek.ui.viewmodel.GameCommentsViewModel
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class CommentsActivity : SimpleSinglePaneActivity() {
@@ -34,9 +38,14 @@ class CommentsActivity : SimpleSinglePaneActivity() {
 
         viewModel.setGameId(gameId)
         viewModel.setSort(if (sortType == SORT_TYPE_USER) GameCommentsViewModel.SortType.USER else GameCommentsViewModel.SortType.RATING)
-        viewModel.sort.observe(this) {
-            sortType = if (it == GameCommentsViewModel.SortType.RATING) SORT_TYPE_RATING else SORT_TYPE_USER
-            invalidateOptionsMenu()
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.sort.collect { sort ->
+                    sortType = if (sort == GameCommentsViewModel.SortType.RATING) SORT_TYPE_RATING else SORT_TYPE_USER
+                    invalidateOptionsMenu()
+                }
+            }
         }
     }
 
@@ -75,13 +84,11 @@ class CommentsActivity : SimpleSinglePaneActivity() {
             R.id.menu_sort_comments -> {
                 sortType = SORT_TYPE_USER
                 invalidateOptionsMenu()
-                (fragment as? CommentsFragment)?.clear()
                 viewModel.setSort(GameCommentsViewModel.SortType.USER)
             }
             R.id.menu_sort_rating -> {
                 sortType = SORT_TYPE_RATING
                 invalidateOptionsMenu()
-                (fragment as? CommentsFragment)?.clear()
                 viewModel.setSort(GameCommentsViewModel.SortType.RATING)
             }
             else -> super.onOptionsItemSelected(item)

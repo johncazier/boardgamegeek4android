@@ -101,7 +101,7 @@ import com.boardgamegeek.model.GameSubtype
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.model.Status
 import com.boardgamegeek.provider.BggContract
-import com.boardgamegeek.ui.CommentsActivity
+import com.boardgamegeek.ui.comments.CommentsActivity
 import com.boardgamegeek.ui.forum.ForumActivity
 import com.boardgamegeek.ui.GameCollectionItemActivity
 import com.boardgamegeek.ui.GameColorsActivity
