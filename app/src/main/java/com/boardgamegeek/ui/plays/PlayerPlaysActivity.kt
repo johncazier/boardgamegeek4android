@@ -19,7 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.startActivity
-import com.boardgamegeek.ui.BuddyActivity
+import com.boardgamegeek.ui.buddy.BuddyActivity
 import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent

@@ -167,7 +167,7 @@
 				android:value=".ui.HomeActivity" />
 		</activity>
 		<activity
-			android:name=".ui.BuddyActivity"
+			android:name=".ui.buddy.BuddyActivity"
 			android:exported="false"
 			android:label="@string/title_buddy">
 			<meta-data

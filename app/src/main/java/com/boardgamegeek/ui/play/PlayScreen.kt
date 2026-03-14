@@ -58,7 +58,7 @@ import com.boardgamegeek.extensions.getTextColor
 import com.boardgamegeek.extensions.startTimerWithSystemTime
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.model.PlayPlayer
-import com.boardgamegeek.ui.BuddyActivity
+import com.boardgamegeek.ui.buddy.BuddyActivity
 import com.boardgamegeek.ui.components.HtmlText
 import com.boardgamegeek.ui.play.PlayViewModel
 import com.boardgamegeek.util.XmlApiMarkupConverter

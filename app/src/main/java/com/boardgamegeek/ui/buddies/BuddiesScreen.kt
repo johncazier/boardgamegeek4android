@@ -41,7 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.model.User
-import com.boardgamegeek.ui.BuddyActivity
+import com.boardgamegeek.ui.buddy.BuddyActivity
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable

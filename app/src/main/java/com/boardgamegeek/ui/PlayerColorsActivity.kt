@@ -17,6 +17,7 @@ import com.boardgamegeek.databinding.ActivityPlayerColorsBinding
 import com.boardgamegeek.databinding.RowPlayerColorBinding
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.ui.adapter.AutoUpdatableAdapter
+import com.boardgamegeek.ui.buddy.BuddyActivity
 import com.boardgamegeek.ui.dialog.PlayerColorPickerDialogFragment
 import com.boardgamegeek.ui.viewmodel.PlayerColorsViewModel
 import com.google.android.material.snackbar.Snackbar

@@ -52,7 +52,7 @@ import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.extensions.setColorViewValue
 import com.boardgamegeek.extensions.toast
 import com.boardgamegeek.model.PlayerColor
-import com.boardgamegeek.ui.BuddyActivity
+import com.boardgamegeek.ui.buddy.BuddyActivity
 import com.boardgamegeek.ui.playstats.PlayStatsActivity
 import com.boardgamegeek.ui.locations.LocationsActivity
 import com.boardgamegeek.ui.plays.LocationActivity

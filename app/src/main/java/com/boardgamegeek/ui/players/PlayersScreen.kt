@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.model.Player
-import com.boardgamegeek.ui.BuddyActivity
+import com.boardgamegeek.ui.buddy.BuddyActivity
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

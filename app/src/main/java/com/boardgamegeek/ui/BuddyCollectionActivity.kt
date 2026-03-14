@@ -7,7 +7,7 @@ import androidx.activity.viewModels
 import com.boardgamegeek.extensions.createStatusMap
 import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.mappers.mapToResource
-import com.boardgamegeek.ui.BuddyActivity.Companion.startUp
+import com.boardgamegeek.ui.buddy.BuddyActivity.Companion.startUp
 import com.boardgamegeek.ui.viewmodel.BuddyCollectionViewModel
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
