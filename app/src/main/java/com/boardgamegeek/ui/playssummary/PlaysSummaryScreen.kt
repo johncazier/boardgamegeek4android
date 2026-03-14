@@ -213,7 +213,7 @@ fun PlaysSummaryScreen(
                     if (resolvedUsername.isNullOrBlank()) {
                         context.toast("Can't figure out your username.")
                     } else {
-                        com.boardgamegeek.ui.PlayerColorsActivity.start(context, resolvedUsername, null)
+                        com.boardgamegeek.ui.playercolors.PlayerColorsActivity.start(context, resolvedUsername, null)
                     }
                 },
                 actionVisible = true
