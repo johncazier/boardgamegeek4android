@@ -32,8 +32,8 @@ import com.boardgamegeek.R
 import com.boardgamegeek.extensions.clearTop
 import com.boardgamegeek.extensions.intentFor
 import com.boardgamegeek.extensions.linkToBgg
-import com.boardgamegeek.ui.BuddyCollectionActivity
 import com.boardgamegeek.ui.PlayerColorsActivity
+import com.boardgamegeek.ui.buddycollection.BuddyCollectionActivity
 import com.boardgamegeek.ui.plays.BuddyPlaysActivity
 import com.boardgamegeek.ui.plays.PlayerPlaysActivity
 import com.boardgamegeek.ui.theme.AppTheme

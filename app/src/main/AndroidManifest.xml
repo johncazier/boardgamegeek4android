@@ -175,7 +175,7 @@
 				android:value=".ui.buddies.BuddiesActivity" />
 		</activity>
 		<activity
-			android:name=".ui.BuddyCollectionActivity"
+			android:name=".ui.buddycollection.BuddyCollectionActivity"
 			android:exported="false"
 			android:label="@string/title_collection" />
 		<activity
