@@ -28,6 +28,7 @@ import com.boardgamegeek.pref.SettingsActivity
 import com.boardgamegeek.ui.forums.ForumsActivity
 import com.boardgamegeek.ui.geeklists.GeekListsActivity
 import com.boardgamegeek.ui.hotness.HotnessActivity
+import com.boardgamegeek.ui.login.LoginActivity
 import com.boardgamegeek.ui.topgames.TopGamesActivity
 import com.boardgamegeek.ui.viewmodel.SelfUserViewModel
 import com.google.android.material.navigation.NavigationView

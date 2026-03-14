@@ -366,7 +366,7 @@
 			</intent-filter>
 		</activity>
 		<activity
-			android:name=".ui.LoginActivity"
+			android:name=".ui.login.LoginActivity"
 			android:configChanges="orientation|screenSize"
 			android:excludeFromRecents="true"
 			android:label="@string/title_login"

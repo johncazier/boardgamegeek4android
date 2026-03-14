@@ -11,7 +11,7 @@ import com.boardgamegeek.extensions.AccountPreferences
 import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.extensions.set
 import com.boardgamegeek.repository.AuthRepository
-import com.boardgamegeek.ui.LoginActivity
+import com.boardgamegeek.ui.login.LoginActivity
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import timber.log.Timber
 import java.io.IOException
