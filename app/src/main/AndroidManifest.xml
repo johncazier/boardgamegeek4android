@@ -276,7 +276,7 @@
 			android:label="@string/title_log_play"
 			android:launchMode="singleTop" />
 		<activity
-			android:name=".ui.LogPlayerActivity"
+			android:name=".ui.logplayer.LogPlayerActivity"
 			android:label="@string/title_log_player" />
 		<activity
 			android:name=".ui.GameCollectionItemActivity"

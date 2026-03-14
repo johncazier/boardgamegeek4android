@@ -74,7 +74,7 @@ import com.boardgamegeek.model.GameExpansion
 import com.boardgamegeek.model.PlayPlayer
 import com.boardgamegeek.model.Player
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
-import com.boardgamegeek.ui.LogPlayerActivity
+import com.boardgamegeek.ui.logplayer.LogPlayerActivity
 import com.boardgamegeek.ui.dialog.LogPlayPlayerColorPickerDialogFragment
 import com.boardgamegeek.ui.dialog.LogPlayPlayerRatingNumberPadDialogFragment
 import com.boardgamegeek.ui.dialog.LogPlayPlayerScoreNumberPadDialogFragment
