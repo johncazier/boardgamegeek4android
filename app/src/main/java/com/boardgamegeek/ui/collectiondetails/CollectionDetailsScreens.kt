@@ -42,7 +42,7 @@ import com.boardgamegeek.ui.artists.ArtistsActivity
 import com.boardgamegeek.ui.categories.CategoriesActivity
 import com.boardgamegeek.ui.designers.DesignersActivity
 import com.boardgamegeek.ui.game.GameActivity
-import com.boardgamegeek.ui.GameCollectionItemActivity
+import com.boardgamegeek.ui.gamecollectionitem.GameCollectionItemActivity
 import com.boardgamegeek.ui.logplay.LogPlayActivity
 import com.boardgamegeek.ui.mechanics.MechanicsActivity
 import com.boardgamegeek.ui.publishers.PublishersActivity

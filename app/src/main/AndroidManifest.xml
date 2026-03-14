@@ -279,7 +279,7 @@
 			android:name=".ui.logplayer.LogPlayerActivity"
 			android:label="@string/title_log_player" />
 		<activity
-			android:name=".ui.GameCollectionItemActivity"
+			android:name=".ui.gamecollectionitem.GameCollectionItemActivity"
 			android:label="@string/title_collection" />
 		<activity
 			android:name=".ui.plays.GamePlaysActivity"
