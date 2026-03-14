@@ -155,7 +155,7 @@
 			android:name=".ui.gamedetail.GameDetailActivity"
 			android:label="@string/title_game_detail" />
 		<activity
-			android:name=".ui.PersonActivity"
+			android:name=".ui.person.PersonActivity"
 			android:exported="false"
 			android:label="@string/title_artist" />
 		<activity

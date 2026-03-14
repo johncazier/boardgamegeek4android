@@ -41,12 +41,12 @@ import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.asPersonalRating
 import com.boardgamegeek.extensions.asYear
+import com.boardgamegeek.extensions.BggColors
 import com.boardgamegeek.extensions.ensureHttpsScheme
 import com.boardgamegeek.extensions.getTextColor
 import com.boardgamegeek.extensions.toColor
 import com.boardgamegeek.model.CollectionItem
 import com.boardgamegeek.provider.BggContract
-import com.boardgamegeek.ui.BggColors
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

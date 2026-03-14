@@ -107,7 +107,7 @@ import com.boardgamegeek.ui.gamecollectionitem.GameCollectionItemActivity
 import com.boardgamegeek.ui.gamecolors.GameColorsActivity
 import com.boardgamegeek.ui.gamedetail.GameDetailActivity
 import com.boardgamegeek.ui.plays.GamePlaysActivity
-import com.boardgamegeek.ui.PersonActivity
+import com.boardgamegeek.ui.person.PersonActivity
 import com.boardgamegeek.ui.play.PlayActivity
 import com.boardgamegeek.ui.dialog.GameAgePollDialogFragment
 import com.boardgamegeek.ui.dialog.GameLanguagePollDialogFragment

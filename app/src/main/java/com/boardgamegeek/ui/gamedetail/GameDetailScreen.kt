@@ -32,7 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.model.GameDetail
-import com.boardgamegeek.ui.PersonActivity
+import com.boardgamegeek.ui.person.PersonActivity
 import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.game.GameViewModel
 import com.boardgamegeek.ui.game.GameViewModel.ProducerType

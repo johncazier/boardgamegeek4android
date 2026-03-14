@@ -29,9 +29,9 @@ import com.boardgamegeek.extensions.linkToBgg
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.forums.ForumsActivity.Companion.startUp
 import com.boardgamegeek.ui.game.GameActivity.Companion.startUp
-import com.boardgamegeek.ui.PersonActivity.Companion.startUpForArtist
-import com.boardgamegeek.ui.PersonActivity.Companion.startUpForDesigner
-import com.boardgamegeek.ui.PersonActivity.Companion.startUpForPublisher
+import com.boardgamegeek.ui.person.PersonActivity.Companion.startUpForArtist
+import com.boardgamegeek.ui.person.PersonActivity.Companion.startUpForDesigner
+import com.boardgamegeek.ui.person.PersonActivity.Companion.startUpForPublisher
 import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
