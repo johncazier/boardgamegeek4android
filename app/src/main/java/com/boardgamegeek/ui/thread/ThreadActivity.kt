@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,6 +45,7 @@ import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableSharedFlow
 
+@OptIn(ExperimentalMaterial3Api::class)
 @AndroidEntryPoint
 class ThreadActivity : ComponentActivity() {
     private var threadId = BggContract.INVALID_ID
@@ -53,7 +56,8 @@ class ThreadActivity : ComponentActivity() {
     private var objectName = ""
     private var objectType = Forum.Type.REGION
     private val viewModel by viewModels<ThreadViewModel>()
-    private var latestArticleId by mutableStateOf(INVALID_ARTICLE_ID)
+    private val firebaseAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
+    private var latestArticleId by mutableStateOf(BggContract.INVALID_ID)
     private var articleCount by mutableStateOf(0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,7 +96,7 @@ class ThreadActivity : ComponentActivity() {
                                 }
                             },
                             actions = {
-                                if (latestArticleId != INVALID_ARTICLE_ID && articleCount > 0) {
+                                if (latestArticleId != BggContract.INVALID_ID && articleCount > 0) {
                                     IconButton(onClick = { scrollCommands.tryEmit(ThreadScrollCommand.ScrollToLatest(latestArticleId)) }) {
                                         Icon(
                                             painter = painterResource(R.drawable.ic_baseline_south_24),
@@ -147,13 +151,13 @@ class ThreadActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         latestArticleId = getThreadKey(threadId)?.let { key ->
-            preferences()[key, INVALID_ARTICLE_ID] ?: INVALID_ARTICLE_ID
-        } ?: INVALID_ARTICLE_ID
+            preferences()[key, BggContract.INVALID_ID] ?: BggContract.INVALID_ID
+        } ?: BggContract.INVALID_ID
     }
 
     override fun onPause() {
         super.onPause()
-        if (latestArticleId != INVALID_ARTICLE_ID) {
+        if (latestArticleId != BggContract.INVALID_ID) {
             getThreadKey(threadId)?.let { key ->
                 preferences()[key] = latestArticleId
             }

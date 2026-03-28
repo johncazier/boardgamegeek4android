@@ -388,5 +388,5 @@ private fun Long.asDate(context: android.content.Context): String {
     return formatDateTime(
         context,
         flags = DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_ABBREV_ALL
-    )
+    ).toString()
 }

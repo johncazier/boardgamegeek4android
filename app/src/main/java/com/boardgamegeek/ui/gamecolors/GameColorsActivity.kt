@@ -9,10 +9,11 @@ import androidx.activity.viewModels
 import androidx.annotation.ColorInt
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
@@ -40,6 +41,7 @@ import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @AndroidEntryPoint
 class GameColorsActivity : ComponentActivity() {
     private var gameId = BggContract.INVALID_ID
@@ -142,8 +144,9 @@ class GameColorsActivity : ComponentActivity() {
                                             text = { Text(stringResource(R.string.menu_colors_generate)) },
                                             onClick = {
                                                 viewModel.computeColors()
+                                                val message = getString(R.string.msg_colors_generated)
                                                 scope.launch {
-                                                    snackbarHostState.showSnackbar(stringResource(R.string.msg_colors_generated))
+                                                    snackbarHostState.showSnackbar(message)
                                                 }
                                                 showMenu = false
                                             }

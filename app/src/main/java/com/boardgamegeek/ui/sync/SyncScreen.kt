@@ -412,9 +412,10 @@ private fun SyncUsersScreen(
             if (!stepText.isNullOrBlank()) {
                 Text(text = stepText, modifier = Modifier.padding(bottom = 8.dp))
             }
-            if (!userProgress.username.isNullOrBlank()) {
+            val username = userProgress.username
+            if (!username.isNullOrBlank()) {
                 Text(
-                    text = stringResource(R.string.sync_notification_user, userProgress.username),
+                    text = stringResource(R.string.sync_notification_user, username),
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
             }
@@ -477,21 +478,21 @@ private fun Long.asDate(context: android.content.Context): String {
     return formatDateTime(
         context,
         flags = DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_ABBREV_ALL
-    )
+    ).toString()
 }
 
 private fun Long.asDateTime(context: android.content.Context): String {
     return formatDateTime(
         context,
         flags = DateUtils.FORMAT_ABBREV_ALL or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY or DateUtils.FORMAT_SHOW_YEAR
-    )
+    ).toString()
 }
 
 private fun Long?.asDateTime(context: android.content.Context): String {
     return this?.formatDateTime(
         context,
         flags = DateUtils.FORMAT_ABBREV_ALL or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME
-    ) ?: context.getString(R.string.never)
+    )?.toString() ?: context.getString(R.string.never)
 }
 
 private fun collectionSyncMessage(

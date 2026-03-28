@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -33,6 +34,7 @@ import com.boardgamegeek.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @AndroidEntryPoint
 class CategoryActivity : ComponentActivity() {
     private var id = BggContract.INVALID_ID

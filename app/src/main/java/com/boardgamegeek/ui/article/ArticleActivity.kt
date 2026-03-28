@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -21,6 +22,7 @@ import com.boardgamegeek.extensions.getParcelableCompat
 import com.boardgamegeek.extensions.getSerializableCompat
 import com.boardgamegeek.extensions.link
 import com.boardgamegeek.extensions.share
+import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.model.Article
 import com.boardgamegeek.model.Forum
 import com.boardgamegeek.provider.BggContract
@@ -30,6 +32,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import timber.log.Timber
 
+@OptIn(ExperimentalMaterial3Api::class)
 class ArticleActivity : ComponentActivity() {
     private var threadId = BggContract.INVALID_ID
     private var threadSubject = ""

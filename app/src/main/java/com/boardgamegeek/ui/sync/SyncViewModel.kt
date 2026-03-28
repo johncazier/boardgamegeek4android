@@ -13,10 +13,11 @@ import com.boardgamegeek.extensions.PREFERENCES_KEY_SYNC_STATUSES
 import com.boardgamegeek.extensions.addSyncStatus
 import com.boardgamegeek.extensions.get
 import com.boardgamegeek.extensions.getSyncStatusesOrDefault
-import com.boardgamegeek.extensions.mapToEnum
 import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.extensions.removeSyncStatus
+import com.boardgamegeek.extensions.set
 import com.boardgamegeek.extensions.stateInWhileSubscribed
+import com.boardgamegeek.mappers.mapToEnum
 import com.boardgamegeek.model.CollectionStatus
 import com.boardgamegeek.model.Game
 import com.boardgamegeek.model.Play
@@ -60,15 +61,15 @@ class SyncViewModel @Inject constructor(
         .stateInWhileSubscribed(viewModelScope, prefs.getSyncStatusesOrDefault())
 
     val collectionCompleteTimestamp: StateFlow<Long?> =
-        preferenceFlow(SyncPrefs.TIMESTAMP_COLLECTION_COMPLETE, SyncPrefs.NAME)
+        preferenceFlow<Long>(SyncPrefs.TIMESTAMP_COLLECTION_COMPLETE, SyncPrefs.NAME)
             .stateInWhileSubscribed(viewModelScope, null)
 
     val collectionPartialTimestamp: StateFlow<Long?> =
-        preferenceFlow(SyncPrefs.TIMESTAMP_COLLECTION_PARTIAL, SyncPrefs.NAME)
+        preferenceFlow<Long>(SyncPrefs.TIMESTAMP_COLLECTION_PARTIAL, SyncPrefs.NAME)
             .stateInWhileSubscribed(viewModelScope, null)
 
     val collectionCompleteCurrentTimestamp: StateFlow<Long?> =
-        preferenceFlow(SyncPrefs.TIMESTAMP_COLLECTION_COMPLETE_CURRENT, SyncPrefs.NAME)
+        preferenceFlow<Long>(SyncPrefs.TIMESTAMP_COLLECTION_COMPLETE_CURRENT, SyncPrefs.NAME)
             .stateInWhileSubscribed(viewModelScope, null)
 
     val syncPlays: StateFlow<Boolean?> =
@@ -76,11 +77,11 @@ class SyncViewModel @Inject constructor(
             .stateInWhileSubscribed(viewModelScope, prefs[PREFERENCES_KEY_SYNC_PLAYS, false])
 
     private val oldestSyncDate: StateFlow<Long?> =
-        preferenceFlow(SyncPrefs.TIMESTAMP_PLAYS_OLDEST_DATE, SyncPrefs.NAME)
+        preferenceFlow<Long>(SyncPrefs.TIMESTAMP_PLAYS_OLDEST_DATE, SyncPrefs.NAME)
             .stateInWhileSubscribed(viewModelScope, null)
 
     private val newestSyncDate: StateFlow<Long?> =
-        preferenceFlow(SyncPrefs.TIMESTAMP_PLAYS_NEWEST_DATE, SyncPrefs.NAME)
+        preferenceFlow<Long>(SyncPrefs.TIMESTAMP_PLAYS_NEWEST_DATE, SyncPrefs.NAME)
             .stateInWhileSubscribed(viewModelScope, null)
 
     val syncBuddies: StateFlow<Boolean?> =
@@ -88,7 +89,7 @@ class SyncViewModel @Inject constructor(
             .stateInWhileSubscribed(viewModelScope, prefs[PREFERENCES_KEY_SYNC_BUDDIES, false])
 
     val buddySyncDate: StateFlow<Long?> =
-        preferenceFlow(SyncPrefs.TIMESTAMP_BUDDIES, SyncPrefs.NAME)
+        preferenceFlow<Long>(SyncPrefs.TIMESTAMP_BUDDIES, SyncPrefs.NAME)
             .stateInWhileSubscribed(viewModelScope, null)
 
     private val collectionWorkInfos = WorkManager.getInstance(getApplication())
@@ -235,12 +236,12 @@ class SyncViewModel @Inject constructor(
         return if (status == CollectionStatus.Unknown) {
             flowOf(null)
         } else {
-            preferenceFlow(getCompleteCollectionTimestampKey(null, status), SyncPrefs.NAME)
+            preferenceFlow<Long>(getCompleteCollectionTimestampKey(null, status), SyncPrefs.NAME)
         }
     }
 
     fun collectionStatusAccessoryCompleteTimestamp(status: CollectionStatus): Flow<Long?> {
-        return preferenceFlow(getCompleteCollectionTimestampKey(Game.Subtype.BoardGameAccessory, status), SyncPrefs.NAME)
+        return preferenceFlow<Long>(getCompleteCollectionTimestampKey(Game.Subtype.BoardGameAccessory, status), SyncPrefs.NAME)
     }
 
     fun syncCollection(status: CollectionStatus = CollectionStatus.Unknown) {

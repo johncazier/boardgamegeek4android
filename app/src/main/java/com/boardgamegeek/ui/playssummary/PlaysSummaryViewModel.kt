@@ -98,7 +98,7 @@ class PlaysSummaryViewModel @Inject constructor(
             .stateInWhileSubscribed(viewModelScope, emptyList())
 
     val players: StateFlow<List<Player>> =
-        combine(syncPlays, username) { enabled, user -> enabled == true to user }
+        combine(syncPlays, username) { enabled, user -> Pair(enabled == true, user) }
             .flatMapLatest { (enabled, user) ->
                 if (!enabled) {
                     flowOf(emptyList())

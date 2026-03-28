@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -33,15 +34,18 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
 
+@OptIn(ExperimentalMaterial3Api::class)
 @AndroidEntryPoint
 class CommentsActivity : ComponentActivity() {
     private var gameId = BggContract.INVALID_ID
     private var gameName = ""
     private var sortType = SORT_TYPE_USER
     private val viewModel by viewModels<GameCommentsViewModel>()
+    private val firebaseAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        readIntent()
 
         if (savedInstanceState == null) {
             firebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM_LIST) {
@@ -131,7 +135,7 @@ class CommentsActivity : ComponentActivity() {
         }
     }
 
-    override fun readIntent() {
+    private fun readIntent() {
         gameId = intent.getIntExtra(KEY_GAME_ID, BggContract.INVALID_ID)
         gameName = intent.getStringExtra(KEY_GAME_NAME).orEmpty()
         sortType = intent.getIntExtra(KEY_SORT_TYPE, SORT_TYPE_USER)

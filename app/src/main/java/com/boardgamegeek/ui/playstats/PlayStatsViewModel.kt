@@ -11,10 +11,10 @@ import com.boardgamegeek.extensions.PlayStatPrefs.LOG_PLAY_STATS_INCOMPLETE
 import com.boardgamegeek.extensions.addSyncStatus
 import com.boardgamegeek.extensions.get
 import com.boardgamegeek.extensions.getSyncStatusesOrDefault
-import com.boardgamegeek.extensions.mapToEnum
 import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.extensions.set
 import com.boardgamegeek.extensions.stateInWhileSubscribed
+import com.boardgamegeek.mappers.mapToEnum
 import com.boardgamegeek.model.CollectionStatus
 import com.boardgamegeek.model.PlayStats
 import com.boardgamegeek.model.PlayerStats

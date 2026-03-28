@@ -12,7 +12,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.onEach
 
@@ -36,8 +35,7 @@ class MechanicViewModel @Inject constructor(
                 if (id == BggContract.INVALID_ID) {
                     kotlinx.coroutines.flow.flowOf(emptyList())
                 } else {
-                    repository.loadCollectionFlow(id, sort)
-                        .distinctUntilChanged()
+                    repository.loadCollection(id, sort)
                 }
             }
             .onEach { _isRefreshing.value = false }

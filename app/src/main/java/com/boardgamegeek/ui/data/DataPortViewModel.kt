@@ -52,6 +52,11 @@ class DataPortViewModel @Inject constructor(
     private val playRepository: PlayRepository,
     private val userRepository: UserRepository,
 ) : AndroidViewModel(application) {
+    private companion object {
+        const val NAME_TYPE = "type"
+        const val NAME_VERSION = "version"
+        const val NAME_ITEMS = "items"
+    }
 
     private val gson: Gson = GsonBuilder()
         .excludeFieldsWithoutExposeAnnotation()
@@ -283,7 +288,7 @@ class DataPortViewModel @Inject constructor(
                     reader.endObject()
                 }
                 if (!shouldContinue) {
-                    postMessage(R.string.msg_import_failed_invalid_type)
+                    postMessage(R.string.msg_import_failed_wrong_type, typeDescription, "unknown")
                 } else {
                     initializeImport()
                     progress.start(items.size)
@@ -295,7 +300,7 @@ class DataPortViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Timber.e(e)
-                postMessage(R.string.msg_import_failed_read_json)
+                postMessage(R.string.msg_import_failed_parse_json)
             } finally {
                 progress.complete()
             }
