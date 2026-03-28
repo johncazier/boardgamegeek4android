@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Sort
@@ -13,11 +14,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
 import com.boardgamegeek.ui.AppScreen
-import com.boardgamegeek.ui.search.SearchResultsActivity
 import com.boardgamegeek.ui.navigation.BottomNavItem
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
@@ -36,56 +38,61 @@ class GeekListsActivity : ComponentActivity() {
         }
 
         setContent {
-            var showMenu by remember { mutableStateOf(false) }
-
-            AppScreen(
-                topBarTitle = stringResource(id = R.string.title_geeklists),
-                currentScreenRouteFromActivity = BottomNavItem.GeekLists.route,
-                onSearchClick = {
-                    startActivity(Intent(this, SearchResultsActivity::class.java))
-                },
-                topBarActions = {
-                    Box {
-                        IconButton(onClick = { showMenu = !showMenu }) {
-                            Icon(
-                                imageVector = Icons.Default.Sort,
-                                contentDescription = stringResource(id = R.string.menu_sort)
-                            )
-                        }
-                        DropdownMenu(
-                            expanded = showMenu,
-                            onDismissRequest = { showMenu = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.menu_sort_geeklists_hot)) },
-                                onClick = {
-                                    viewModel.setSort(GeekListsViewModel.SortType.HOT)
-                                    showMenu = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.menu_sort_geeklists_recent)) },
-                                onClick = {
-                                    viewModel.setSort(GeekListsViewModel.SortType.RECENT)
-                                    showMenu = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.menu_sort_geeklists_active)) },
-                                onClick = {
-                                    viewModel.setSort(GeekListsViewModel.SortType.ACTIVE)
-                                    showMenu = false
-                                }
-                            )
-                        }
-                    }
-                }
-            ) { paddingValues ->
-                GeekListsScreen(
-                    viewModel = viewModel,
-                    paddingValues = paddingValues
-                )
-            }
+            GeekListsRouteScreen()
         }
+    }
+}
+
+@Composable
+fun GeekListsRouteScreen(
+    viewModel: GeekListsViewModel = hiltViewModel(),
+) {
+    var showMenu by remember { mutableStateOf(false) }
+    val navigator = LocalAppNavigator.current
+
+    AppScreen(
+        topBarTitle = stringResource(id = R.string.title_geeklists),
+        currentScreenRouteFromActivity = BottomNavItem.GeekLists.route,
+        topBarActions = {
+            Box {
+                IconButton(onClick = { showMenu = !showMenu }) {
+                    Icon(
+                        imageVector = Icons.Default.Sort,
+                        contentDescription = stringResource(id = R.string.menu_sort),
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false },
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.menu_sort_geeklists_hot)) },
+                        onClick = {
+                            viewModel.setSort(GeekListsViewModel.SortType.HOT)
+                            showMenu = false
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.menu_sort_geeklists_recent)) },
+                        onClick = {
+                            viewModel.setSort(GeekListsViewModel.SortType.RECENT)
+                            showMenu = false
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.menu_sort_geeklists_active)) },
+                        onClick = {
+                            viewModel.setSort(GeekListsViewModel.SortType.ACTIVE)
+                            showMenu = false
+                        },
+                    )
+                }
+            }
+        },
+    ) { paddingValues ->
+        GeekListsScreen(
+            viewModel = viewModel,
+            paddingValues = paddingValues,
+        )
     }
 }

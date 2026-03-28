@@ -23,16 +23,21 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.provider.BggContract
+import com.boardgamegeek.ui.MainActivity
 import com.boardgamegeek.ui.AppScreen
-import com.boardgamegeek.ui.search.SearchResultsActivity
 import com.boardgamegeek.ui.dialog.CollectionStatusDialogFragment
 import com.boardgamegeek.ui.game.GameViewModel
+import com.boardgamegeek.ui.navigation.GameRoute
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
@@ -98,58 +103,15 @@ class GameActivity : AppCompatActivity(), CollectionStatusDialogFragment.Listene
         }
 
         setContent {
-            val snackbarHostState = remember { SnackbarHostState() }
-            val gameState by viewModel.game.collectAsStateWithLifecycle()
-            val title = gameState?.name ?: gameName
-            val heroUrl = gameState?.heroImageUrl ?: heroImageUrl
-            val thumbUrl = gameState?.thumbnailUrl ?: thumbnailUrl
-            val image = gameState?.imageUrl ?: imageUrl
-            val arePlayersSorted = gameState?.customPlayerSort ?: arePlayersCustomSorted
-            val favorite = gameState?.isFavorite ?: isFavorite
-            val userMenuEnabled = (gameState?.maxUsers ?: if (isUserMenuEnabled) 1 else 0) > 0
-
-            AppScreen(
-                topBarTitle = title,
-                currentScreenRouteFromActivity = "",
-                snackbarHostState = snackbarHostState,
-                onSearchClick = {
-                    startActivity(Intent(this, SearchResultsActivity::class.java))
-                },
-                topBarActions = {
-                    IconButton(onClick = { linkToBgg("boardgame", gameId) }) {
-                        Icon(
-                            imageVector = Icons.Filled.OpenInBrowser,
-                            contentDescription = stringResource(R.string.menu_view)
-                        )
-                    }
-                    GameOverflowMenuAction(
-                        gameId = gameId,
-                        gameName = title,
-                        heroUrl = heroUrl,
-                        thumbnailUrl = thumbUrl,
-                        imageUrl = image,
-                        arePlayersCustomSorted = arePlayersSorted,
-                        isFavorite = favorite,
-                        isUserMenuEnabled = userMenuEnabled,
-                        viewModel = viewModel,
-                    )
-                }
-            ) { paddingValues ->
-                Box(modifier = Modifier.padding(paddingValues)) {
-                    GameScreen(
-                        viewModel = viewModel,
-                        gameId = gameId,
-                        initialGameName = gameName,
-                        initialHeroUrl = heroImageUrl,
-                        initialThumbnailUrl = thumbnailUrl,
-                        initialImageUrl = imageUrl,
-                        initialArePlayersCustomSorted = arePlayersCustomSorted,
-                        initialIsFavorite = isFavorite,
-                        initialIsUserMenuEnabled = isUserMenuEnabled,
-                        snackbarHostState = snackbarHostState,
-                    )
-                }
-            }
+            GameRouteScreen(
+                route = GameRoute(
+                    gameId = gameId,
+                    gameName = gameName,
+                    thumbnailUrl = thumbnailUrl,
+                    heroImageUrl = heroImageUrl,
+                ),
+                viewModel = viewModel,
+            )
         }
     }
 
@@ -192,11 +154,14 @@ class GameActivity : AppCompatActivity(), CollectionStatusDialogFragment.Listene
 
         fun createIntent(context: Context, gameId: Int, gameName: String, thumbnailUrl: String = "", heroImageUrl: String = ""): Intent? {
             if (gameId == BggContract.INVALID_ID) return null
-            return context.intentFor<GameActivity>(
-                KEY_GAME_ID to gameId,
-                KEY_GAME_NAME to gameName,
-                KEY_THUMBNAIL_URL to thumbnailUrl,
-                KEY_HERO_IMAGE_URL to heroImageUrl,
+            return MainActivity.createIntent(
+                context,
+                GameRoute(
+                    gameId = gameId,
+                    gameName = gameName,
+                    thumbnailUrl = thumbnailUrl,
+                    heroImageUrl = heroImageUrl,
+                ),
             )
         }
 
@@ -222,6 +187,73 @@ class GameActivity : AppCompatActivity(), CollectionStatusDialogFragment.Listene
                 }
             }
             return null
+        }
+    }
+}
+
+@Composable
+fun GameRouteScreen(
+    route: GameRoute,
+    viewModel: GameViewModel = hiltViewModel(),
+) {
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val gameState by viewModel.game.collectAsStateWithLifecycle()
+
+    LaunchedEffect(route.gameId) {
+        viewModel.setId(route.gameId)
+        FirebaseAnalytics.getInstance(context).logEvent(FirebaseAnalytics.Event.VIEW_ITEM) {
+            param(FirebaseAnalytics.Param.CONTENT_TYPE, "Game")
+            param(FirebaseAnalytics.Param.ITEM_ID, route.gameId.toString())
+            param(FirebaseAnalytics.Param.ITEM_NAME, route.gameName)
+        }
+    }
+
+    val title = gameState?.name ?: route.gameName
+    val heroUrl = gameState?.heroImageUrl ?: route.heroImageUrl
+    val thumbUrl = gameState?.thumbnailUrl ?: route.thumbnailUrl
+    val image = gameState?.imageUrl.orEmpty()
+    val arePlayersSorted = gameState?.customPlayerSort ?: false
+    val favorite = gameState?.isFavorite ?: false
+    val userMenuEnabled = (gameState?.maxUsers ?: 0) > 0
+
+    AppScreen(
+        topBarTitle = title,
+        currentScreenRouteFromActivity = "",
+        snackbarHostState = snackbarHostState,
+        topBarActions = {
+            IconButton(onClick = { context.linkToBgg("boardgame", route.gameId) }) {
+                Icon(
+                    imageVector = Icons.Filled.OpenInBrowser,
+                    contentDescription = stringResource(R.string.menu_view),
+                )
+            }
+            GameOverflowMenuAction(
+                gameId = route.gameId,
+                gameName = title,
+                heroUrl = heroUrl,
+                thumbnailUrl = thumbUrl,
+                imageUrl = image,
+                arePlayersCustomSorted = arePlayersSorted,
+                isFavorite = favorite,
+                isUserMenuEnabled = userMenuEnabled,
+                viewModel = viewModel,
+            )
+        },
+    ) { paddingValues ->
+        Box(modifier = Modifier.padding(paddingValues)) {
+            GameScreen(
+                viewModel = viewModel,
+                gameId = route.gameId,
+                initialGameName = route.gameName,
+                initialHeroUrl = route.heroImageUrl,
+                initialThumbnailUrl = route.thumbnailUrl,
+                initialImageUrl = image,
+                initialArePlayersCustomSorted = arePlayersSorted,
+                initialIsFavorite = favorite,
+                initialIsUserMenuEnabled = userMenuEnabled,
+                snackbarHostState = snackbarHostState,
+            )
         }
     }
 }

@@ -6,13 +6,16 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.longToast
 import com.boardgamegeek.provider.BggContract.Games
-import com.boardgamegeek.ui.game.GameActivity
+import com.boardgamegeek.ui.navigation.GameRoute
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
 import com.boardgamegeek.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -36,24 +39,11 @@ class SearchResultsActivity : ComponentActivity() {
         readIntent(intent)
 
         setContent {
-            AppTheme {
-                SearchResultsScreen(
-                    viewModel = viewModel,
-                    initialQuery = initialQuery,
-                    onQueryChange = { text ->
-                        searchText = text
-                    },
-                    onBack = { finish() },
-                    onSearchSubmit = { query ->
-                        if (query.length > 1) {
-                            viewModel.search(query)
-                        }
-                    },
-                    onGameOpen = { result ->
-                        GameActivity.start(this, result.id, result.name)
-                    }
-                )
-            }
+            SearchRouteScreen(
+                initialQuery = initialQuery,
+                onBack = { finish() },
+                onQueryChange = { searchText = it },
+            )
         }
     }
 
@@ -75,7 +65,12 @@ class SearchResultsActivity : ComponentActivity() {
                     longToast(R.string.search_error_no_data)
                 } else {
                     val gameName = intent.getStringExtra(SearchManager.EXTRA_DATA_KEY).orEmpty()
-                    GameActivity.start(this, Games.getGameId(uri), gameName)
+                    startActivity(
+                        com.boardgamegeek.ui.MainActivity.createIntent(
+                            this,
+                            GameRoute(gameId = Games.getGameId(uri), gameName = gameName),
+                        ),
+                    )
                 }
                 finish()
             }
@@ -92,5 +87,31 @@ class SearchResultsActivity : ComponentActivity() {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun SearchRouteScreen(
+    initialQuery: String,
+    onBack: () -> Unit,
+    onQueryChange: (String) -> Unit,
+    viewModel: SearchViewModel = hiltViewModel(),
+) {
+    val navigator = LocalAppNavigator.current
+    AppTheme {
+        SearchResultsScreen(
+            viewModel = viewModel,
+            initialQuery = initialQuery,
+            onQueryChange = onQueryChange,
+            onBack = onBack,
+            onSearchSubmit = { query ->
+                if (query.length > 1) {
+                    viewModel.search(query)
+                }
+            },
+            onGameOpen = { result ->
+                navigator.navigate(GameRoute(gameId = result.id, gameName = result.name))
+            },
+        )
     }
 }

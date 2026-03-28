@@ -5,11 +5,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
 import com.boardgamegeek.ui.AppScreen
-import com.boardgamegeek.ui.search.SearchResultsActivity
-import com.boardgamegeek.ui.game.GameActivity
+import com.boardgamegeek.ui.navigation.GameRoute
+import com.boardgamegeek.ui.navigation.HotnessRoute
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
 import com.boardgamegeek.ui.navigation.BottomNavItem
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -24,21 +27,33 @@ class HotnessActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            AppScreen(topBarTitle = stringResource(id = R.string.title_hotness),
-                currentScreenRouteFromActivity = activityScreenRoute, // Pass the Activity's route
-                onSearchClick = {
-                    // Search still uses the Activity's context if needed for startActivity
-                    startActivity(Intent(this, SearchResultsActivity::class.java))
-                }
-            ) { paddingValues ->
-                HotnessScreen(
-                    viewModel = viewModel,
-                    paddingValues = paddingValues,
-                    onGameClick = { gameId, gameName, thumbnailUrl ->
-                        GameActivity.start(this, gameId, gameName, thumbnailUrl ?: "")
-                    }
-                )
-            }
+            HotnessRouteScreen()
         }
+    }
+}
+
+@Composable
+fun HotnessRouteScreen(
+    viewModel: HotnessViewModel = hiltViewModel(),
+) {
+    val navigator = LocalAppNavigator.current
+    AppScreen(
+        topBarTitle = stringResource(id = R.string.title_hotness),
+        currentScreenRouteFromActivity = BottomNavItem.Hotness.route,
+    ) { paddingValues ->
+        HotnessScreen(
+            viewModel = viewModel,
+            paddingValues = paddingValues,
+            onGameClick = { gameId, gameName, thumbnailUrl ->
+                navigator.navigate(
+                    GameRoute(
+                        gameId = gameId,
+                        gameName = gameName,
+                        thumbnailUrl = thumbnailUrl.orEmpty(),
+                        heroImageUrl = thumbnailUrl.orEmpty(),
+                    ),
+                )
+            },
+        )
     }
 }
