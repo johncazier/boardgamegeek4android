@@ -448,7 +448,7 @@ class PlayRepository(
         return tryUpload(play.copy(internalId = internalId))
     }
 
-    suspend fun logPlay(play: Play) = withContext(Dispatchers.IO) {
+    suspend fun logPlay(play: Play, enqueueUpload: Boolean = true) = withContext(Dispatchers.IO) {
         if (play.updateTimestamp > 0L) {
             // remember details about the play if it's being uploaded for the first time
             if (!play.isSynced) {
@@ -486,7 +486,9 @@ class PlayRepository(
                 }
             }
 
-            enqueueUploadRequest(play.internalId)
+            if (enqueueUpload) {
+                enqueueUploadRequest(play.internalId)
+            }
         }
     }
 

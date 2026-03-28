@@ -495,8 +495,10 @@ class LogPlayViewModel @Inject constructor(
             val play = buildPlay(updateTimestamp = System.currentTimeMillis())
             val newInternalId = playRepository.upsert(play)
             val savedPlay = play.copy(internalId = newInternalId)
-            playRepository.logPlay(savedPlay)
-            syncExpansionPlays(savedPlay, markForUpload = true)
+            playRepository.logPlay(savedPlay, enqueueUpload = false)
+            val playsToUpload = mutableSetOf(savedPlay.internalId)
+            playsToUpload += syncExpansionPlays(savedPlay, markForUpload = true)
+            playRepository.enqueueUploadRequest(playsToUpload)
             if (internalIdToDelete != INVALID_ID.toLong()) {
                 if (playRepository.markAsDeleted(internalIdToDelete)) {
                     playRepository.enqueueUploadRequest(internalIdToDelete)
@@ -547,13 +549,13 @@ class LogPlayViewModel @Inject constructor(
         incomplete = _incomplete.value,
         noWinStats = _doNotCountWinStats.value,
         comments = _comments.value,
-        _players = _players.value,
+        _players = if (_internalId.value == INVALID_ID.toLong()) _players.value.detachedForNewPlay() else _players.value,
         dirtyTimestamp = dirtyTimestamp,
         updateTimestamp = updateTimestamp,
         deleteTimestamp = deleteTimestamp,
     )
 
-    private suspend fun syncExpansionPlays(play: Play, markForUpload: Boolean) {
+    private suspend fun syncExpansionPlays(play: Play, markForUpload: Boolean): Set<Long> {
         val timestamp = when {
             play.updateTimestamp > 0L -> play.updateTimestamp
             play.dirtyTimestamp > 0L -> play.dirtyTimestamp
@@ -561,6 +563,7 @@ class LogPlayViewModel @Inject constructor(
         }
         val selectedExpansionIds = _selectedExpansionIds.value
         val refreshedExpansionPlays = mutableMapOf<Int, Play>()
+        val affectedInternalIds = mutableSetOf<Long>()
 
         selectedExpansionIds.forEach { expansionId ->
             val existing = relatedExpansionPlays[expansionId]
@@ -570,14 +573,16 @@ class LogPlayViewModel @Inject constructor(
                 playId = existing?.playId ?: INVALID_ID,
                 gameId = expansionId,
                 gameName = expansionName,
+                _players = play.players.detachedForNewPlay(),
                 dirtyTimestamp = if (markForUpload) 0L else timestamp,
                 updateTimestamp = if (markForUpload) timestamp else 0L,
                 deleteTimestamp = 0L,
             )
             val newInternalId = playRepository.upsert(expansionPlay)
             val savedExpansionPlay = expansionPlay.copy(internalId = newInternalId)
+            affectedInternalIds += newInternalId
             if (markForUpload) {
-                playRepository.logPlay(savedExpansionPlay)
+                playRepository.logPlay(savedExpansionPlay, enqueueUpload = false)
             }
             refreshedExpansionPlays[expansionId] = savedExpansionPlay
         }
@@ -587,12 +592,13 @@ class LogPlayViewModel @Inject constructor(
             .values
             .forEach { removedPlay ->
                 if (playRepository.markAsDeleted(removedPlay.internalId)) {
-                    playRepository.enqueueUploadRequest(removedPlay.internalId)
+                    affectedInternalIds += removedPlay.internalId
                 }
             }
 
         relatedExpansionPlays = refreshedExpansionPlays
         _loggableExpansions.value = playRepository.loadLoggableExpansions(play.gameId, selectedExpansionIds)
+        return affectedInternalIds
     }
 
     private fun today(): Long {
@@ -602,6 +608,13 @@ class LogPlayViewModel @Inject constructor(
         calendar.set(Calendar.SECOND, 0)
         calendar.set(Calendar.MILLISECOND, 0)
         return calendar.timeInMillis
+    }
+
+    private fun List<PlayPlayer>.detachedForNewPlay() = map { player ->
+        player.copy(
+            internalId = INVALID_ID.toLong(),
+            playInternalId = INVALID_ID.toLong(),
+        )
     }
 
     private fun includeCurrentUser(players: List<Player>): List<Player> {
