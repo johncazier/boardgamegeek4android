@@ -9,8 +9,6 @@ import timber.log.Timber
 
 class RemoteConfig {
     companion object {
-        const val KEY_BGG_BEARER_TOKEN = "bgg_bearer_token"
-
         const val KEY_SYNC_ENABLED = "sync_enabled"
         const val KEY_SYNC_BUDDIES_DAYS = "sync_buddies_days"
         const val KEY_SYNC_BUDDIES_MAX = "sync_buddies_max"

@@ -1,6 +1,6 @@
 package com.boardgamegeek.io
 
-import com.boardgamegeek.util.RemoteConfig
+import com.boardgamegeek.BuildConfig
 import okhttp3.Interceptor
 import okhttp3.Response
 import java.io.IOException
@@ -9,11 +9,12 @@ import kotlin.jvm.Throws
 class BearerTokenInterceptor : Interceptor {
     @Throws(IOException::class)
     override fun intercept(chain: Interceptor.Chain): Response {
-        val token = RemoteConfig.getString(RemoteConfig.KEY_BGG_BEARER_TOKEN)
         val originalRequest = chain.request()
-        val request = originalRequest.newBuilder()
-            .header("Authorization", "Bearer $token")
-            .build()
+        val requestBuilder = originalRequest.newBuilder()
+        if (BuildConfig.BGG_BEARER_TOKEN.isNotBlank()) {
+            requestBuilder.header("Authorization", "Bearer ${BuildConfig.BGG_BEARER_TOKEN}")
+        }
+        val request = requestBuilder.build()
         return chain.proceed(request)
     }
 }

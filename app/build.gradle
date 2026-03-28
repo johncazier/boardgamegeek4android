@@ -20,6 +20,19 @@ plugins {
     id 'com.github.ben-manes.versions'
 }
 
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { stream ->
+        localProperties.load(stream)
+    }
+}
+
+def bggBearerToken = localProperties.getProperty("bggBearerToken")
+if (!bggBearerToken) {
+    bggBearerToken = System.getenv("BGG_BEARER_TOKEN") ?: ""
+}
+
 def versionMajor = 6
 def versionMinor = 8
 def versionPatch = 2
@@ -52,6 +65,7 @@ android {
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
 
         vectorDrawables.useSupportLibrary = true
+        buildConfigField "String", "BGG_BEARER_TOKEN", "\"${bggBearerToken.replace("\\", "\\\\").replace("\"", "\\\"")}\""
 
         ksp {
             arg("room.schemaLocation", file("$projectDir/schemas").absolutePath)

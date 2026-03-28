@@ -12,3 +12,11 @@ See what we're planning for on our [Trello board](https://trello.com/b/pRZWIOOv)
 The installer is available through the Play Store (unavailable at the moment) or at [GitHub Releases](https://github.com/ccomeaux/boardgamegeek4android/releases). If you are interested in Beta (or maybe even Alpha releases), please join the [BoardGameGeek.com Guild](https://boardgamegeek.com/guild/3543), or opt in at the [Play Store](https://play.google.com/apps/testing/com.boardgamegeek).
 
 If you are interested in contributing to this project please refer to the [How To Contribute](/CONTRIBUTING.md) page.
+
+## Local configuration
+Set the BoardGameGeek bearer token outside the project before building:
+
+- Add `bggBearerToken=...` to your local `local.properties`, or
+- Export `BGG_BEARER_TOKEN` in your shell environment.
+
+`local.properties` takes precedence if both are set.
