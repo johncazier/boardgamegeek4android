@@ -73,7 +73,10 @@ class SyncCollectionWorker @AssistedInject constructor(
             return null
         }
 
-        setForeground(createForegroundInfo(applicationContext.getString(R.string.sync_notification_title_collection)))
+        setForegroundSafely(
+            createForegroundInfo(applicationContext.getString(R.string.sync_notification_title_collection)),
+            "SyncCollectionWorker startup",
+        )
 
         return if (quickSync) {
             val lastPartialSync = syncPrefs[TIMESTAMP_COLLECTION_PARTIAL, 0L] ?: 0L
@@ -109,7 +112,10 @@ class SyncCollectionWorker @AssistedInject constructor(
     }
 
     private suspend fun syncCompleteCollection(): Data? {
-        setForeground(createForegroundInfo(applicationContext.getString(R.string.sync_notification_collection_full)))
+        setForegroundSafely(
+            createForegroundInfo(applicationContext.getString(R.string.sync_notification_collection_full)),
+            "SyncCollectionWorker full",
+        )
         setProgress(PROGRESS_STEP_COLLECTION_COMPLETE)
 
         val statuses = prefs.getSyncStatuses().toMutableList().apply {
@@ -170,7 +176,7 @@ class SyncCollectionWorker @AssistedInject constructor(
         Timber.i("Syncing $statusDescription collection $subtypeDescription while excluding statuses [${excludedStatuses.formatList()}]")
 
         val contentText = applicationContext.getString(R.string.sync_notification_collection_detail, statusDescription, subtypeDescription)
-        setForeground(createForegroundInfo(contentText))
+        setForegroundSafely(createForegroundInfo(contentText), "SyncCollectionWorker progress")
 
         val updatedTimestamp = System.currentTimeMillis()
         val result = performSync(updatedTimestamp, subtype, null, status, excludedStatuses, errorMessage = contentText)
@@ -214,7 +220,7 @@ class SyncCollectionWorker @AssistedInject constructor(
             subtype.getDescription(applicationContext),
             previousSyncTimestamp.toDateTime()
         )
-        setForeground(createForegroundInfo(contentText))
+        setForegroundSafely(createForegroundInfo(contentText), "SyncCollectionWorker progress")
 
         val updatedTimestamp = System.currentTimeMillis()
         val result = performSync(updatedTimestamp, subtype, previousSyncTimestamp, errorMessage = contentText)
@@ -225,7 +231,10 @@ class SyncCollectionWorker @AssistedInject constructor(
     private suspend fun syncUnupdatedCollection(): Data? {
         Timber.i("Starting to sync unupdated collection")
         setProgress(PROGRESS_STEP_COLLECTION_STALE)
-        setForeground(createForegroundInfo(applicationContext.getString(R.string.sync_notification_collection_unupdated)))
+        setForegroundSafely(
+            createForegroundInfo(applicationContext.getString(R.string.sync_notification_collection_unupdated)),
+            "SyncCollectionWorker unupdated collections",
+        )
         return try {
             val gameList = gameCollectionRepository.loadUnupdatedItems()
             Timber.i("Found %,d unupdated collection items to update", gameList.size)
@@ -246,7 +255,7 @@ class SyncCollectionWorker @AssistedInject constructor(
                         subtype.getDescription(applicationContext),
                         gameDescription
                     )
-                    setForeground(createForegroundInfo(contentText))
+                    setForegroundSafely(createForegroundInfo(contentText), "SyncCollectionWorker progress")
                     performSync(subtype = subtype, gameIds = games.map { it.game.gameId }, errorMessage = contentText)?.let { return it }
                 }
             }
@@ -293,7 +302,10 @@ class SyncCollectionWorker @AssistedInject constructor(
 
     private suspend fun deleteUnusedItems() {
         setProgress(PROGRESS_STEP_COLLECTION_DELETE)
-        setForeground(createForegroundInfo(applicationContext.getString(R.string.sync_notification_collection_missing)))
+        setForegroundSafely(
+            createForegroundInfo(applicationContext.getString(R.string.sync_notification_collection_missing)),
+            "SyncCollectionWorker missing collection",
+        )
         val timestamp = syncPrefs.getCurrentCollectionSyncTimestamp()
         Timber.i("Deleting collection items not updated since ${timestamp.toDateTime()}")
         val count = gameCollectionRepository.deleteUnupdatedItems(timestamp)
@@ -311,7 +323,10 @@ class SyncCollectionWorker @AssistedInject constructor(
         val gamesToRemove = gameRepository.loadGamesByLastViewed(sinceTimestamp, prefs.isStatusSetToSync(CollectionStatus.Played))
         if (gamesToRemove.isNotEmpty()) {
             Timber.i("Found ${gamesToRemove.size} games to remove: ${gamesToRemove.map { "[${it.first}] ${it.second}" }}")
-            setForeground(createForegroundInfo(applicationContext.resources.getQuantityString(R.plurals.sync_notification_games_remove, gamesToRemove.size, gamesToRemove.size)))
+            setForegroundSafely(
+                createForegroundInfo(applicationContext.resources.getQuantityString(R.plurals.sync_notification_games_remove, gamesToRemove.size, gamesToRemove.size)),
+                "SyncCollectionWorker remove games",
+            )
 
             var count = 0
             // NOTE: We're deleting one at a time, because a batch doesn't perform the game/collection join
@@ -329,7 +344,10 @@ class SyncCollectionWorker @AssistedInject constructor(
         val gamesFetchMaxUnupdated = RemoteConfig.getInt(RemoteConfig.KEY_SYNC_GAMES_FETCH_MAX_UNUPDATED).coerceIn(1, if (quickSync) 8 else Int.MAX_VALUE)
         Timber.i("Refreshing $gamesFetchMaxUnupdated games that are missing details in the collection")
         setProgress(PROGRESS_STEP_GAMES_NEW)
-        setForeground(createForegroundInfo(applicationContext.getString(R.string.sync_notification_games_unupdated)))
+        setForegroundSafely(
+            createForegroundInfo(applicationContext.getString(R.string.sync_notification_games_unupdated)),
+            "SyncCollectionWorker unupdated games",
+        )
         val games = gameRepository.loadUnupdatedGames(gamesFetchMaxUnupdated)
         refreshGames(games)?.let { return it }
 
@@ -338,7 +356,10 @@ class SyncCollectionWorker @AssistedInject constructor(
         val gamesFetchMax = RemoteConfig.getInt(RemoteConfig.KEY_SYNC_GAMES_FETCH_MAX).coerceIn(1, if (quickSync) 4 else Int.MAX_VALUE)
         Timber.i("Refreshing $gamesFetchMax oldest games in the collection")
         setProgress(PROGRESS_STEP_GAMES_STALE)
-        setForeground(createForegroundInfo(applicationContext.getString(R.string.sync_notification_games_oldest)))
+        setForegroundSafely(
+            createForegroundInfo(applicationContext.getString(R.string.sync_notification_games_oldest)),
+            "SyncCollectionWorker oldest games",
+        )
         val timestamp = System.currentTimeMillis()
         val staleGames = gameRepository.loadOldestUpdatedGames(gamesFetchMax, timestamp)
         refreshGames(staleGames)?.let { return it }

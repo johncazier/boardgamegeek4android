@@ -89,7 +89,6 @@ import com.boardgamegeek.extensions.linkToBgg
 import com.boardgamegeek.extensions.setTextMaybeHtml
 import com.boardgamegeek.extensions.toColor
 import com.boardgamegeek.extensions.toDescription
-import com.boardgamegeek.extensions.showAndSurvive
 import com.boardgamegeek.model.CollectionItem
 import com.boardgamegeek.model.Game
 import com.boardgamegeek.model.GameAgePoll
@@ -109,20 +108,21 @@ import com.boardgamegeek.ui.gamedetail.GameDetailActivity
 import com.boardgamegeek.ui.plays.GamePlaysActivity
 import com.boardgamegeek.ui.person.PersonActivity
 import com.boardgamegeek.ui.play.PlayActivity
-import com.boardgamegeek.ui.dialog.GameAgePollDialogFragment
-import com.boardgamegeek.ui.dialog.GameLanguagePollDialogFragment
-import com.boardgamegeek.ui.dialog.GameRanksDialogFragment
-import com.boardgamegeek.ui.dialog.GameSuggestedPlayerCountPollDialogFragment
 import com.boardgamegeek.ui.forums.ForumsViewModel
 import com.boardgamegeek.ui.game.GameViewModel
 import com.boardgamegeek.util.XmlApiMarkupConverter
-import androidx.fragment.app.FragmentActivity
 import com.boardgamegeek.ui.playstats.GamePlayStatsActivity
 import java.text.DecimalFormat
 import java.text.NumberFormat
 
 @Composable
-fun GameInfoTab(viewModel: GameViewModel) {
+fun GameInfoTab(
+    viewModel: GameViewModel,
+    onShowRanks: () -> Unit,
+    onShowSuggestedPlayerCount: () -> Unit,
+    onShowAgePoll: () -> Unit,
+    onShowLanguagePoll: () -> Unit,
+) {
     val context = LocalContext.current
     val game by viewModel.game.collectAsStateWithLifecycle()
     val subtypes by viewModel.subtypes.collectAsStateWithLifecycle()
@@ -148,6 +148,10 @@ fun GameInfoTab(viewModel: GameViewModel) {
                 languagePoll = languagePoll,
                 agePoll = agePoll,
                 playerPoll = playerPoll,
+                onShowRanks = onShowRanks,
+                onShowSuggestedPlayerCount = onShowSuggestedPlayerCount,
+                onShowAgePoll = onShowAgePoll,
+                onShowLanguagePoll = onShowLanguagePoll,
             )
         }
         PullRefreshIndicator(
@@ -166,6 +170,10 @@ private fun GameInfoContent(
     languagePoll: GameLanguagePoll?,
     agePoll: GameAgePoll?,
     playerPoll: List<GamePlayerPollResults>,
+    onShowRanks: () -> Unit,
+    onShowSuggestedPlayerCount: () -> Unit,
+    onShowAgePoll: () -> Unit,
+    onShowLanguagePoll: () -> Unit,
 ) {
     val context = LocalContext.current
     val gameIconTint = rememberGameIconTint(game.iconColor)
@@ -228,7 +236,6 @@ private fun GameInfoContent(
         context.getSpannedText(R.string.age_community, it).toString()
     }.orEmpty()
 
-    val activity = context as FragmentActivity
     val listState = rememberLazyListState()
 
     LaunchedEffect(rankText, familyText) {
@@ -249,7 +256,7 @@ private fun GameInfoContent(
                     title = rankText,
                     subtitle = familyText.takeIf { it.isNotBlank() },
                     iconTint = gameIconTint,
-                    onClick = { activity.showAndSurvive(GameRanksDialogFragment()) }
+                    onClick = onShowRanks,
                 )
                 HorizontalDivider()
             } else {
@@ -308,9 +315,7 @@ private fun GameInfoContent(
                 iconTint = gameIconTint,
                 onClick = {
                     if (game.suggestedPlayerCountPollVoteTotal > 0) {
-                        activity.showAndSurvive(GameSuggestedPlayerCountPollDialogFragment().apply {
-                            setStyle(androidx.fragment.app.DialogFragment.STYLE_NORMAL, R.style.Theme_bgglight_Dialog)
-                        })
+                        onShowSuggestedPlayerCount()
                     }
                 }
             )
@@ -328,9 +333,7 @@ private fun GameInfoContent(
                 iconTint = gameIconTint,
                 onClick = {
                     if (ageVotes > 0) {
-                        activity.showAndSurvive(GameAgePollDialogFragment().apply {
-                            setStyle(androidx.fragment.app.DialogFragment.STYLE_NORMAL, R.style.Theme_bgglight_Dialog)
-                        })
+                        onShowAgePoll()
                     }
                 }
             )
@@ -363,9 +366,7 @@ private fun GameInfoContent(
                 },
                 onClick = {
                     if (languageVotes > 0) {
-                        activity.showAndSurvive(GameLanguagePollDialogFragment().apply {
-                            setStyle(androidx.fragment.app.DialogFragment.STYLE_NORMAL, R.style.Theme_bgglight_Dialog)
-                        })
+                        onShowLanguagePoll()
                     }
                 }
             )

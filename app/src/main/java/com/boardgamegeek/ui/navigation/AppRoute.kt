@@ -40,6 +40,11 @@ data object DataRoute : AppRoute
 data object SettingsRoute : AppRoute
 
 @Serializable
+data class LoginRoute(
+    val username: String? = null,
+) : AppRoute
+
+@Serializable
 data class SearchRoute(
     val query: String = "",
 ) : AppRoute

@@ -32,14 +32,19 @@ import com.boardgamegeek.extensions.linkToBgg
 import com.boardgamegeek.extensions.logPlayPreference
 import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.extensions.shareGame
-import com.boardgamegeek.extensions.showAndSurvive
 import com.boardgamegeek.ui.image.ImageActivity
 import com.boardgamegeek.ui.logplay.LogPlayActivity
-import com.boardgamegeek.ui.dialog.CollectionStatusDialogFragment
-import com.boardgamegeek.ui.dialog.GameUsersDialogFragment
 import com.boardgamegeek.ui.game.GameViewModel
 import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.coroutines.launch
+
+private enum class GameDialogType {
+    COLLECTION_STATUS,
+    RANKS,
+    SUGGESTED_PLAYER_COUNT,
+    AGE_POLL,
+    LANGUAGE_POLL,
+}
 
 @Composable
 fun GameScreen(
@@ -56,6 +61,7 @@ fun GameScreen(
 ) {
     val context = LocalContext.current
     val activity = context as FragmentActivity
+    var activeDialog by remember { mutableStateOf<GameDialogType?>(null) }
     val game by viewModel.game.collectAsStateWithLifecycle()
     val username by viewModel.username.collectAsStateWithLifecycle()
     val syncCollectionPref by viewModel.syncCollectionPreference.collectAsStateWithLifecycle()
@@ -102,6 +108,11 @@ fun GameScreen(
             arePlayersCustomSorted = arePlayersCustomSorted,
             viewModel = viewModel,
             activity = activity,
+            onShowCollectionStatus = { activeDialog = GameDialogType.COLLECTION_STATUS },
+            onShowRanks = { activeDialog = GameDialogType.RANKS },
+            onShowSuggestedPlayerCount = { activeDialog = GameDialogType.SUGGESTED_PLAYER_COUNT },
+            onShowAgePoll = { activeDialog = GameDialogType.AGE_POLL },
+            onShowLanguagePoll = { activeDialog = GameDialogType.LANGUAGE_POLL },
         )
     }
 
@@ -162,6 +173,21 @@ fun GameScreen(
         }
 
     }
+
+    when (activeDialog) {
+        GameDialogType.COLLECTION_STATUS -> CollectionStatusDialog(
+            onDismiss = { activeDialog = null },
+            onConfirm = viewModel::addCollectionItem,
+        )
+        GameDialogType.RANKS -> GameRanksDialog(viewModel = viewModel, onDismiss = { activeDialog = null })
+        GameDialogType.SUGGESTED_PLAYER_COUNT -> GameSuggestedPlayerCountDialog(
+            viewModel = viewModel,
+            onDismiss = { activeDialog = null },
+        )
+        GameDialogType.AGE_POLL -> GameAgePollDialog(viewModel = viewModel, onDismiss = { activeDialog = null })
+        GameDialogType.LANGUAGE_POLL -> GameLanguagePollDialog(viewModel = viewModel, onDismiss = { activeDialog = null })
+        null -> Unit
+    }
 }
 
 @Composable
@@ -201,6 +227,7 @@ fun GameOverflowMenuAction(
     isFavorite: Boolean,
     isUserMenuEnabled: Boolean,
     viewModel: GameViewModel,
+    onShowUsers: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -267,7 +294,7 @@ fun GameOverflowMenuAction(
             text = { Text(stringResource(R.string.menu_users)) },
             onClick = {
                 expanded = false
-                GameUsersDialogFragment.launch(activity)
+                onShowUsers()
             },
             enabled = isUserMenuEnabled
         )
@@ -301,6 +328,11 @@ private fun buildGameTabs(
     arePlayersCustomSorted: Boolean,
     viewModel: GameViewModel,
     activity: FragmentActivity,
+    onShowCollectionStatus: () -> Unit,
+    onShowRanks: () -> Unit,
+    onShowSuggestedPlayerCount: () -> Unit,
+    onShowAgePoll: () -> Unit,
+    onShowLanguagePoll: () -> Unit,
 ): List<GameTab> {
     val favoriteIcon = if (isFavorite) R.drawable.ic_baseline_favorite_24 else R.drawable.ic_baseline_favorite_border_24
 
@@ -309,7 +341,15 @@ private fun buildGameTabs(
         titleResId = R.string.title_info,
         fabIconRes = R.drawable.ic_baseline_event_available_24,
         onFabClick = { logPlay(activity, viewModel, gameId, gameName, heroUrl, thumbnailUrl, imageUrl, arePlayersCustomSorted) },
-        content = { GameInfoTab(viewModel) }
+        content = {
+            GameInfoTab(
+                viewModel = viewModel,
+                onShowRanks = onShowRanks,
+                onShowSuggestedPlayerCount = onShowSuggestedPlayerCount,
+                onShowAgePoll = onShowAgePoll,
+                onShowLanguagePoll = onShowLanguagePoll,
+            )
+        }
     )
     tabs += GameTab(
         titleResId = R.string.title_credits,
@@ -335,7 +375,7 @@ private fun buildGameTabs(
         tabs += GameTab(
             titleResId = R.string.title_my_games,
             fabIconRes = R.drawable.ic_baseline_add_24,
-            onFabClick = { activity.showAndSurvive(CollectionStatusDialogFragment()) },
+            onFabClick = onShowCollectionStatus,
             content = { GameCollectionTab(viewModel) }
         )
     }

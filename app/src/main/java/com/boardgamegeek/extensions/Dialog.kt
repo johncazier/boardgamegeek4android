@@ -11,44 +11,23 @@ import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentManager
 import com.boardgamegeek.R
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import java.util.*
-
-fun FragmentActivity.showAndSurvive(dialog: DialogFragment, tag: String = "dialog") {
-    showAndSurvive(dialog, supportFragmentManager, tag)
-}
-
-fun Fragment.showAndSurvive(dialog: DialogFragment, tag: String = "dialog") {
-    showAndSurvive(dialog, parentFragmentManager, tag)
-}
-
-private fun showAndSurvive(dialog: DialogFragment, fragmentManager: FragmentManager, tag: String = "dialog") {
-    fragmentManager.beginTransaction().apply {
-        fragmentManager.findFragmentByTag(tag)?.let {
-            remove(it)
-        }
-        addToBackStack(null)
-        dialog.show(this, tag)
-    }
-}
+import java.util.Locale
 
 fun Activity.createDiscardDialog(
     @StringRes objectResId: Int,
     @StringRes positiveButtonResId: Int = R.string.keep_editing,
     isNew: Boolean,
     finishActivity: Boolean = true,
-    discardListener: () -> Unit = {}
+    discardListener: () -> Unit = {},
 ): Dialog {
     val messageFormat = getString(
-        if (isNew)
+        if (isNew) {
             R.string.discard_new_message
-        else
+        } else {
             R.string.discard_changes_message
+        },
     )
     return createThemedBuilder()
         .setMessage(String.format(messageFormat, getString(objectResId).lowercase(Locale.getDefault())))
@@ -73,21 +52,35 @@ fun Context.showClickableAlertDialog(@StringRes titleResId: Int, message: String
     showClickableAlertDialog(titleResId, spannableMessage)
 }
 
-fun Context.showClickableAlertDialog(@StringRes titleResId: Int, @StringRes messageResId: Int, vararg formatArgs: Any) {
+fun Context.showClickableAlertDialog(
+    @StringRes titleResId: Int,
+    @StringRes messageResId: Int,
+    vararg formatArgs: Any,
+) {
     val spannableMessage = SpannableString(getString(messageResId, *formatArgs))
     showClickableAlertDialog(titleResId, spannableMessage)
 }
 
-fun Context.showClickableAlertDialogPlural(@StringRes titleResId: Int, @PluralsRes messageResId: Int, quantity: Int, vararg formatArgs: Any) {
+fun Context.showClickableAlertDialogPlural(
+    @StringRes titleResId: Int,
+    @PluralsRes messageResId: Int,
+    quantity: Int,
+    vararg formatArgs: Any,
+) {
     val spannableMessage = SpannableString(resources.getQuantityString(messageResId, quantity, *formatArgs))
     showClickableAlertDialog(titleResId, spannableMessage)
 }
 
-private fun Context.showClickableAlertDialog(@StringRes titleResId: Int, spannableMessage: SpannableString) {
+private fun Context.showClickableAlertDialog(
+    @StringRes titleResId: Int,
+    spannableMessage: SpannableString,
+) {
     Linkify.addLinks(spannableMessage, Linkify.WEB_URLS)
     val dialog = AlertDialog.Builder(this)
         .setMessage(spannableMessage)
         .show()
-    if (titleResId != ResourcesCompat.ID_NULL) dialog.setTitle(titleResId)
+    if (titleResId != ResourcesCompat.ID_NULL) {
+        dialog.setTitle(titleResId)
+    }
     dialog.findViewById<TextView>(android.R.id.message)?.movementMethod = LinkMovementMethod.getInstance()
 }

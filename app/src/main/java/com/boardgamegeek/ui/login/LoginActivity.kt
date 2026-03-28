@@ -27,10 +27,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -40,6 +42,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.auth.Authenticator
@@ -47,7 +50,9 @@ import com.boardgamegeek.extensions.AccountPreferences
 import com.boardgamegeek.extensions.intentFor
 import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.extensions.set
+import com.boardgamegeek.extensions.toast
 import com.boardgamegeek.model.AuthToken
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
 import com.boardgamegeek.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -78,63 +83,11 @@ class LoginActivity : ComponentActivity() {
         isRequestingNewAccount = username == null
 
         setContent {
-            AppTheme {
-                val isAuthenticating by viewModel.isAuthenticating.collectAsStateWithLifecycle()
-                val authenticationResult by viewModel.authenticationResult.collectAsStateWithLifecycle()
-                var usernameInput by rememberSaveable { mutableStateOf(username.orEmpty()) }
-                var passwordInput by rememberSaveable { mutableStateOf("") }
-                var usernameError by rememberSaveable { mutableStateOf<String?>(null) }
-                var passwordError by rememberSaveable { mutableStateOf<String?>(null) }
-                var attemptedLogin by rememberSaveable { mutableStateOf(false) }
-                val keyboard = LocalSoftwareKeyboardController.current
-
-                LaunchedEffect(authenticationResult, isAuthenticating, attemptedLogin) {
-                    if (!isAuthenticating && attemptedLogin) {
-                        val result = authenticationResult
-                        if (result == null) {
-                            passwordError = getString(R.string.error_incorrect_password)
-                        } else {
-                            createAccount(result)
-                        }
-                        attemptedLogin = false
-                    }
-                }
-
-                LoginScreen(
-                    isRequestingNewAccount = isRequestingNewAccount,
-                    username = usernameInput,
-                    password = passwordInput,
-                    usernameError = usernameError,
-                    passwordError = passwordError,
-                    isAuthenticating = isAuthenticating,
-                    onUsernameChanged = {
-                        usernameInput = it
-                        usernameError = null
-                    },
-                    onPasswordChanged = {
-                        passwordInput = it
-                        passwordError = null
-                    },
-                    onSignIn = {
-                        usernameError = null
-                        passwordError = null
-
-                        val trimmedUsername = usernameInput.trim()
-                        when {
-                            trimmedUsername.isBlank() -> usernameError = getString(R.string.error_field_required)
-                            passwordInput.isBlank() -> passwordError = getString(R.string.error_field_required)
-                            else -> {
-                                keyboard?.hide()
-                                username = trimmedUsername
-                                password = passwordInput
-                                attemptedLogin = true
-                                viewModel.clearAuthenticationResult()
-                                viewModel.login(username, password)
-                            }
-                        }
-                    }
-                )
-            }
+            LoginRouteScreen(
+                initialUsername = username,
+                onLoginSuccess = { finish() },
+                viewModel = viewModel,
+            )
         }
     }
 
@@ -202,6 +155,114 @@ class LoginActivity : ComponentActivity() {
             )
             return bundleOf(AccountManager.KEY_INTENT to intent)
         }
+    }
+}
+
+@Composable
+fun LoginRouteScreen(
+    initialUsername: String? = null,
+    onLoginSuccess: (() -> Unit)? = null,
+    viewModel: LoginViewModel = hiltViewModel(),
+) {
+    val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
+    val isAuthenticating by viewModel.isAuthenticating.collectAsStateWithLifecycle()
+    val authenticationResult by viewModel.authenticationResult.collectAsStateWithLifecycle()
+    var usernameInput by rememberSaveable { mutableStateOf(initialUsername.orEmpty()) }
+    var passwordInput by rememberSaveable { mutableStateOf("") }
+    var usernameError by rememberSaveable { mutableStateOf<String?>(null) }
+    var passwordError by rememberSaveable { mutableStateOf<String?>(null) }
+    var attemptedLogin by rememberSaveable { mutableStateOf(false) }
+    val keyboard = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(authenticationResult, isAuthenticating, attemptedLogin) {
+        if (!isAuthenticating && attemptedLogin) {
+            val result = authenticationResult
+            if (result == null) {
+                passwordError = context.getString(R.string.error_incorrect_password)
+            } else if (completeLogin(context, result, passwordInput, initialUsername == null)) {
+                (onLoginSuccess ?: { navigator.popBackStack() })()
+            } else {
+                context.toast(R.string.title_error)
+            }
+            attemptedLogin = false
+        }
+    }
+
+    AppTheme {
+        LoginScreen(
+            isRequestingNewAccount = initialUsername == null,
+            username = usernameInput,
+            password = passwordInput,
+            usernameError = usernameError,
+            passwordError = passwordError,
+            isAuthenticating = isAuthenticating,
+            onUsernameChanged = {
+                usernameInput = it
+                usernameError = null
+            },
+            onPasswordChanged = {
+                passwordInput = it
+                passwordError = null
+            },
+            onSignIn = {
+                usernameError = null
+                passwordError = null
+
+                val trimmedUsername = usernameInput.trim()
+                when {
+                    trimmedUsername.isBlank() -> usernameError = context.getString(R.string.error_field_required)
+                    passwordInput.isBlank() -> passwordError = context.getString(R.string.error_field_required)
+                    else -> {
+                        keyboard?.hide()
+                        attemptedLogin = true
+                        viewModel.clearAuthenticationResult()
+                        viewModel.login(trimmedUsername, passwordInput)
+                    }
+                }
+            },
+        )
+    }
+}
+
+private fun completeLogin(
+    context: Context,
+    authToken: AuthToken,
+    password: String,
+    isRequestingNewAccount: Boolean,
+): Boolean {
+    val username = authToken.username ?: return false
+    Timber.i("Creating account")
+    val accountManager = AccountManager.get(context)
+    val account = Account(username, Authenticator.ACCOUNT_TYPE)
+    return try {
+        accountManager.setAuthToken(account, Authenticator.AUTH_TOKEN_TYPE, authToken.token)
+        val userData = bundleOf(Authenticator.KEY_AUTH_TOKEN_EXPIRY to authToken.expiry.toString())
+        if (isRequestingNewAccount) {
+            var success = accountManager.addAccountExplicitly(account, password, userData)
+            if (!success) {
+                Authenticator.removeAccounts(context.applicationContext)
+                success = accountManager.addAccountExplicitly(account, password, userData)
+            }
+            if (!success) {
+                val accounts = accountManager.getAccountsByType(Authenticator.ACCOUNT_TYPE)
+                when {
+                    accounts.isEmpty() -> return false
+                    accounts.size != 1 -> return false
+                    else -> {
+                        val existingAccount = accounts[0]
+                        if (existingAccount.name != account.name) return false
+                        accountManager.setPassword(account, password)
+                    }
+                }
+            }
+        } else {
+            accountManager.setPassword(account, password)
+        }
+        context.preferences()[AccountPreferences.KEY_USERNAME] = username
+        true
+    } catch (_: Exception) {
+        false
     }
 }
 

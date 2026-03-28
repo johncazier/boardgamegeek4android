@@ -61,7 +61,7 @@ class ImageActivity : ComponentActivity() {
                             }
                         },
                         update = { view ->
-                            Picasso.with(view.context)
+                            Picasso.get()
                                 .load(imageUrl.ensureHttpsScheme())
                                 .error(R.drawable.thumbnail_image_empty)
                                 .fit()
@@ -73,7 +73,7 @@ class ImageActivity : ComponentActivity() {
                                         isLoading = false
                                     }
 
-                                    override fun onError() {
+                                    override fun onError(e: Exception?) {
                                         isLoading = false
                                     }
                                 })

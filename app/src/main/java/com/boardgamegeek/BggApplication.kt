@@ -1,11 +1,11 @@
 package com.boardgamegeek
 
+import android.app.Application
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
 import android.os.StrictMode.VmPolicy
 import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
-import androidx.multidex.MultiDexApplication
 import androidx.preference.PreferenceManager
 import androidx.work.*
 import com.boardgamegeek.extensions.*
@@ -30,7 +30,7 @@ import javax.inject.Inject
 import javax.inject.Named
 
 @HiltAndroidApp
-class BggApplication : MultiDexApplication(), Configuration.Provider {
+class BggApplication : Application(), Configuration.Provider {
     @Inject
     @Named("withCache")
     lateinit var httpClient: OkHttpClient

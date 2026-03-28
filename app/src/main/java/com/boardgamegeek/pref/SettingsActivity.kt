@@ -4,10 +4,9 @@ import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.activity.addCallback
 import androidx.collection.arrayMapOf
 import androidx.core.os.bundleOf
-import androidx.fragment.app.DialogFragment
-import androidx.activity.addCallback
 import androidx.fragment.app.activityViewModels
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -18,6 +17,7 @@ import com.boardgamegeek.pref.SyncPrefs.Companion.TIMESTAMP_COLLECTION_COMPLETE
 import com.boardgamegeek.pref.SyncPrefs.Companion.TIMESTAMP_COLLECTION_COMPLETE_CURRENT
 import com.boardgamegeek.ui.DrawerActivity
 import com.boardgamegeek.ui.viewmodel.SelfUserViewModel
+import com.boardgamegeek.ui.viewmodel.SettingsViewModel
 import com.boardgamegeek.work.SyncCollectionWorker
 import com.boardgamegeek.work.SyncPlaysWorker
 import com.boardgamegeek.work.SyncUsersWorker
@@ -74,6 +74,7 @@ class SettingsActivity : DrawerActivity() {
     class PrefFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeListener {
         private val syncPrefs: SharedPreferences by lazy { SyncPrefs.getPrefs(requireContext()) }
         private val selfUserViewModel by activityViewModels<SelfUserViewModel>()
+        private val settingsViewModel by activityViewModels<SettingsViewModel>()
         private var needsCollectionSync = false
         private var needsPlaysSync = false
         private var needsUsersSync = false
@@ -179,24 +180,36 @@ class SettingsActivity : DrawerActivity() {
             } ?: super.onPreferenceTreeClick(preference)
         }
 
-        private val dialogFragmentTag = "PreferenceFragment.DIALOG"
-
         override fun onDisplayPreferenceDialog(preference: Preference) {
-            if (parentFragmentManager.findFragmentByTag(dialogFragmentTag) != null) {
-                return
+            when (preference) {
+                is SignOutPreference -> {
+                    requireContext().createThemedBuilder()
+                        .setTitle(preference.dialogTitle)
+                        .setMessage(preference.dialogMessage)
+                        .setNegativeButton(R.string.cancel, null)
+                        .setPositiveButton(R.string.ok) { _, _ ->
+                            requireContext().cancelSync()
+                            com.boardgamegeek.auth.Authenticator.signOut(requireContext())
+                        }
+                        .show()
+                }
+                is ConfirmDialogPreference -> {
+                    requireContext().createThemedBuilder()
+                        .setTitle(preference.dialogTitle)
+                        .setMessage(preference.summary)
+                        .setNegativeButton(R.string.cancel, null)
+                        .setPositiveButton(R.string.ok) { _, _ ->
+                            when (preference.key) {
+                                "clear" -> settingsViewModel.clearAllData()
+                                "collection" -> settingsViewModel.resetCollectionItems()
+                                "plays" -> settingsViewModel.resetPlays()
+                                "buddies" -> settingsViewModel.resetUsers()
+                            }
+                        }
+                        .show()
+                }
+                else -> super.onDisplayPreferenceDialog(preference)
             }
-
-            val dialogFragment: DialogFragment? = when (preference) {
-                is SignOutPreference -> SignOutDialogFragment.newInstance(preference.key)
-                is ConfirmDialogPreference -> ConfirmDialogFragment.newInstance(preference.key)
-                else -> null
-            }
-
-            if (dialogFragment != null) {
-                @Suppress("DEPRECATION")
-                dialogFragment.setTargetFragment(this, 0)
-                dialogFragment.show(parentFragmentManager, dialogFragmentTag)
-            } else super.onDisplayPreferenceDialog(preference)
         }
 
         private fun updateAccountPrefs(username: String) {

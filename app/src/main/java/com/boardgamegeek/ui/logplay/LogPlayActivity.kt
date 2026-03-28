@@ -1,6 +1,7 @@
 package com.boardgamegeek.ui.logplay
 
 import android.annotation.SuppressLint
+import android.app.DatePickerDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -13,12 +14,15 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.os.Bundle
 import android.text.format.DateUtils
+import android.view.HapticFeedbackConstants
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -36,7 +40,11 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ListUpdateCallback
 import androidx.recyclerview.widget.RecyclerView
 import com.boardgamegeek.R
+import com.boardgamegeek.databinding.DialogColorsBinding
+import com.boardgamegeek.databinding.DialogNumberPadBinding
 import com.boardgamegeek.databinding.RowLogplayPlayerBinding
+import com.boardgamegeek.extensions.BggColors
+import com.boardgamegeek.extensions.KEY_HAPTIC_FEEDBACK
 import com.boardgamegeek.extensions.LOG_EDIT_PLAYER
 import com.boardgamegeek.extensions.LOG_EDIT_PLAYER_PROMPTED
 import com.boardgamegeek.extensions.TAG_PLAY_TIMER
@@ -45,6 +53,8 @@ import com.boardgamegeek.extensions.asColorRgb
 import com.boardgamegeek.extensions.asPersonalRating
 import com.boardgamegeek.extensions.asScore
 import com.boardgamegeek.extensions.cancelNotification
+import com.boardgamegeek.extensions.childrenRecursiveSequence
+import com.boardgamegeek.extensions.clearText
 import com.boardgamegeek.extensions.createDiscardDialog
 import com.boardgamegeek.extensions.createThemedBuilder
 import com.boardgamegeek.extensions.formatDateTime
@@ -74,12 +84,9 @@ import com.boardgamegeek.model.GameExpansion
 import com.boardgamegeek.model.PlayPlayer
 import com.boardgamegeek.model.Player
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
+import com.boardgamegeek.ui.adapter.ColorGridAdapter
 import com.boardgamegeek.ui.logplayer.LogPlayerActivity
-import com.boardgamegeek.ui.dialog.LogPlayPlayerColorPickerDialogFragment
-import com.boardgamegeek.ui.dialog.LogPlayPlayerRatingNumberPadDialogFragment
-import com.boardgamegeek.ui.dialog.LogPlayPlayerScoreNumberPadDialogFragment
 import com.boardgamegeek.ui.theme.AppTheme
-import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -89,6 +96,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.text.NumberFormat
+import java.text.ParseException
+import java.util.Calendar
 import kotlin.math.abs
 
 @AndroidEntryPoint
@@ -541,11 +552,27 @@ class LogPlayActivity : AppCompatActivity() {
     }
 
     private fun showDatePicker() {
-        val datePicker = MaterialDatePicker.Builder.datePicker().setSelection(dateInMillis?.fromLocalToUtc()).build()
-        datePicker.addOnPositiveButtonClickListener {
-            viewModel.updateDate(it.fromLocalToUtc())
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = dateInMillis ?: System.currentTimeMillis()
         }
-        datePicker.show(supportFragmentManager, "DATE_PICKER_DIALOG")
+        DatePickerDialog(
+            this,
+            { _, year, monthOfYear, dayOfMonth ->
+                val selectedDate = Calendar.getInstance().apply {
+                    set(Calendar.YEAR, year)
+                    set(Calendar.MONTH, monthOfYear)
+                    set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
+                viewModel.updateDate(selectedDate.fromLocalToUtc())
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH),
+        ).show()
     }
 
     private fun saveOrLog() {
@@ -826,38 +853,220 @@ class LogPlayActivity : AppCompatActivity() {
 
     private fun showScoreDialog(position: Int) {
         players.getOrNull(position)?.let { player ->
-            LogPlayPlayerScoreNumberPadDialogFragment.newInstance(
-                position,
+            showNumberPadDialog(
+                R.string.score,
                 player.score,
                 player.color,
                 player.fullDescription(this),
-            ).show(supportFragmentManager, "score_dialog")
+            ) { score ->
+                viewModel.addScoreToPlayer(position, score)
+            }
         }
     }
 
     private fun showRatingDialog(position: Int) {
         players.getOrNull(position)?.let { player ->
-            LogPlayPlayerRatingNumberPadDialogFragment.newInstance(
-                position,
+            showNumberPadDialog(
+                R.string.rating,
                 player.rating.asPersonalRating(this, 0),
                 player.color,
                 player.fullDescription(this),
-            ).show(supportFragmentManager, "rating_dialog")
+                minValue = 1.0,
+                maxValue = 10.0,
+                maxMantissa = 6,
+            ) { rating ->
+                viewModel.addRatingToPlayer(position, rating)
+            }
         }
     }
 
     private fun showColorDialog(position: Int) {
         players.getOrNull(position)?.let { player ->
-            val usedColors = players.filterIndexed { i, _ -> i != position }.map { it.color } as ArrayList<String>
-            LogPlayPlayerColorPickerDialogFragment.launch(
-                this,
-                player.fullDescription(this),
-                gameColors,
-                player.color,
-                usedColors,
-                position,
-            )
+            val usedColors = players.filterIndexed { i, _ -> i != position }.map { it.color }
+            showColorPickerDialog(
+                title = player.fullDescription(this),
+                featuredColors = gameColors,
+                selectedColor = player.color,
+                disabledColors = usedColors,
+            ) { color ->
+                firebaseAnalytics.logEvent("DataManipulation") {
+                    param(FirebaseAnalytics.Param.CONTENT_TYPE, "PlayerColors")
+                    param("Action", "Add")
+                    param("Color", color)
+                }
+                viewModel.addColorToPlayer(position, color)
+            }
         }
+    }
+
+    private fun showNumberPadDialog(
+        @androidx.annotation.StringRes titleResId: Int,
+        initialValue: String,
+        colorDescription: String? = null,
+        subtitle: String? = null,
+        minValue: Double = -Double.MAX_VALUE,
+        maxValue: Double = Double.MAX_VALUE,
+        maxMantissa: Int = 10,
+        onDone: (Double) -> Unit,
+    ) {
+        val binding = DialogNumberPadBinding.inflate(layoutInflater)
+        val decimal = DecimalFormatSymbols.getInstance().decimalSeparator
+        binding.decimalSeparator.text = decimal.toString()
+        binding.plusMinusView.isVisible = minValue < 0.0
+        binding.titleView.setText(titleResId)
+        binding.subtitleView.setTextOrHide(subtitle)
+
+        if (initialValue.isNotBlank()) {
+            binding.outputView.text = initialValue
+        }
+
+        val color = colorDescription.asColorRgb()
+        if (color != Color.TRANSPARENT) {
+            binding.headerView.setBackgroundColor(color)
+            val textColor = color.getTextColor()
+            binding.titleView.setTextColor(textColor)
+            binding.subtitleView.setTextColor(textColor)
+        }
+
+        fun parseOutput(text: String): Double {
+            val parsableText = when {
+                text.isEmpty() || text == decimal.toString() || text == "-" || text == "-$decimal" -> ""
+                text.endsWith(decimal) -> "${text}0"
+                text.startsWith(decimal) -> "0$text"
+                text.startsWith("-$decimal") -> "-0${text.substring(1)}"
+                else -> text
+            }
+            return try {
+                NumberFormat.getNumberInstance().parse(parsableText)?.toDouble() ?: 0.0
+            } catch (_: ParseException) {
+                0.0
+            }
+        }
+
+        fun hasTwoDecimalPoints(text: String): Boolean {
+            val decimalIndex = text.indexOf(decimal)
+            return decimalIndex >= 0 && text.indexOf(decimal, decimalIndex + 1) >= 0
+        }
+
+        fun isWithinLength(text: String): Boolean {
+            if (text.isEmpty()) return true
+            val mantissaLength = text.substringAfter(decimal, "").length
+            return text.length <= 10 && mantissaLength <= maxMantissa
+        }
+
+        fun isWithinRange(text: String): Boolean {
+            if (text.isEmpty() || text == decimal.toString() || text == "-$decimal") return true
+            if (hasTwoDecimalPoints(text)) return false
+            val value = parseOutput(text)
+            return value in minValue..maxValue
+        }
+
+        fun maybeUpdateOutput(output: String, source: View) {
+            if (isWithinLength(output) && isWithinRange(output)) {
+                if (preferences()[KEY_HAPTIC_FEEDBACK, true] == true) {
+                    source.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                }
+                binding.outputView.text = output
+                binding.deleteView.isEnabled = binding.outputView.length() > 0
+            }
+        }
+
+        binding.deleteView.isEnabled = binding.outputView.length() > 0
+        binding.deleteView.setOnClickListener {
+            val text = binding.outputView.text
+            if (text.isNotEmpty()) {
+                maybeUpdateOutput(text.substring(0, text.length - 1), it)
+            }
+        }
+        binding.deleteView.setOnLongClickListener {
+            binding.outputView.clearText()
+            binding.deleteView.isEnabled = false
+            true
+        }
+        binding.plusMinusView.setOnClickListener {
+            val output = binding.outputView.text.toString()
+            val signedOutput = if (output.startsWith("-")) output.substring(1) else "-$output"
+            maybeUpdateOutput(signedOutput, it)
+        }
+        binding.numberPadView.childrenRecursiveSequence().filterIsInstance<TextView>().forEach { view ->
+            view.setOnClickListener {
+                maybeUpdateOutput(binding.outputView.text.toString() + view.text, view)
+            }
+        }
+
+        val dialog = createThemedBuilder().setView(binding.root).create()
+        binding.doneView.setOnClickListener {
+            onDone(parseOutput(binding.outputView.text.toString()))
+            dialog.dismiss()
+        }
+        dialog.show()
+        dialog.window?.let { window ->
+            val width = minOf(
+                resources.getDimensionPixelSize(R.dimen.dialog_width),
+                resources.displayMetrics.widthPixels * 3 / 4,
+            )
+            window.setLayout(width, window.attributes.height)
+        }
+    }
+
+    private fun showColorPickerDialog(
+        title: String,
+        featuredColors: List<String>,
+        selectedColor: String?,
+        disabledColors: List<String>,
+        onColorSelected: (String) -> Unit,
+    ) {
+        val binding = DialogColorsBinding.inflate(layoutInflater)
+        binding.addButton.isVisible = false
+
+        val choices = ArrayList(BggColors.colorList)
+        val featured = ArrayList<Pair<String, Int>>()
+        for (i in choices.indices.reversed()) {
+            val pair = choices[i]
+            if (featuredColors.contains(pair.first)) {
+                choices.removeAt(i)
+                featured.add(0, pair)
+            }
+        }
+
+        val colorGridAdapter = ColorGridAdapter(choices, ArrayList(disabledColors))
+        colorGridAdapter.selectedColor = selectedColor
+        binding.colorGrid.adapter = colorGridAdapter
+
+        if (featured.isNotEmpty()) {
+            val featuredGridAdapter = ColorGridAdapter(featured, ArrayList(disabledColors))
+            featuredGridAdapter.selectedColor = selectedColor
+            binding.featuredColorGrid.adapter = featuredGridAdapter
+            binding.featuredColorGrid.isVisible = true
+            binding.moreView.isVisible = true
+            binding.colorGrid.isVisible = false
+            binding.moreView.setOnClickListener {
+                binding.moreView.isVisible = false
+                binding.dividerView.isVisible = true
+                binding.colorGrid.isVisible = true
+            }
+        } else {
+            binding.featuredColorGrid.isVisible = false
+            binding.moreView.isVisible = false
+            binding.colorGrid.isVisible = true
+        }
+
+        val dialog = createThemedBuilder()
+            .setTitle(title)
+            .setView(binding.root)
+            .create()
+
+        listOf(binding.colorGrid, binding.featuredColorGrid).forEach { grid ->
+            grid.setOnItemClickListener { parent, _, position, _ ->
+                val item = (parent.adapter as? ColorGridAdapter)?.getItem(position)
+                if (item != null) {
+                    onColorSelected(item.first)
+                }
+                dialog.dismiss()
+            }
+        }
+
+        dialog.show()
     }
 
     private fun createLaunchInput(autoPosition: Int) = LogPlayerActivity.LaunchInput(
@@ -1018,17 +1227,7 @@ class LogPlayActivity : AppCompatActivity() {
                 val scoreDescription = player.numericScore?.asScore(itemView.context) ?: player.score
                 binding.scoreView.setTextWithStyle(scoreDescription, false, player.isWin, nameColor)
                 binding.scoreButton.setColorFilter(ContextCompat.getColor(itemView.context, R.color.button_under_text), PorterDuff.Mode.SRC_IN)
-                binding.scoreButton.setOnClickListener {
-                    players.getOrNull(position)?.let { current ->
-                        val fragment = LogPlayPlayerScoreNumberPadDialogFragment.newInstance(
-                            position,
-                            current.score,
-                            current.color,
-                            current.fullDescription(this@LogPlayActivity),
-                        )
-                        fragment.show(this@LogPlayActivity.supportFragmentManager, "score_dialog")
-                    }
-                }
+                binding.scoreButton.setOnClickListener { showScoreDialog(position) }
 
                 binding.ratingButton.setColorFilter(ContextCompat.getColor(itemView.context, R.color.button_under_text), PorterDuff.Mode.SRC_IN)
                 if (player.rating == 0.0) {
@@ -1036,35 +1235,13 @@ class LogPlayActivity : AppCompatActivity() {
                 } else {
                     binding.ratingView.setTextOrHide(player.rating.asBoundedRating(itemView.context, format = ratingFormat))
                 }
-                binding.ratingButton.setOnClickListener {
-                    players.getOrNull(position)?.let { current ->
-                        val fragment = LogPlayPlayerRatingNumberPadDialogFragment.newInstance(
-                            position,
-                            current.rating.asPersonalRating(this@LogPlayActivity, 0),
-                            current.color,
-                            current.fullDescription(this@LogPlayActivity),
-                        )
-                        fragment.show(this@LogPlayActivity.supportFragmentManager, "rating_dialog")
-                    }
-                }
+                binding.ratingButton.setOnClickListener { showRatingDialog(position) }
 
                 val color = player.color.asColorRgb()
                 binding.colorView.setColorViewValue(color)
                 binding.teamColorView.setTextOrHide(player.color)
                 binding.teamColorView.visibility = if (color == Color.TRANSPARENT && player.color.isNotBlank()) View.VISIBLE else View.GONE
-                binding.colorView.setOnClickListener {
-                    players.getOrNull(position)?.let { current ->
-                        val usedColors = players.filter { it != current }.map { it.color } as ArrayList<String>
-                        LogPlayPlayerColorPickerDialogFragment.launch(
-                            this@LogPlayActivity,
-                            current.fullDescription(this@LogPlayActivity),
-                            gameColors,
-                            current.color,
-                            usedColors,
-                            bindingAdapterPosition,
-                        )
-                    }
-                }
+                binding.colorView.setOnClickListener { showColorDialog(position) }
 
                 if (player.seat == PlayPlayer.SEAT_UNKNOWN) {
                     binding.seatView.visibility = View.GONE

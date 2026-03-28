@@ -28,7 +28,10 @@ class PlayUploadWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         Timber.i("Begin uploading plays")
 
-        setForeground(createForegroundInfo(applicationContext.getString(R.string.sync_notification_plays_upload)))
+        setForegroundSafely(
+            createForegroundInfo(applicationContext.getString(R.string.sync_notification_plays_upload)),
+            "PlayUploadWorker startup",
+        )
 
         val playsToDelete = mutableListOf<Play>()
         val playsToUpsert = mutableListOf<Play>()
@@ -71,7 +74,10 @@ class PlayUploadWorker @AssistedInject constructor(
             playRepository.uploadPlay(it)
         }
 
-        setForeground(createForegroundInfo(applicationContext.getString(R.string.sync_notification_plays_upload_stats)))
+        setForegroundSafely(
+            createForegroundInfo(applicationContext.getString(R.string.sync_notification_plays_upload_stats)),
+            "PlayUploadWorker stats",
+        )
         gameIds.filterNot { it == BggContract.INVALID_ID }.forEach { gameId ->
             playRepository.updateGamePlayCount(gameId)
             Timber.i("Updated game [$gameId]'s game count")
@@ -90,7 +96,10 @@ class PlayUploadWorker @AssistedInject constructor(
         uploadItem: suspend (item: Play) -> kotlin.Result<PlayUploadResult>
     ) : Result {
         playsToUpsert.forEach { play ->
-            setForeground(createForegroundInfo(applicationContext.getString(messageResId, play.gameName)))
+            setForegroundSafely(
+                createForegroundInfo(applicationContext.getString(messageResId, play.gameName)),
+                "PlayUploadWorker item ${play.internalId}",
+            )
             val result = uploadItem(play)
             if (result.isSuccess) {
                 result.getOrNull()?.let {

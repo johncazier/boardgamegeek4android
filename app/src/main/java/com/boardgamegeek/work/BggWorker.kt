@@ -1,14 +1,17 @@
 package com.boardgamegeek.work
 
+import android.app.ForegroundServiceStartNotAllowedException
 import android.content.Context
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkManager
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.NotificationChannels
+import timber.log.Timber
 import java.util.UUID
 
 const val NOTIFICATION_ID_COLLECTION = 41
@@ -39,5 +42,22 @@ fun Context.createForegroundInfo(titleResId: Int, notificationId: Int, id: UUID,
         ForegroundInfo(notificationId, notification, FOREGROUND_SERVICE_TYPE_DATA_SYNC)
     } else {
         ForegroundInfo(notificationId, notification)
+    }
+}
+
+suspend fun CoroutineWorker.setForegroundSafely(foregroundInfo: ForegroundInfo, reason: String) {
+    try {
+        setForeground(foregroundInfo)
+    } catch (exception: Exception) {
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                exception is ForegroundServiceStartNotAllowedException -> {
+                Timber.w(exception, "Skipping foreground promotion for %s", reason)
+            }
+            exception is IllegalStateException -> {
+                Timber.w(exception, "Skipping foreground promotion for %s", reason)
+            }
+            else -> throw exception
+        }
     }
 }

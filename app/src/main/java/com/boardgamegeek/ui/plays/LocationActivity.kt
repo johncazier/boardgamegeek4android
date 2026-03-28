@@ -23,9 +23,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
+import com.boardgamegeek.databinding.DialogEditTextBinding
+import com.boardgamegeek.extensions.createThemedBuilder
+import com.boardgamegeek.extensions.requestFocus
+import com.boardgamegeek.extensions.setAndSelectExistingText
 import com.boardgamegeek.extensions.startActivity
-import com.boardgamegeek.ui.locations.LocationsActivity
-import com.boardgamegeek.ui.dialog.EditLocationNameDialogFragment
 import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
@@ -70,9 +72,7 @@ class LocationActivity : AppCompatActivity() {
                     playCount = plays.sumOf { it.quantity },
                     snackbarHostState = snackbarHostState,
                     onBack = { finish() },
-                    onEdit = {
-                        EditLocationNameDialogFragment.newInstance(location).show(supportFragmentManager, "edit_location")
-                    },
+                    onEdit = { showEditLocationDialog(location) },
                 ) { paddingValues ->
                     PlaysScreen(
                         viewModel = viewModel,
@@ -92,6 +92,31 @@ class LocationActivity : AppCompatActivity() {
 
     private fun readIntent() {
         locationName = intent.getStringExtra(KEY_LOCATION_NAME).orEmpty()
+    }
+
+    private fun showEditLocationDialog(currentLocation: String) {
+        val binding = DialogEditTextBinding.inflate(layoutInflater)
+        binding.editTextContainer.hint = getString(R.string.location_hint)
+        binding.editText.setAndSelectExistingText(currentLocation)
+
+        val dialog = createThemedBuilder()
+            .setTitle(R.string.title_edit_location)
+            .setView(binding.root)
+            .setNegativeButton(R.string.cancel, null)
+            .setPositiveButton(R.string.ok) { _, _ ->
+                val text = binding.editText.text?.toString().orEmpty().trim()
+                if (text.isNotBlank()) {
+                    FirebaseAnalytics.getInstance(this).logEvent("DataManipulation") {
+                        param(FirebaseAnalytics.Param.CONTENT_TYPE, "Location")
+                        param("Action", "Edit")
+                    }
+                    viewModel.renameLocation(currentLocation, text)
+                }
+            }
+            .create()
+
+        dialog.requestFocus(binding.editText)
+        dialog.show()
     }
 
     companion object {

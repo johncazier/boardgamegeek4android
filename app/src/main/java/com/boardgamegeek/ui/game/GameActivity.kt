@@ -25,7 +25,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -35,7 +37,6 @@ import com.boardgamegeek.extensions.*
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.MainActivity
 import com.boardgamegeek.ui.AppScreen
-import com.boardgamegeek.ui.dialog.CollectionStatusDialogFragment
 import com.boardgamegeek.ui.game.GameViewModel
 import com.boardgamegeek.ui.navigation.GameRoute
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -45,7 +46,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @AndroidEntryPoint
-class GameActivity : AppCompatActivity(), CollectionStatusDialogFragment.Listener {
+class GameActivity : AppCompatActivity() {
     private var gameId: Int = BggContract.INVALID_ID
     private var gameName: String = ""
     private var heroImageUrl = ""
@@ -131,10 +132,6 @@ class GameActivity : AppCompatActivity(), CollectionStatusDialogFragment.Listene
         }
     }
 
-    override fun onSelectStatuses(selectedStatuses: List<String>, wishlistPriority: Int) {
-        viewModel.addCollectionItem(selectedStatuses, wishlistPriority)
-    }
-
     companion object {
         private const val KEY_GAME_ID = "GAME_ID"
         private const val KEY_GAME_NAME = "GAME_NAME"
@@ -199,6 +196,7 @@ fun GameRouteScreen(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val gameState by viewModel.game.collectAsStateWithLifecycle()
+    var isUsersDialogOpen by remember { mutableStateOf(false) }
 
     LaunchedEffect(route.gameId) {
         viewModel.setId(route.gameId)
@@ -238,6 +236,7 @@ fun GameRouteScreen(
                 isFavorite = favorite,
                 isUserMenuEnabled = userMenuEnabled,
                 viewModel = viewModel,
+                onShowUsers = { isUsersDialogOpen = true },
             )
         },
     ) { paddingValues ->
@@ -255,5 +254,12 @@ fun GameRouteScreen(
                 snackbarHostState = snackbarHostState,
             )
         }
+    }
+
+    if (isUsersDialogOpen) {
+        GameUsersDialog(
+            viewModel = viewModel,
+            onDismiss = { isUsersDialogOpen = false },
+        )
     }
 }

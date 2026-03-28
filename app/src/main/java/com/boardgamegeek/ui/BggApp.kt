@@ -16,6 +16,7 @@ import com.boardgamegeek.ui.forums.ForumsRouteScreen
 import com.boardgamegeek.ui.game.GameRouteScreen
 import com.boardgamegeek.ui.geeklists.GeekListsRouteScreen
 import com.boardgamegeek.ui.hotness.HotnessRouteScreen
+import com.boardgamegeek.ui.login.LoginRouteScreen
 import com.boardgamegeek.ui.navigation.AppRoute
 import com.boardgamegeek.ui.navigation.BackStackAppNavigator
 import com.boardgamegeek.ui.navigation.BuddiesRoute
@@ -26,6 +27,7 @@ import com.boardgamegeek.ui.navigation.ForumsRoute
 import com.boardgamegeek.ui.navigation.GameRoute
 import com.boardgamegeek.ui.navigation.GeekListsRoute
 import com.boardgamegeek.ui.navigation.HotnessRoute
+import com.boardgamegeek.ui.navigation.LoginRoute
 import com.boardgamegeek.ui.navigation.LocalAppNavigator
 import com.boardgamegeek.ui.navigation.PlaysSummaryRoute
 import com.boardgamegeek.ui.navigation.SearchRoute
@@ -34,6 +36,7 @@ import com.boardgamegeek.ui.navigation.SyncRoute
 import com.boardgamegeek.ui.navigation.TopGamesRoute
 import com.boardgamegeek.ui.playssummary.PlaysSummaryRouteScreen
 import com.boardgamegeek.ui.search.SearchRouteScreen
+import com.boardgamegeek.ui.settings.SettingsRouteScreen
 import com.boardgamegeek.ui.sync.SyncRouteScreen
 import com.boardgamegeek.ui.topgames.TopGamesRouteScreen
 
@@ -77,7 +80,10 @@ fun BggApp(
             DataRouteScreen()
         }
         entry<SettingsRoute> {
-            PlaceholderRouteScreen("Settings")
+            SettingsRouteScreen()
+        }
+        entry<LoginRoute> {
+            LoginRouteScreen(initialUsername = it.username)
         }
         entry<SearchRoute> { route ->
             SearchRouteScreen(
