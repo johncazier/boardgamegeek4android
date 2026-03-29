@@ -1,10 +1,6 @@
 package com.boardgamegeek.ui.gamecollectionitem
 
 import android.content.Context
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,259 +44,234 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.asWishListPriority
 import com.boardgamegeek.extensions.formatTimestamp
 import com.boardgamegeek.extensions.formatList
-import com.boardgamegeek.extensions.startActivity
 import com.boardgamegeek.model.CollectionItem
 import com.boardgamegeek.provider.BggContract
+import com.boardgamegeek.ui.MainActivity
 import com.boardgamegeek.ui.game.GameActivity
 import com.boardgamegeek.ui.image.ImageActivity
+import com.boardgamegeek.ui.navigation.GameCollectionItemRoute
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.popBackStackOrFinish
 import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 @OptIn(ExperimentalMaterial3Api::class)
-class GameCollectionItemActivity : ComponentActivity() {
-    private var internalId = BggContract.INVALID_ID.toLong()
-    private var gameId = BggContract.INVALID_ID
-    private var gameName = ""
-    private var collectionId = BggContract.INVALID_ID
-    private var collectionName = ""
-    private var thumbnailUrl = ""
-    private var heroImageUrl = ""
-    private var gameYearPublished = CollectionItem.YEAR_UNKNOWN
-    private var collectionYearPublished = CollectionItem.YEAR_UNKNOWN
+object GameCollectionItemActivity {
+    fun start(context: Context, item: CollectionItem) {
+        if (item.internalId == BggContract.INVALID_ID.toLong()) return
+        context.startActivity(
+            MainActivity.createIntent(
+                context = context,
+                route = GameCollectionItemRoute(
+                    internalId = item.internalId,
+                    gameId = item.gameId,
+                    gameName = item.gameName,
+                    collectionId = item.collectionId,
+                    collectionName = item.collectionName,
+                    thumbnailUrl = item.thumbnailUrl,
+                    heroImageUrl = item.heroImageUrl,
+                    gameYearPublished = item.yearPublished,
+                    collectionYearPublished = item.collectionYearPublished,
+                ),
+            ),
+        )
+    }
+}
 
-    private val viewModel by viewModels<GameCollectionItemViewModel>()
-    private val firebaseAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GameCollectionItemRouteScreen(
+    route: GameCollectionItemRoute,
+    viewModel: GameCollectionItemViewModel = hiltViewModel(),
+) {
+    val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
+    val firebaseAnalytics = remember(context) { FirebaseAnalytics.getInstance(context) }
+    val item by viewModel.item.collectAsStateWithLifecycle()
+    val isEditMode by viewModel.isEditMode.collectAsStateWithLifecycle()
+    val isEdited by viewModel.isEdited.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showDiscardDialog by remember { mutableStateOf(false) }
+    var draft by remember(item) { mutableStateOf(item?.toDraft()) }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        readIntent()
-
-        if (savedInstanceState == null) {
-            firebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM) {
-                param(FirebaseAnalytics.Param.CONTENT_TYPE, "GameCollectionItem")
-                param(FirebaseAnalytics.Param.ITEM_ID, collectionId.toString())
-                param(FirebaseAnalytics.Param.ITEM_NAME, collectionName)
-            }
+    LaunchedEffect(route.internalId) {
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM) {
+            param(FirebaseAnalytics.Param.CONTENT_TYPE, "GameCollectionItem")
+            param(FirebaseAnalytics.Param.ITEM_ID, route.collectionId.toString())
+            param(FirebaseAnalytics.Param.ITEM_NAME, route.collectionName)
         }
+        viewModel.setInternalId(route.internalId)
+    }
 
-        viewModel.setInternalId(internalId)
+    LaunchedEffect(Unit) {
+        viewModel.error.collect { message ->
+            if (message.isNotBlank()) snackbarHostState.showSnackbar(message)
+        }
+    }
 
-        setContent {
-            val item by viewModel.item.collectAsStateWithLifecycle()
-            val isEditMode by viewModel.isEditMode.collectAsStateWithLifecycle()
-            val isEdited by viewModel.isEdited.collectAsStateWithLifecycle()
-            val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
-            val snackbarHostState = remember { SnackbarHostState() }
-            var showDeleteDialog by remember { mutableStateOf(false) }
-            var showDiscardDialog by remember { mutableStateOf(false) }
-            var draft by remember(item) { mutableStateOf(item?.toDraft()) }
-
-            LaunchedEffect(Unit) {
-                viewModel.error.collect { message ->
-                    if (message.isNotBlank()) snackbarHostState.showSnackbar(message)
-                }
-            }
-
-            AppTheme {
-                Scaffold(
-                    topBar = {
-                        TopAppBar(
-                            title = {
-                                Text(
-                                    text = titleFromNames(
-                                        collectionName = item?.collectionName ?: collectionName,
-                                        gameYear = gameYearPublished,
-                                        collectionYear = item?.collectionYearPublished ?: collectionYearPublished
-                                    )
-                                )
-                            },
-                            navigationIcon = {
-                                IconButton(
-                                    onClick = {
-                                        if (isEditMode && isEdited) showDiscardDialog = true
-                                        else if (isEditMode) viewModel.disableEditMode()
-                                        else {
-                                            if (gameId != BggContract.INVALID_ID) {
-                                                GameActivity.startUp(this@GameCollectionItemActivity, gameId, gameName, thumbnailUrl, heroImageUrl)
-                                            }
-                                            finish()
-                                        }
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = getString(R.string.menu_back)
-                                    )
-                                }
-                            },
-                            actions = {
-                                val imageUrl = item?.let { current ->
-                                    current.heroImageUrl.ifBlank { current.thumbnailUrl }
-                                }.orEmpty()
-                                IconButton(
-                                    enabled = imageUrl.isNotBlank(),
-                                    onClick = {
-                                        ImageActivity.start(
-                                            this@GameCollectionItemActivity,
-                                            item?.heroImageUrl?.ifBlank { item?.thumbnailUrl } ?: heroImageUrl.ifBlank { thumbnailUrl }
-                                        )
-                                    }
-                                ) {
-                                    Icon(Icons.Default.Image, contentDescription = stringResource(R.string.menu_view_image))
-                                }
-                                IconButton(onClick = { showDeleteDialog = true }) {
-                                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete))
-                                }
-                                if (!isEditMode && (item?.isDirty == true)) {
-                                    TextButton(onClick = viewModel::reset) {
-                                        Text(stringResource(R.string.menu_discard_changes))
-                                    }
-                                }
-                            }
+    AppTheme {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = titleFromNames(
+                                collectionName = item?.collectionName ?: route.collectionName,
+                                gameYear = route.gameYearPublished,
+                                collectionYear = item?.collectionYearPublished ?: route.collectionYearPublished,
+                            ),
                         )
                     },
-                    floatingActionButton = {
-                        if (collectionId != BggContract.INVALID_ID) {
-                            FloatingActionButton(
-                                onClick = {
-                                    if (isEditMode) {
-                                        val source = item
-                                        val edited = draft
-                                        if (source != null && edited != null) {
-                                            viewModel.saveChanges(source, edited)
-                                        }
-                                    } else {
-                                        viewModel.enableEditMode()
-                                        draft = item?.toDraft()
-                                    }
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = if (isEditMode) Icons.Default.Save else Icons.Default.Edit,
-                                    contentDescription = if (isEditMode) stringResource(R.string.save) else stringResource(R.string.edit),
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                if (isEditMode && isEdited) showDiscardDialog = true
+                                else if (isEditMode) viewModel.disableEditMode()
+                                else navigator.popBackStackOrFinish(context)
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.menu_back),
+                            )
+                        }
+                    },
+                    actions = {
+                        val imageUrl = item?.let { current ->
+                            current.heroImageUrl.ifBlank { current.thumbnailUrl }
+                        }.orEmpty()
+                        IconButton(
+                            enabled = imageUrl.isNotBlank(),
+                            onClick = {
+                                ImageActivity.start(
+                                    context,
+                                    item?.heroImageUrl?.ifBlank { item?.thumbnailUrl } ?: route.heroImageUrl.ifBlank { route.thumbnailUrl },
                                 )
+                            },
+                        ) {
+                            Icon(Icons.Default.Image, contentDescription = stringResource(R.string.menu_view_image))
+                        }
+                        IconButton(onClick = { showDeleteDialog = true }) {
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete))
+                        }
+                        if (!isEditMode && (item?.isDirty == true)) {
+                            TextButton(onClick = viewModel::reset) {
+                                Text(stringResource(R.string.menu_discard_changes))
                             }
                         }
                     },
-                    snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-                ) { paddingValues ->
-                    when {
-                        isRefreshing && item == null -> {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(paddingValues),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                CircularProgressIndicator()
+                )
+            },
+            floatingActionButton = {
+                if (route.collectionId != BggContract.INVALID_ID) {
+                    FloatingActionButton(
+                        onClick = {
+                            if (isEditMode) {
+                                val source = item
+                                val edited = draft
+                                if (source != null && edited != null) {
+                                    viewModel.saveChanges(source, edited)
+                                }
+                            } else {
+                                viewModel.enableEditMode()
+                                draft = item?.toDraft()
                             }
-                        }
-                        item == null -> {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(24.dp),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(stringResource(R.string.invalid_collection_status))
-                            }
-                        }
-                        else -> {
-                            GameCollectionItemScreen(
-                                item = item!!,
-                                draft = draft ?: item!!.toDraft(),
-                                isEditMode = isEditMode,
-                                onDraftChange = {
-                                    draft = it
-                                    viewModel.markEdited()
-                                },
-                                paddingValues = paddingValues,
-                            )
-                        }
+                        },
+                    ) {
+                        Icon(
+                            imageVector = if (isEditMode) Icons.Default.Save else Icons.Default.Edit,
+                            contentDescription = if (isEditMode) stringResource(R.string.save) else stringResource(R.string.edit),
+                        )
                     }
                 }
-
-                if (showDeleteDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showDeleteDialog = false },
-                        title = { Text(stringResource(R.string.delete)) },
-                        text = { Text(stringResource(R.string.are_you_sure_delete_collection_item)) },
-                        confirmButton = {
-                            TextButton(onClick = {
-                                viewModel.delete()
-                                showDeleteDialog = false
-                                finish()
-                            }) { Text(stringResource(R.string.delete)) }
-                        },
-                        dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.cancel)) } }
-                    )
+            },
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        ) { paddingValues ->
+            when {
+                isRefreshing && item == null -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-
-                if (showDiscardDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showDiscardDialog = false },
-                        title = { Text(stringResource(R.string.menu_discard_changes)) },
-                        text = { Text(stringResource(R.string.discard_changes_message, getString(R.string.collection_item))) },
-                        confirmButton = {
-                            TextButton(onClick = {
-                                viewModel.reset()
-                                viewModel.disableEditMode()
-                                showDiscardDialog = false
-                            }) { Text(stringResource(R.string.menu_discard_changes)) }
+                item == null -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(stringResource(R.string.invalid_collection_status))
+                    }
+                }
+                else -> {
+                    GameCollectionItemScreen(
+                        item = item!!,
+                        draft = draft ?: item!!.toDraft(),
+                        isEditMode = isEditMode,
+                        onDraftChange = {
+                            draft = it
+                            viewModel.markEdited()
                         },
-                        dismissButton = { TextButton(onClick = { showDiscardDialog = false }) { Text(stringResource(R.string.cancel)) } }
+                        paddingValues = paddingValues,
                     )
                 }
             }
         }
-    }
 
-    private fun readIntent() {
-        internalId = intent.getLongExtra(KEY_INTERNAL_ID, BggContract.INVALID_ID.toLong())
-        gameId = intent.getIntExtra(KEY_GAME_ID, BggContract.INVALID_ID)
-        gameName = intent.getStringExtra(KEY_GAME_NAME).orEmpty()
-        collectionId = intent.getIntExtra(KEY_COLLECTION_ID, BggContract.INVALID_ID)
-        collectionName = intent.getStringExtra(KEY_COLLECTION_NAME).orEmpty()
-        thumbnailUrl = intent.getStringExtra(KEY_THUMBNAIL_URL).orEmpty()
-        heroImageUrl = intent.getStringExtra(KEY_HERO_IMAGE_URL).orEmpty()
-        gameYearPublished = intent.getIntExtra(KEY_GAME_YEAR_PUBLISHED, CollectionItem.YEAR_UNKNOWN)
-        collectionYearPublished = intent.getIntExtra(KEY_COLLECTION_YEAR_PUBLISHED, CollectionItem.YEAR_UNKNOWN)
-    }
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = { Text(stringResource(R.string.delete)) },
+                text = { Text(stringResource(R.string.are_you_sure_delete_collection_item)) },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.delete()
+                            showDeleteDialog = false
+                            navigator.popBackStackOrFinish(context)
+                        },
+                    ) { Text(stringResource(R.string.delete)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.cancel)) }
+                },
+            )
+        }
 
-    companion object {
-        private const val KEY_INTERNAL_ID = "_ID"
-        private const val KEY_GAME_ID = "GAME_ID"
-        private const val KEY_GAME_NAME = "GAME_NAME"
-        private const val KEY_COLLECTION_ID = "COLLECTION_ID"
-        private const val KEY_COLLECTION_NAME = "COLLECTION_NAME"
-        private const val KEY_THUMBNAIL_URL = "THUMBNAIL_URL"
-        private const val KEY_HERO_IMAGE_URL = "HERO_IMAGE_URL"
-        private const val KEY_GAME_YEAR_PUBLISHED = "YEAR_PUBLISHED"
-        private const val KEY_COLLECTION_YEAR_PUBLISHED = "COLLECTION_YEAR_PUBLISHED"
-
-        fun start(context: Context, item: CollectionItem) {
-            if (item.internalId == BggContract.INVALID_ID.toLong()) return
-            context.startActivity<GameCollectionItemActivity>(
-                KEY_INTERNAL_ID to item.internalId,
-                KEY_GAME_ID to item.gameId,
-                KEY_GAME_NAME to item.gameName,
-                KEY_COLLECTION_ID to item.collectionId,
-                KEY_COLLECTION_NAME to item.collectionName,
-                KEY_THUMBNAIL_URL to item.thumbnailUrl,
-                KEY_HERO_IMAGE_URL to item.heroImageUrl,
-                KEY_GAME_YEAR_PUBLISHED to item.yearPublished,
-                KEY_COLLECTION_YEAR_PUBLISHED to item.collectionYearPublished,
+        if (showDiscardDialog) {
+            AlertDialog(
+                onDismissRequest = { showDiscardDialog = false },
+                title = { Text(stringResource(R.string.menu_discard_changes)) },
+                text = { Text(stringResource(R.string.discard_changes_message, context.getString(R.string.collection_item))) },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.reset()
+                            viewModel.disableEditMode()
+                            showDiscardDialog = false
+                        },
+                    ) { Text(stringResource(R.string.menu_discard_changes)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDiscardDialog = false }) { Text(stringResource(R.string.cancel)) }
+                },
             )
         }
     }

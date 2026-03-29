@@ -228,14 +228,14 @@ object DrawerRoute {
 }
 
 private fun BottomNavItem.toRoute() = when (this) {
-    BottomNavItem.Collection -> CollectionRoute
+    BottomNavItem.Collection -> CollectionRoute()
     BottomNavItem.Hotness -> HotnessRoute
     BottomNavItem.TopGames -> TopGamesRoute
     BottomNavItem.GeekLists -> GeekListsRoute
 }
 
 private fun String.toBottomNavRoute() = when (this) {
-    BottomNavItem.Collection.route -> CollectionRoute
+    BottomNavItem.Collection.route -> CollectionRoute()
     BottomNavItem.TopGames.route -> TopGamesRoute
     BottomNavItem.GeekLists.route -> GeekListsRoute
     else -> HotnessRoute

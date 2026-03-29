@@ -1,6 +1,8 @@
 package com.boardgamegeek.ui
 
 import android.app.SearchManager
+import android.accounts.AccountManager
+import android.accounts.AccountAuthenticatorResponse
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -18,12 +20,17 @@ import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.provider.BggContract.Games
 import com.boardgamegeek.ui.navigation.AppRoute
+import com.boardgamegeek.ui.navigation.CollectionRoute
 import com.boardgamegeek.ui.navigation.BuddiesRoute
 import com.boardgamegeek.ui.navigation.CollectionDetailsRoute
+import com.boardgamegeek.ui.navigation.DataRoute
 import com.boardgamegeek.ui.navigation.HotnessRoute
 import com.boardgamegeek.ui.navigation.SearchRoute
 import com.boardgamegeek.ui.navigation.GameRoute
+import com.boardgamegeek.ui.navigation.LoginRoute
 import com.boardgamegeek.ui.navigation.PlaysSummaryRoute
+import com.boardgamegeek.ui.navigation.SettingsRoute
+import com.boardgamegeek.ui.navigation.SyncRoute
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.json.Json
 
@@ -31,9 +38,11 @@ import kotlinx.serialization.json.Json
 class MainActivity : AppCompatActivity() {
     private var pendingExternalRoute by mutableStateOf<AppRoute?>(null)
     private var pendingExternalRouteShouldReplace by mutableStateOf(false)
+    private var platformLoginHandler by mutableStateOf<((String) -> Unit)?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        updatePlatformLoginHandler(intent)
         val initialNavigation = readIntentRoute(intent)
         val initialRoute = initialNavigation?.route ?: resolveInitialRoute(this)
         setContent {
@@ -45,6 +54,7 @@ class MainActivity : AppCompatActivity() {
                     pendingExternalRoute = null
                     pendingExternalRouteShouldReplace = false
                 },
+                onLoginSuccess = platformLoginHandler,
             )
         }
     }
@@ -52,9 +62,29 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        updatePlatformLoginHandler(intent)
         readIntentRoute(intent)?.let {
             pendingExternalRoute = it.route
             pendingExternalRouteShouldReplace = it.replaceBackStack
+        }
+    }
+
+    private fun updatePlatformLoginHandler(intent: Intent) {
+        val response = intent.getParcelableExtra<AccountAuthenticatorResponse>(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE)
+        if (response == null) {
+            platformLoginHandler = null
+            return
+        }
+        response.onRequestContinued()
+        platformLoginHandler = { username ->
+            val extras = Bundle().apply {
+                putString(AccountManager.KEY_ACCOUNT_NAME, username)
+                putString(AccountManager.KEY_ACCOUNT_TYPE, Authenticator.ACCOUNT_TYPE)
+            }
+            setResult(RESULT_OK, Intent().putExtras(extras))
+            response.onResult(extras)
+            platformLoginHandler = null
+            finish()
         }
     }
 
@@ -69,6 +99,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         val route = when (intent.action) {
+            Intent.ACTION_CREATE_SHORTCUT -> CollectionRoute(isCreatingShortcut = true)
+
             Intent.ACTION_VIEW -> {
                 val uri = intent.data ?: return null
                 GameRoute(
@@ -82,9 +114,28 @@ class MainActivity : AppCompatActivity() {
                 query = intent.getStringExtra(SearchManager.QUERY).orEmpty(),
             )
 
+            Intent.ACTION_APPLICATION_PREFERENCES,
+            Intent.ACTION_MANAGE_NETWORK_USAGE,
+            getString(com.boardgamegeek.R.string.intent_action_account) -> SettingsRoute
+
+            getString(com.boardgamegeek.R.string.intent_action_sync) -> SyncRoute
+
+            getString(com.boardgamegeek.R.string.intent_action_data) -> DataRoute
+
             else -> null
         }
-        return route?.let { PendingRoute(it, replaceBackStack = false) }
+        if (route != null) {
+            return PendingRoute(route, replaceBackStack = intent.action == Intent.ACTION_CREATE_SHORTCUT)
+        }
+
+        if (intent.hasExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE)) {
+            return PendingRoute(
+                route = LoginRoute(username = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)),
+                replaceBackStack = true,
+            )
+        }
+
+        return null
     }
 
     companion object {

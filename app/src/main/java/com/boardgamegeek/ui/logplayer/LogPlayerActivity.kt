@@ -1,14 +1,6 @@
 package com.boardgamegeek.ui.logplayer
 
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.addCallback
-import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContract
-import androidx.activity.viewModels
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -45,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,13 +51,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.core.os.bundleOf
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.asColorRgb
 import com.boardgamegeek.extensions.createDiscardDialog
-import com.boardgamegeek.extensions.getParcelableCompat
 import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.extensions.showLogPlayerNew
 import com.boardgamegeek.extensions.showLogPlayerPosition
@@ -73,216 +65,203 @@ import com.boardgamegeek.extensions.showLogPlayerScore
 import com.boardgamegeek.extensions.showLogPlayerTeamColor
 import com.boardgamegeek.extensions.showLogPlayerWin
 import com.boardgamegeek.model.PlayPlayer
-import com.boardgamegeek.provider.BggContract
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.LocalRouteResultCoordinator
+import com.boardgamegeek.ui.navigation.LogPlayerPayload
+import com.boardgamegeek.ui.navigation.LogPlayerRoute
+import com.boardgamegeek.ui.navigation.LogPlayerRouteResult
+import com.boardgamegeek.ui.navigation.findActivity
+import com.boardgamegeek.ui.navigation.popBackStackOrFinish
 import com.boardgamegeek.ui.theme.AppTheme
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
-@OptIn(ExperimentalMaterial3Api::class)
-class LogPlayerActivity : ComponentActivity() {
-    private val viewModel by viewModels<LogPlayerViewModel>()
-
-    private var gameName = ""
-    private var position = 0
-    private var player = PlayPlayer()
-    private var originalPlayer: PlayPlayer? = null
-    private var isNewPlayer = false
-    private var autoPosition = PlayPlayer.SEAT_UNKNOWN
-    private var heroImageUrl = ""
-    private var usedColors = arrayListOf<String>()
-
-    private var userHasShownTeamColor = false
-    private var userHasShownPosition = false
-    private var userHasShownScore = false
-    private var userHasShownRating = false
-    private var userHasShownNew = false
-    private var userHasShownWin = false
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        parseIntent(savedInstanceState)
-
-        onBackPressedDispatcher.addCallback(this) {
-            cancel(player)
-        }
-
-        viewModel.setGameId(intent.getIntExtra(KEY_GAME_ID, BggContract.INVALID_ID))
-
-        setContent {
-            val players by viewModel.players.collectAsStateWithLifecycle()
-            val users by viewModel.users.collectAsStateWithLifecycle()
-            val colors by viewModel.colors.collectAsStateWithLifecycle()
-
-            AppTheme {
-                LogPlayerScreen(
-                    gameName = gameName,
-                    heroImageUrl = heroImageUrl,
-                    player = player,
-                    position = position,
-                    hasAutoPosition = hasAutoPosition(),
-                    autoPosition = autoPosition,
-                    isNewPlayer = isNewPlayer,
-                    colors = colors,
-                    usedColors = usedColors,
-                    players = players,
-                    users = users,
-                    userHasShownTeamColor = userHasShownTeamColor,
-                    userHasShownPosition = userHasShownPosition,
-                    userHasShownScore = userHasShownScore,
-                    userHasShownRating = userHasShownRating,
-                    userHasShownNew = userHasShownNew,
-                    userHasShownWin = userHasShownWin,
-                    onPlayerChange = { player = it },
-                    onShownFlagsChange = { team, pos, score, rating, newFlag, win ->
-                        userHasShownTeamColor = team
-                        userHasShownPosition = pos
-                        userHasShownScore = score
-                        userHasShownRating = rating
-                        userHasShownNew = newFlag
-                        userHasShownWin = win
-                    },
-                    onDone = { save(it) },
-                    onCancel = { cancel(it) },
-                )
-            }
-        }
-    }
-
-    private fun parseIntent(savedInstanceState: Bundle?) {
-        position = intent.getIntExtra(KEY_POSITION, INVALID_POSITION)
-        gameName = intent.getStringExtra(KEY_GAME_NAME).orEmpty()
-        heroImageUrl = intent.getStringExtra(KEY_HERO_IMAGE_URL).orEmpty()
-        autoPosition = intent.getIntExtra(KEY_AUTO_POSITION, PlayPlayer.SEAT_UNKNOWN)
-        isNewPlayer = intent.getBooleanExtra(KEY_NEW_PLAYER, false)
-        val used = intent.getStringArrayExtra(KEY_USED_COLORS)
-
-        if (intent.getBooleanExtra(KEY_END_PLAY, false)) {
-            userHasShownScore = true
-        }
-
-        if (savedInstanceState == null) {
-            player = intent.getParcelableCompat(KEY_PLAYER) ?: PlayPlayer()
-            if (hasAutoPosition()) player = player.copy(startingPosition = autoPosition.toString())
-            originalPlayer = player.copy()
-        } else {
-            player = savedInstanceState.getParcelableCompat(KEY_PLAYER) ?: PlayPlayer()
-            userHasShownTeamColor = savedInstanceState.getBoolean(KEY_USER_HAS_SHOWN_TEAM_COLOR)
-            userHasShownPosition = savedInstanceState.getBoolean(KEY_USER_HAS_SHOWN_POSITION)
-            userHasShownScore = savedInstanceState.getBoolean(KEY_USER_HAS_SHOWN_SCORE)
-            userHasShownRating = savedInstanceState.getBoolean(KEY_USER_HAS_SHOWN_RATING)
-            userHasShownNew = savedInstanceState.getBoolean(KEY_USER_HAS_SHOWN_NEW)
-            userHasShownWin = savedInstanceState.getBoolean(KEY_USER_HAS_SHOWN_WIN)
-        }
-
-        usedColors = if (used == null) arrayListOf() else ArrayList(listOf(*used))
-        usedColors.remove(player.color)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putParcelable(KEY_PLAYER, player)
-        outState.putBoolean(KEY_USER_HAS_SHOWN_TEAM_COLOR, userHasShownTeamColor)
-        outState.putBoolean(KEY_USER_HAS_SHOWN_POSITION, userHasShownPosition)
-        outState.putBoolean(KEY_USER_HAS_SHOWN_SCORE, userHasShownScore)
-        outState.putBoolean(KEY_USER_HAS_SHOWN_RATING, userHasShownRating)
-        outState.putBoolean(KEY_USER_HAS_SHOWN_NEW, userHasShownNew)
-        outState.putBoolean(KEY_USER_HAS_SHOWN_WIN, userHasShownWin)
-    }
-
-    private fun hasAutoPosition(): Boolean = autoPosition != PlayPlayer.SEAT_UNKNOWN
-
-    private fun save(currentPlayer: PlayPlayer) {
-        player = currentPlayer
-        setResult(Activity.RESULT_OK, Intent().apply {
-            putExtra(KEY_PLAYER, player)
-            putExtra(KEY_POSITION, position)
-        })
-        finish()
-    }
-
-    private fun cancel(currentPlayer: PlayPlayer) {
-        player = currentPlayer
-        if (player == originalPlayer) {
-            setResult(Activity.RESULT_CANCELED)
-            finish()
-        } else {
-            createDiscardDialog(R.string.player, isNew = isNewPlayer).show()
-        }
-    }
+object LogPlayerActivity {
+    const val INVALID_POSITION = -1
 
     data class LaunchInput(
         val gameId: Int,
         val gameName: String,
         val heroImageUrl: String,
         val isRequestingToEndPlay: Boolean,
-        val fabColor: Int,
         val usedColors: List<String>,
         val autoPosition: Int,
     )
 
-    class AddPlayerContract : ActivityResultContract<LaunchInput, PlayPlayer?>() {
-        override fun createIntent(context: Context, input: LaunchInput): Intent {
-            return Intent(context, LogPlayerActivity::class.java).apply {
-                putExtra(KEY_GAME_ID, input.gameId)
-                putExtra(KEY_GAME_NAME, input.gameName)
-                putExtra(KEY_HERO_IMAGE_URL, input.heroImageUrl)
-                putExtra(KEY_END_PLAY, input.isRequestingToEndPlay)
-                putExtra(KEY_FAB_COLOR, input.fabColor)
-                putExtra(KEY_USED_COLORS, input.usedColors.toTypedArray())
-                putExtra(KEY_NEW_PLAYER, true)
-                putExtra(KEY_AUTO_POSITION, input.autoPosition)
+    fun addPlayerRoute(
+        requestId: String,
+        input: LaunchInput,
+    ): LogPlayerRoute {
+        return LogPlayerRoute(
+            requestId = requestId,
+            gameId = input.gameId,
+            gameName = input.gameName,
+            heroImageUrl = input.heroImageUrl,
+            isRequestingToEndPlay = input.isRequestingToEndPlay,
+            usedColors = input.usedColors,
+            autoPosition = input.autoPosition,
+            isNewPlayer = true,
+        )
+    }
+
+    fun editPlayerRoute(
+        requestId: String,
+        input: LaunchInput,
+        position: Int,
+        player: PlayPlayer,
+    ): LogPlayerRoute {
+        return LogPlayerRoute(
+            requestId = requestId,
+            gameId = input.gameId,
+            gameName = input.gameName,
+            heroImageUrl = input.heroImageUrl,
+            isRequestingToEndPlay = input.isRequestingToEndPlay,
+            usedColors = input.usedColors,
+            autoPosition = input.autoPosition,
+            playerPosition = position,
+            isNewPlayer = false,
+            player = player.toPayload(),
+        )
+    }
+}
+
+@Composable
+fun LogPlayerRouteScreen(
+    route: LogPlayerRoute,
+    viewModel: LogPlayerViewModel = hiltViewModel(),
+) {
+    val context = LocalContext.current
+    val activity = remember(context) { context.findActivity() }
+    val navigator = LocalAppNavigator.current
+    val routeResults = LocalRouteResultCoordinator.current
+    val players by viewModel.players.collectAsStateWithLifecycle()
+    val users by viewModel.users.collectAsStateWithLifecycle()
+    val colors by viewModel.colors.collectAsStateWithLifecycle()
+    val initialPlayer = remember(route) {
+        route.player.toPlayPlayer().let { initial ->
+            if (route.autoPosition != LogPlayerActivity.INVALID_POSITION && initial.startingPosition.isBlank()) {
+                initial.copy(startingPosition = route.autoPosition.toString())
+            } else {
+                initial
             }
         }
+    }
+    val originalPlayer = remember(route.requestId) { initialPlayer.copy() }
 
-        override fun parseResult(resultCode: Int, intent: Intent?): PlayPlayer? {
-            return if (resultCode == RESULT_OK) intent?.getParcelableCompat(KEY_PLAYER) else null
-        }
+    var player by rememberSaveable(route.requestId) { mutableStateOf(initialPlayer) }
+    var userHasShownTeamColor by rememberSaveable(route.requestId) { mutableStateOf(false) }
+    var userHasShownPosition by rememberSaveable(route.requestId) { mutableStateOf(route.isRequestingToEndPlay) }
+    var userHasShownScore by rememberSaveable(route.requestId) { mutableStateOf(route.isRequestingToEndPlay) }
+    var userHasShownRating by rememberSaveable(route.requestId) { mutableStateOf(false) }
+    var userHasShownNew by rememberSaveable(route.requestId) { mutableStateOf(false) }
+    var userHasShownWin by rememberSaveable(route.requestId) { mutableStateOf(false) }
+
+    LaunchedEffect(route.gameId) {
+        viewModel.setGameId(route.gameId)
     }
 
-    class EditPlayerContract : ActivityResultContract<Pair<LaunchInput, Pair<Int, PlayPlayer>>, Pair<Int, PlayPlayer?>>() {
-        override fun createIntent(context: Context, input: Pair<LaunchInput, Pair<Int, PlayPlayer>>): Intent {
-            return Intent(context, LogPlayerActivity::class.java).apply {
-                putExtra(KEY_GAME_ID, input.first.gameId)
-                putExtra(KEY_GAME_NAME, input.first.gameName)
-                putExtra(KEY_HERO_IMAGE_URL, input.first.heroImageUrl)
-                putExtra(KEY_END_PLAY, input.first.isRequestingToEndPlay)
-                putExtra(KEY_FAB_COLOR, input.first.fabColor)
-                putExtra(KEY_USED_COLORS, input.first.usedColors.toTypedArray())
-                putExtra(KEY_NEW_PLAYER, false)
-                putExtra(KEY_AUTO_POSITION, input.first.autoPosition)
-                putExtra(KEY_POSITION, input.second.first)
-                putExtra(KEY_PLAYER, input.second.second)
+    fun closeWithResult(playerResult: PlayPlayer?) {
+        routeResults.deliver(
+            route.requestId,
+            LogPlayerRouteResult(
+                position = route.playerPosition,
+                player = playerResult,
+            ),
+        )
+        navigator.popBackStackOrFinish(context)
+    }
+
+    fun cancel(currentPlayer: PlayPlayer) {
+        player = currentPlayer
+        if (currentPlayer == originalPlayer) {
+            closeWithResult(null)
+        } else {
+            val currentActivity = activity
+            if (currentActivity == null) {
+                closeWithResult(null)
+            } else {
+                currentActivity.createDiscardDialog(
+                    R.string.player,
+                    isNew = route.isNewPlayer,
+                    finishActivity = false,
+                ) {
+                    closeWithResult(null)
+                }.show()
             }
         }
-
-        override fun parseResult(resultCode: Int, intent: Intent?): Pair<Int, PlayPlayer?> {
-            return if (resultCode == RESULT_OK) {
-                val position = intent?.getIntExtra(KEY_POSITION, INVALID_POSITION) ?: INVALID_POSITION
-                val player = intent?.getParcelableCompat<PlayPlayer>(KEY_PLAYER)
-                position to player
-            } else INVALID_POSITION to null
-        }
     }
 
-    companion object {
-        const val KEY_GAME_ID = "GAME_ID"
-        const val KEY_GAME_NAME = "GAME_NAME"
-        const val KEY_HERO_IMAGE_URL = "HERO_IMAGE_URL"
-        const val KEY_AUTO_POSITION = "AUTO_POSITION"
-        const val KEY_USED_COLORS = "USED_COLORS"
-        const val KEY_END_PLAY = "SCORE_SHOWN"
-        const val KEY_PLAYER = "PLAYER"
-        const val KEY_FAB_COLOR = "FAB_COLOR"
-        const val KEY_POSITION = "POSITION"
-        const val KEY_NEW_PLAYER = "NEW_PLAYER"
-        const val INVALID_POSITION = -1
-        const val KEY_USER_HAS_SHOWN_TEAM_COLOR = "USER_HAS_SHOWN_TEAM_COLOR"
-        const val KEY_USER_HAS_SHOWN_POSITION = "USER_HAS_SHOWN_POSITION"
-        const val KEY_USER_HAS_SHOWN_SCORE = "USER_HAS_SHOWN_SCORE"
-        const val KEY_USER_HAS_SHOWN_RATING = "USER_HAS_SHOWN_RATING"
-        const val KEY_USER_HAS_SHOWN_NEW = "USER_HAS_SHOWN_NEW"
-        const val KEY_USER_HAS_SHOWN_WIN = "USER_HAS_SHOWN_WIN"
+    BackHandler {
+        cancel(player)
     }
+
+    AppTheme {
+        LogPlayerScreen(
+            gameName = route.gameName,
+            heroImageUrl = route.heroImageUrl,
+            player = player,
+            position = route.playerPosition,
+            hasAutoPosition = route.autoPosition != LogPlayerActivity.INVALID_POSITION,
+            autoPosition = route.autoPosition,
+            isNewPlayer = route.isNewPlayer,
+            colors = colors,
+            usedColors = route.usedColors,
+            players = players,
+            users = users,
+            userHasShownTeamColor = userHasShownTeamColor,
+            userHasShownPosition = userHasShownPosition,
+            userHasShownScore = userHasShownScore,
+            userHasShownRating = userHasShownRating,
+            userHasShownNew = userHasShownNew,
+            userHasShownWin = userHasShownWin,
+            onPlayerChange = { player = it },
+            onShownFlagsChange = { team, pos, score, rating, newFlag, win ->
+                userHasShownTeamColor = team
+                userHasShownPosition = pos
+                userHasShownScore = score
+                userHasShownRating = rating
+                userHasShownNew = newFlag
+                userHasShownWin = win
+            },
+            onDone = {
+                player = it
+                closeWithResult(it)
+            },
+            onCancel = { cancel(it) },
+        )
+    }
+}
+
+private fun PlayPlayer.toPayload(): LogPlayerPayload {
+    return LogPlayerPayload(
+        name = name,
+        username = username,
+        startingPosition = startingPosition,
+        color = color,
+        score = score,
+        rating = rating,
+        userId = userId,
+        isNew = isNew,
+        isWin = isWin,
+        playInternalId = playInternalId,
+        uiId = uiId,
+        internalId = internalId,
+    )
+}
+
+private fun LogPlayerPayload.toPlayPlayer(): PlayPlayer {
+    return PlayPlayer(
+        name = name,
+        username = username,
+        startingPosition = startingPosition,
+        color = color,
+        score = score,
+        rating = rating,
+        userId = userId,
+        isNew = isNew,
+        isWin = isWin,
+        playInternalId = playInternalId,
+        uiId = uiId,
+        internalId = internalId,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -352,7 +331,7 @@ private fun LogPlayerScreen(
                         Text(text = gameName)
                         Text(
                             text = if (hasAutoPosition) stringResource(R.string.generic_player, autoPosition) else "",
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
                         )
                     }
                 },
@@ -380,27 +359,27 @@ private fun LogPlayerScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
         ) {
             AsyncImage(
                 model = heroImageUrl,
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(140.dp)
+                    .height(140.dp),
             )
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 OutlinedTextField(
                     value = form.name,
                     onValueChange = { form = form.copy(name = it) },
                     label = { Text(stringResource(R.string.player_name)) },
                     modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                 )
                 DropdownMenu(expanded = showPlayerSuggestions, onDismissRequest = { showPlayerSuggestions = false }) {
                     playerSuggestions.forEach {
@@ -409,14 +388,14 @@ private fun LogPlayerScreen(
                             onClick = {
                                 form = form.copy(name = it.name, username = it.username)
                                 showPlayerSuggestions = false
-                            }
+                            },
                         )
                     }
                 }
                 Text(
                     text = stringResource(R.string.title_players),
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.clickable { showPlayerSuggestions = true }
+                    modifier = Modifier.clickable { showPlayerSuggestions = true },
                 )
 
                 OutlinedTextField(
@@ -432,14 +411,14 @@ private fun LogPlayerScreen(
                             onClick = {
                                 form = form.copy(username = it.username, name = it.playNickname.ifBlank { it.fullName })
                                 showUserSuggestions = false
-                            }
+                            },
                         )
                     }
                 }
                 Text(
                     text = stringResource(R.string.title_buddies),
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.clickable { showUserSuggestions = true }
+                    modifier = Modifier.clickable { showUserSuggestions = true },
                 )
 
                 if (teamVisible) {
@@ -448,16 +427,15 @@ private fun LogPlayerScreen(
                             value = form.color,
                             onValueChange = { form = form.copy(color = it) },
                             label = { Text(stringResource(R.string.team_color)) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Box(
                             modifier = Modifier
                                 .size(28.dp)
                                 .clickable { showColorDialog = true }
-                                .background(Color(form.color.asColorRgb()), CircleShape)
-                        ) {
-                        }
+                                .background(Color(form.color.asColorRgb()), CircleShape),
+                        )
                     }
                 }
 
@@ -499,6 +477,12 @@ private fun LogPlayerScreen(
                         Switch(checked = form.isWin, onCheckedChange = { form = form.copy(isWin = it) })
                     }
                 }
+                if (position != LogPlayerActivity.INVALID_POSITION && !isNewPlayer) {
+                    Text(
+                        text = stringResource(R.string.generic_player, position + 1),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
             }
         }
     }
@@ -524,6 +508,7 @@ private fun LogPlayerScreen(
                                             newVisible = true
                                             form = form.copy(isNew = true)
                                         }
+
                                         R.string.win -> {
                                             winVisible = true
                                             form = form.copy(isWin = true)
@@ -531,13 +516,17 @@ private fun LogPlayerScreen(
                                     }
                                     showAddFieldMenu = false
                                 }
-                                .padding(vertical = 4.dp)
+                                .padding(vertical = 4.dp),
                         )
                     }
                 }
             },
             confirmButton = {},
-            dismissButton = { TextButton(onClick = { showAddFieldMenu = false }) { Text(stringResource(R.string.cancel)) } }
+            dismissButton = {
+                TextButton(onClick = { showAddFieldMenu = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
         )
     }
 
@@ -556,21 +545,25 @@ private fun LogPlayerScreen(
                                     showColorDialog = false
                                 }
                                 .padding(vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(16.dp)
-                                    .background(Color(color.asColorRgb()), CircleShape)
+                                    .size(20.dp)
+                                    .background(Color(color.asColorRgb()), CircleShape),
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
                             Text(color)
                         }
                     }
                 }
             },
             confirmButton = {},
-            dismissButton = { TextButton(onClick = { showColorDialog = false }) { Text(stringResource(R.string.cancel)) } }
+            dismissButton = {
+                TextButton(onClick = { showColorDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
         )
     }
 }

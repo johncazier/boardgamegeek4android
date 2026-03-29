@@ -1,9 +1,6 @@
 package com.boardgamegeek.ui.playstats
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
+import android.content.Context
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -13,47 +10,56 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.boardgamegeek.R
+import com.boardgamegeek.ui.MainActivity
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.PlayStatsRoute
+import com.boardgamegeek.ui.navigation.popBackStackOrFinish
 import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
-import dagger.hilt.android.AndroidEntryPoint
+
+object PlayStatsActivity {
+    fun start(context: Context) {
+        context.startActivity(MainActivity.createIntent(context, PlayStatsRoute))
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
-@AndroidEntryPoint
-class PlayStatsActivity : ComponentActivity() {
-    private val viewModel by viewModels<PlayStatsViewModel>()
-    private val firebaseAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
+@Composable
+fun PlayStatsRouteScreen(
+    viewModel: PlayStatsViewModel = hiltViewModel(),
+) {
+    val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        if (savedInstanceState == null) {
-            firebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM) {
-                param(FirebaseAnalytics.Param.CONTENT_TYPE, "PlayStats")
-            }
+    LaunchedEffect(Unit) {
+        FirebaseAnalytics.getInstance(context).logEvent(FirebaseAnalytics.Event.VIEW_ITEM) {
+            param(FirebaseAnalytics.Param.CONTENT_TYPE, "PlayStats")
         }
+    }
 
-        setContent {
-            AppTheme {
-                Scaffold(
-                    topBar = {
-                        TopAppBar(
-                            title = { Text(text = stringResource(R.string.title_play_stats)) },
-                            navigationIcon = {
-                                IconButton(onClick = ::finish) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = stringResource(R.string.menu_back)
-                                    )
-                                }
-                            }
-                        )
-                    }
-                ) { paddingValues ->
-                    PlayStatsScreen(viewModel = viewModel, paddingValues = paddingValues)
-                }
-            }
+    AppTheme {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(text = stringResource(R.string.title_play_stats)) },
+                    navigationIcon = {
+                        IconButton(onClick = { navigator.popBackStackOrFinish(context) }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.menu_back),
+                            )
+                        }
+                    },
+                )
+            },
+        ) { paddingValues ->
+            PlayStatsScreen(viewModel = viewModel, paddingValues = paddingValues)
         }
     }
 }

@@ -2,11 +2,7 @@ package com.boardgamegeek.ui.collection
 
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -51,80 +47,37 @@ import com.boardgamegeek.ui.navigation.GameRoute
 import com.boardgamegeek.ui.navigation.LocalAppNavigator
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 
-@AndroidEntryPoint
-class CollectionActivity : AppCompatActivity() {
-
-    private val viewModel: CollectionViewModel by viewModels()
-
-    private var isCreatingShortcut = false
-    private var changingGamePlayId: Long = BggContract.INVALID_ID.toLong()
-    private var initialViewId: Int = CollectionViewPrefs.DEFAULT_DEFAULT_ID
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        readIntentExtras()
-
-        if (savedInstanceState == null) {
-            FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.VIEW_ITEM_LIST) {
-                param(FirebaseAnalytics.Param.CONTENT_TYPE, "Collection")
-            }
-        }
-
-        setContent {
-            CollectionRouteScreen(
-                initialViewId = initialViewId,
-                changingGamePlayId = changingGamePlayId,
-                isCreatingShortcut = isCreatingShortcut,
-                viewModel = viewModel,
-            )
-        }
+object CollectionActivity {
+    fun startForGameChange(context: Context, playId: Long) {
+        context.startActivity(
+            MainActivity.createIntent(
+                context = context,
+                route = CollectionRoute(changingGamePlayId = playId),
+            ),
+        )
     }
 
-    private fun readIntentExtras() {
-        isCreatingShortcut = Intent.ACTION_CREATE_SHORTCUT == intent.action
-        changingGamePlayId = intent.getLongExtra(KEY_CHANGING_GAME_PLAY_ID, BggContract.INVALID_ID.toLong())
-        val hideNavigationFeatures = isCreatingShortcut || changingGamePlayId != BggContract.INVALID_ID.toLong()
-        initialViewId = if (hideNavigationFeatures) {
-            CollectionViewPrefs.DEFAULT_DEFAULT_ID
-        } else {
-            intent.getIntExtra(KEY_VIEW_ID, viewModel.defaultViewIdFlow.value)
-        }
+    fun createShortcutInfo(context: Context, viewId: Int, viewName: String): ShortcutInfoCompat {
+        val intent = MainActivity.createIntent(context, CollectionRoute())
+            .clearTask()
+            .newTask()
+            .apply { action = Intent.ACTION_VIEW }
+        return ShortcutInfoCompat.Builder(context, createShortcutName(viewId))
+            .setShortLabel(viewName.toShortLabel())
+            .setLongLabel(viewName.toLongLabel())
+            .setIcon(IconCompat.createWithResource(context, R.drawable.ic_shortcut_ic_collection))
+            .setIntent(intent)
+            .build()
     }
 
-    companion object {
-        private const val KEY_VIEW_ID = "VIEW_ID"
-        private const val KEY_CHANGING_GAME_PLAY_ID = "KEY_CHANGING_GAME_PLAY_ID"
-
-        fun startForGameChange(context: Context, playId: Long) {
-            context.startActivity(MainActivity.createIntent(context, CollectionRoute))
-        }
-
-        fun createShortcutInfo(context: Context, viewId: Int, viewName: String): ShortcutInfoCompat {
-            val intent = MainActivity.createIntent(context, CollectionRoute)
-                .clearTask()
-                .newTask()
-                .apply { action = Intent.ACTION_VIEW }
-            return ShortcutInfoCompat.Builder(context, createShortcutName(viewId))
-                .setShortLabel(viewName.toShortLabel())
-                .setLongLabel(viewName.toLongLabel())
-                .setIcon(IconCompat.createWithResource(context, R.drawable.ic_shortcut_ic_collection))
-                .setIntent(intent)
-                .build()
-        }
-
-        fun createShortcutName(viewId: Int) = "collection_view-$viewId"
-    }
+    fun createShortcutName(viewId: Int) = "collection_view-$viewId"
 }
 
 @Composable
 fun CollectionRouteScreen(
-    initialViewId: Int? = null,
-    changingGamePlayId: Long = BggContract.INVALID_ID.toLong(),
-    isCreatingShortcut: Boolean = false,
+    route: CollectionRoute = CollectionRoute(),
     viewModel: CollectionViewModel = hiltViewModel(),
 ) {
     val navigator = LocalAppNavigator.current
@@ -136,7 +89,16 @@ fun CollectionRouteScreen(
     var isFilterSheetOpen by remember { mutableStateOf(false) }
     var saveViewDialog by remember { mutableStateOf<SaveViewDialogState?>(null) }
 
-    LaunchedEffect(initialViewId) {
+    val initialViewId = if (route.isCreatingShortcut || route.changingGamePlayId != BggContract.INVALID_ID.toLong()) {
+        CollectionViewPrefs.DEFAULT_DEFAULT_ID
+    } else {
+        route.initialViewId.takeUnless { it == 0 }
+    }
+
+    LaunchedEffect(route, initialViewId) {
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM_LIST) {
+            param(FirebaseAnalytics.Param.CONTENT_TYPE, "Collection")
+        }
         if (initialViewId != null && initialViewId != CollectionViewPrefs.DEFAULT_DEFAULT_ID) {
             viewModel.selectView(initialViewId)
         }
@@ -254,8 +216,8 @@ fun CollectionRouteScreen(
         CollectionScreen(
             viewModel = viewModel,
             paddingValues = paddingValues,
-            isCreatingShortcut = isCreatingShortcut,
-            changingGamePlayId = changingGamePlayId,
+            isCreatingShortcut = route.isCreatingShortcut,
+            changingGamePlayId = route.changingGamePlayId,
             onGameClick = { gameId, gameName, thumbnailUrl, heroImageUrl ->
                 navigator.navigate(
                     GameRoute(

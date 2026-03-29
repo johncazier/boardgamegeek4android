@@ -5,7 +5,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.net.toUri
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.*
-import com.boardgamegeek.ui.HomeActivity
+import com.boardgamegeek.ui.MainActivity
+import com.boardgamegeek.ui.navigation.HotnessRoute
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import timber.log.Timber
@@ -23,7 +24,7 @@ class BggFirebaseMessagingService : FirebaseMessagingService() {
             val intent = if (urlString != null) {
                 Intent(Intent.ACTION_VIEW, urlString.toUri())
             } else {
-                intentFor<HomeActivity>()
+                MainActivity.createIntent(applicationContext, HotnessRoute)
             }
             val message = it.body.orEmpty()
             val builder = applicationContext.createNotificationBuilder(

@@ -58,7 +58,7 @@ fun CollectionDetailsRouteScreen(
         snackbarHostState = snackbarHostState,
         topBarActions = {
             IconButton(
-                onClick = { navigator.navigateTopLevel(CollectionRoute) },
+                onClick = { navigator.navigateTopLevel(CollectionRoute()) },
             ) {
                 Icon(
                     imageVector = Icons.Filled.CollectionsBookmark,

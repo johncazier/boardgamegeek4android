@@ -53,13 +53,12 @@ import com.boardgamegeek.extensions.setColorViewValue
 import com.boardgamegeek.extensions.toast
 import com.boardgamegeek.model.PlayerColor
 import com.boardgamegeek.ui.buddy.BuddyActivity
-import com.boardgamegeek.ui.playstats.PlayStatsActivity
 import com.boardgamegeek.ui.locations.LocationsActivity
 import com.boardgamegeek.ui.plays.LocationActivity
 import com.boardgamegeek.ui.plays.PlaysActivity
 import com.boardgamegeek.ui.play.PlayActivity
 import com.boardgamegeek.ui.players.PlayersActivity
-import com.boardgamegeek.ui.startActivity
+import com.boardgamegeek.ui.playstats.PlayStatsActivity
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -137,7 +136,7 @@ fun PlaysSummaryScreen(
             SectionHeader(
                 title = stringResource(R.string.title_plays),
                 actionText = playsMoreText(context, playCount),
-                onAction = { context.startActivity<PlaysActivity>() }
+                onAction = { PlaysActivity.start(context) }
             )
 
             if (playsInProgress.isNotEmpty() || playsNotInProgress.isNotEmpty()) {
@@ -170,7 +169,7 @@ fun PlaysSummaryScreen(
             SectionHeader(
                 title = stringResource(R.string.title_players),
                 actionText = stringResource(R.string.more),
-                onAction = { context.startActivity<PlayersActivity>() },
+                onAction = { PlayersActivity.start(context) },
                 actionVisible = players.isNotEmpty()
             )
 
@@ -189,7 +188,7 @@ fun PlaysSummaryScreen(
             SectionHeader(
                 title = stringResource(R.string.title_locations),
                 actionText = stringResource(R.string.more),
-                onAction = { context.startActivity<LocationsActivity>() },
+                onAction = { LocationsActivity.start(context) },
                 actionVisible = locations.isNotEmpty()
             )
 
@@ -238,7 +237,7 @@ fun PlaysSummaryScreen(
             SectionHeader(
                 title = stringResource(R.string.title_play_stats),
                 actionText = stringResource(R.string.more),
-                onAction = { context.startActivity<PlayStatsActivity>() }
+                onAction = { PlayStatsActivity.start(context) }
             )
 
             Card(modifier = Modifier.fillMaxWidth()) {

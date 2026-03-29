@@ -1,15 +1,9 @@
 package com.boardgamegeek.ui.login
 
 import android.accounts.Account
-import android.accounts.AccountAuthenticatorResponse
 import android.accounts.AccountManager
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.addCallback
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,121 +41,38 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.auth.Authenticator
 import com.boardgamegeek.extensions.AccountPreferences
-import com.boardgamegeek.extensions.intentFor
 import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.extensions.set
 import com.boardgamegeek.extensions.toast
 import com.boardgamegeek.model.AuthToken
+import com.boardgamegeek.ui.MainActivity
+import com.boardgamegeek.ui.navigation.LoginRoute
 import com.boardgamegeek.ui.navigation.LocalAppNavigator
 import com.boardgamegeek.ui.theme.AppTheme
-import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
-@AndroidEntryPoint
-class LoginActivity : ComponentActivity() {
-    private val viewModel by viewModels<LoginViewModel>()
-    private var accountAuthenticatorResponse: AccountAuthenticatorResponse? = null
-
-    private var username: String? = null
-    private var password: String? = null
-
-    private lateinit var accountManager: AccountManager
-    private var isRequestingNewAccount = false
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        onBackPressedDispatcher.addCallback(this) {
-            if (viewModel.isAuthenticating.value) viewModel.cancel() else finish()
+object LoginActivity {
+    fun createIntentBundle(
+        context: Context,
+        response: android.accounts.AccountAuthenticatorResponse?,
+        accountName: String?,
+    ): android.os.Bundle {
+        val intent = MainActivity.createIntent(
+            context = context,
+            route = LoginRoute(username = accountName),
+            replaceBackStack = true,
+        ).apply {
+            putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
+            putExtra(AccountManager.KEY_ACCOUNT_NAME, accountName)
         }
-
-        accountAuthenticatorResponse = intent.getParcelableExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE)
-        accountAuthenticatorResponse?.onRequestContinued()
-
-        accountManager = AccountManager.get(this)
-        username = intent.getStringExtra(KEY_USERNAME)
-        isRequestingNewAccount = username == null
-
-        setContent {
-            LoginRouteScreen(
-                initialUsername = username,
-                onLoginSuccess = { finish() },
-                viewModel = viewModel,
-            )
-        }
-    }
-
-    private fun createAccount(authToken: AuthToken) {
-        Timber.i("Creating account")
-        if (authToken.username == null) return
-
-        val account = Account(authToken.username, Authenticator.ACCOUNT_TYPE)
-        try {
-            accountManager.setAuthToken(account, Authenticator.AUTH_TOKEN_TYPE, authToken.token)
-        } catch (e: SecurityException) {
-            AlertDialog.Builder(this)
-                .setTitle(R.string.title_error)
-                .setMessage(R.string.error_account_set_auth_token_security_exception)
-                .show()
-            return
-        }
-        val userData = bundleOf(Authenticator.KEY_AUTH_TOKEN_EXPIRY to authToken.expiry.toString())
-        if (isRequestingNewAccount) {
-            try {
-                var success = accountManager.addAccountExplicitly(account, password, userData)
-                if (!success) {
-                    Authenticator.removeAccounts(applicationContext)
-                    success = accountManager.addAccountExplicitly(account, password, userData)
-                }
-                if (!success) {
-                    val accounts = accountManager.getAccountsByType(Authenticator.ACCOUNT_TYPE)
-                    when {
-                        accounts.isEmpty() -> return
-                        accounts.size != 1 -> return
-                        else -> {
-                            val existingAccount = accounts[0]
-                            if (existingAccount.name != account.name) return
-                            accountManager.setPassword(account, password)
-                        }
-                    }
-                }
-            } catch (_: Exception) {
-                return
-            }
-        } else {
-            accountManager.setPassword(account, password)
-        }
-        val extras = bundleOf(
-            AccountManager.KEY_ACCOUNT_NAME to authToken.username,
-            AccountManager.KEY_ACCOUNT_TYPE to Authenticator.ACCOUNT_TYPE
-        )
-        setResult(RESULT_OK, Intent().putExtras(extras))
-        accountAuthenticatorResponse?.let {
-            it.onResult(extras)
-            accountAuthenticatorResponse = null
-        }
-        preferences()[AccountPreferences.KEY_USERNAME] = authToken.username
-
-        finish()
-    }
-
-    companion object {
-        private const val KEY_USERNAME = "USERNAME"
-
-        fun createIntentBundle(context: Context, response: AccountAuthenticatorResponse?, accountName: String?): Bundle {
-            val intent = context.intentFor<LoginActivity>(
-                KEY_USERNAME to accountName,
-                AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE to response
-            )
-            return bundleOf(AccountManager.KEY_INTENT to intent)
-        }
+        return bundleOf(AccountManager.KEY_INTENT to intent)
     }
 }
 
 @Composable
 fun LoginRouteScreen(
     initialUsername: String? = null,
-    onLoginSuccess: (() -> Unit)? = null,
+    onLoginSuccess: ((String) -> Unit)? = null,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
@@ -181,7 +92,12 @@ fun LoginRouteScreen(
             if (result == null) {
                 passwordError = context.getString(R.string.error_incorrect_password)
             } else if (completeLogin(context, result, passwordInput, initialUsername == null)) {
-                (onLoginSuccess ?: { navigator.popBackStack() })()
+                val username = result.username
+                if (username != null) {
+                    onLoginSuccess?.invoke(username) ?: navigator.popBackStack()
+                } else {
+                    context.toast(R.string.title_error)
+                }
             } else {
                 context.toast(R.string.title_error)
             }

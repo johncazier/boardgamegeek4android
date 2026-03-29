@@ -7,7 +7,11 @@ import kotlinx.serialization.Serializable
 sealed interface AppRoute : NavKey
 
 @Serializable
-data object CollectionRoute : AppRoute
+data class CollectionRoute(
+    val initialViewId: Int = 0,
+    val changingGamePlayId: Long = -1L,
+    val isCreatingShortcut: Boolean = false,
+) : AppRoute
 
 @Serializable
 data object HotnessRoute : AppRoute
@@ -156,4 +160,161 @@ data class GeekListItemRoute(
     val comments: List<GeekListCommentRoute> = emptyList(),
     val thumbnailUrls: List<String> = emptyList(),
     val heroImageUrls: List<String> = emptyList(),
+) : AppRoute
+
+@Serializable
+data class MechanicRoute(
+    val mechanicId: Int,
+    val mechanicName: String = "",
+) : AppRoute
+
+@Serializable
+data class CategoryRoute(
+    val categoryId: Int,
+    val categoryName: String = "",
+) : AppRoute
+
+@Serializable
+data class BuddyRoute(
+    val username: String? = null,
+    val playerName: String? = null,
+) : AppRoute
+
+@Serializable
+data class BuddyCollectionRoute(
+    val buddyName: String,
+) : AppRoute
+
+@Serializable
+data class BuddyPlaysRoute(
+    val buddyName: String,
+) : AppRoute
+
+@Serializable
+data class PlayersRoute(
+    val sortType: String = "NAME",
+) : AppRoute
+
+@Serializable
+data object LocationsRoute : AppRoute
+
+@Serializable
+data object PlayStatsRoute : AppRoute
+
+@Serializable
+data object PlaysRoute : AppRoute
+
+@Serializable
+data class CommentsRoute(
+    val gameId: Int,
+    val gameName: String = "",
+    val sortType: Int = 0,
+) : AppRoute
+
+@Serializable
+data class GameDetailRoute(
+    val title: String = "",
+    val gameId: Int,
+    val gameName: String = "",
+    val producerType: String = "UNKNOWN",
+) : AppRoute
+
+@Serializable
+data class GameColorsRoute(
+    val gameId: Int,
+    val gameName: String = "",
+    val iconColor: Int = 0,
+) : AppRoute
+
+@Serializable
+data class PlayerColorsRoute(
+    val buddyName: String? = null,
+    val playerName: String? = null,
+) : AppRoute
+
+@Serializable
+data class GamePlaysRoute(
+    val gameId: Int,
+    val gameName: String = "",
+    val heroImageUrl: String = "",
+    val thumbnailUrl: String = "",
+    val arePlayersCustomSorted: Boolean = false,
+    val iconColor: Int = 0,
+) : AppRoute
+
+@Serializable
+data class PlayerPlaysRoute(
+    val playerName: String = "",
+) : AppRoute
+
+@Serializable
+data class LocationRoute(
+    val locationName: String = "",
+) : AppRoute
+
+@Serializable
+data class LogPlayRoute(
+    val internalId: Long = -1L,
+    val gameId: Int,
+    val gameName: String = "",
+    val heroImageUrl: String = "",
+    val customPlayerSort: Boolean = false,
+    val isRequestingToEndPlay: Boolean = false,
+    val isRequestingRematch: Boolean = false,
+    val isChangingGame: Boolean = false,
+) : AppRoute
+
+@Serializable
+data class LogPlayerRoute(
+    val requestId: String,
+    val gameId: Int,
+    val gameName: String = "",
+    val heroImageUrl: String = "",
+    val isRequestingToEndPlay: Boolean = false,
+    val usedColors: List<String> = emptyList(),
+    val autoPosition: Int = -1,
+    val playerPosition: Int = -1,
+    val isNewPlayer: Boolean = false,
+    val player: LogPlayerPayload = LogPlayerPayload(),
+) : AppRoute
+
+@Serializable
+data class LogPlayerPayload(
+    val name: String = "",
+    val username: String = "",
+    val startingPosition: String = "",
+    val color: String = "",
+    val score: String = "",
+    val rating: Double = 0.0,
+    val userId: Int? = -1,
+    val isNew: Boolean = false,
+    val isWin: Boolean = false,
+    val playInternalId: Long = -1L,
+    val uiId: Long = 0L,
+    val internalId: Long = -1L,
+)
+
+@Serializable
+data class PlayRoute(
+    val internalId: Long,
+) : AppRoute
+
+@Serializable
+data class GamePlayStatsRoute(
+    val gameId: Int,
+    val gameName: String = "",
+    val headerColor: Int = 0,
+) : AppRoute
+
+@Serializable
+data class GameCollectionItemRoute(
+    val internalId: Long,
+    val gameId: Int = 0,
+    val gameName: String = "",
+    val collectionId: Int = 0,
+    val collectionName: String = "",
+    val thumbnailUrl: String = "",
+    val heroImageUrl: String = "",
+    val gameYearPublished: Int = 0,
+    val collectionYearPublished: Int = 0,
 ) : AppRoute

@@ -2,7 +2,6 @@ package com.boardgamegeek.repository
 
 import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.text.format.DateUtils
@@ -28,7 +27,9 @@ import com.boardgamegeek.pref.SyncPrefs
 import com.boardgamegeek.pref.SyncPrefs.Companion.TIMESTAMP_PLAYS_OLDEST_DATE
 import com.boardgamegeek.pref.clearPlaysTimestamps
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
+import com.boardgamegeek.ui.MainActivity
 import com.boardgamegeek.ui.playstats.PlayStatsActivity
+import com.boardgamegeek.ui.navigation.PlayStatsRoute
 import com.boardgamegeek.work.PlayUploadWorker
 import com.boardgamegeek.work.SyncPlaysWorker
 import kotlinx.coroutines.Dispatchers
@@ -893,12 +894,14 @@ class PlayRepository(
                     R.string.sync_notification_h_index_decrease
                 context.notify(
                     context.createNotificationBuilder(
-                        R.string.title_play_stats, NotificationChannels.STATS, PlayStatsActivity::class.java
+                        R.string.title_play_stats,
+                        NotificationChannels.STATS,
+                        MainActivity.createIntent(context, PlayStatsRoute),
                     ).setContentText(context.getSpannedText(messageId, context.getString(typeResId), hIndex.description)).setContentIntent(
                         PendingIntent.getActivity(
                             context,
                             0,
-                            Intent(context, PlayStatsActivity::class.java),
+                            MainActivity.createIntent(context, PlayStatsRoute),
                             PendingIntent.FLAG_UPDATE_CURRENT or if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0,
                         )
                     ), NotificationTags.PLAY_STATS, notificationId

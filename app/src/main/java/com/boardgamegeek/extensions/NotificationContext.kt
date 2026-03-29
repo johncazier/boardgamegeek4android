@@ -21,11 +21,13 @@ import com.boardgamegeek.R
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.model.PlayUploadResult
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
-import com.boardgamegeek.ui.*
 import com.boardgamegeek.ui.logplay.LogPlayActivity
+import com.boardgamegeek.ui.MainActivity
 import com.boardgamegeek.ui.play.PlayActivity
 import com.boardgamegeek.ui.plays.GamePlaysActivity
 import com.boardgamegeek.ui.plays.PlaysActivity
+import com.boardgamegeek.ui.navigation.HotnessRoute
+import com.boardgamegeek.ui.navigation.PlaysRoute
 import com.boardgamegeek.util.LargeIconLoader
 import timber.log.Timber
 
@@ -33,27 +35,24 @@ private const val TAG_PREFIX = "com.boardgamegeek."
 const val TAG_PLAY_TIMER = TAG_PREFIX + "PLAY_TIMER"
 
 /**
- * Creates a [androidx.core.app.NotificationCompat.Builder] with the correct icons, specified title, and pending intent that goes to the [com.boardgamegeek.ui.HomeActivity].
+ * Creates a [androidx.core.app.NotificationCompat.Builder] with the correct icons, specified title, and pending intent that goes to the main app host.
  */
 fun Context.createNotificationBuilder(
-    @StringRes titleResId: Int,
+    title: String?,
     channelId: String,
-    cls: Class<*>? = HomeActivity::class.java
+    intent: Intent? = MainActivity.createIntent(this, HotnessRoute),
 ): NotificationCompat.Builder {
-    return createNotificationBuilder(getString(titleResId), channelId, cls)
-}
-
-/**
- * Creates a [androidx.core.app.NotificationCompat.Builder] with the correct icons, specified title, and pending intent that goes to the [com.boardgamegeek.ui.HomeActivity].
- */
-fun Context.createNotificationBuilder(title: String?, channelId: String, cls: Class<*>? = HomeActivity::class.java): NotificationCompat.Builder {
-    return createNotificationBuilder(title, channelId, Intent(this, cls))
+    return createNotificationBuilder(title, channelId, intent)
 }
 
 /**
  * Creates a [NotificationCompat.Builder] with the correct icons, specified title, and pending intent.
  */
-fun Context.createNotificationBuilder(@StringRes titleResId: Int, channelId: String, intent: Intent?): NotificationCompat.Builder {
+fun Context.createNotificationBuilder(
+    @StringRes titleResId: Int,
+    channelId: String,
+    intent: Intent? = MainActivity.createIntent(this, HotnessRoute),
+): NotificationCompat.Builder {
     return createNotificationBuilder(getString(titleResId), channelId, intent)
 }
 
@@ -235,7 +234,7 @@ private fun showNotificationSummary(context: Context) {
     val builder = context.createNotificationBuilder(
         R.string.sync_notification_title_play_upload,
         NotificationChannels.SYNC_UPLOAD,
-        context.intentFor<PlaysActivity>()
+        MainActivity.createIntent(context, PlaysRoute)
     )
         .setGroup(NotificationTags.UPLOAD_PLAY)
         .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_SUMMARY)

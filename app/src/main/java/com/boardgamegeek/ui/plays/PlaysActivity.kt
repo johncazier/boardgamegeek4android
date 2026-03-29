@@ -1,10 +1,7 @@
 package com.boardgamegeek.ui.plays
 
 import android.app.DatePickerDialog
-import android.os.Bundle
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -20,7 +17,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,109 +25,110 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.notifyLoggedPlay
+import com.boardgamegeek.ui.MainActivity
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.PlaysRoute
+import com.boardgamegeek.ui.navigation.popBackStackOrFinish
 import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
-import dagger.hilt.android.AndroidEntryPoint
 import java.util.Calendar
 import java.util.GregorianCalendar
 
-@AndroidEntryPoint
-class PlaysActivity : AppCompatActivity() {
-    private val viewModel by viewModels<PlaysViewModel>()
+object PlaysActivity {
+    fun start(context: Context) {
+        context.startActivity(MainActivity.createIntent(context, PlaysRoute))
+    }
+}
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+@Composable
+fun PlaysRouteScreen(
+    viewModel: PlaysViewModel = hiltViewModel(),
+) {
+    val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
 
-        if (savedInstanceState == null) {
-            FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.VIEW_ITEM_LIST) {
-                param(FirebaseAnalytics.Param.CONTENT_TYPE, "Plays")
-            }
+    LaunchedEffect(Unit) {
+        FirebaseAnalytics.getInstance(context).logEvent(FirebaseAnalytics.Event.VIEW_ITEM_LIST) {
+            param(FirebaseAnalytics.Param.CONTENT_TYPE, "Plays")
         }
-
         viewModel.setAll()
+    }
 
-        setContent {
-            AppTheme {
-                val snackbarHostState = remember { SnackbarHostState() }
-                val plays by viewModel.plays.collectAsState()
-                val filterType by viewModel.filterType.collectAsState()
-                val sortType by viewModel.sortType.collectAsState()
+    AppTheme {
+        val snackbarHostState = remember { SnackbarHostState() }
+        val plays by viewModel.plays.collectAsState()
+        val filterType by viewModel.filterType.collectAsState()
+        val sortType by viewModel.sortType.collectAsState()
 
-                LaunchedEffect(viewModel) {
-                    viewModel.errorMessageFlow.collect { message ->
-                        if (!message.isNullOrBlank()) {
-                            snackbarHostState.showSnackbar(message)
-                            viewModel.clearErrorMessage()
-                        }
-                    }
-                }
-
-                LaunchedEffect(viewModel) {
-                    viewModel.loggedPlayResultFlow.collect { result ->
-                        result?.let {
-                            notifyLoggedPlay(it)
-                            viewModel.clearLoggedPlayResult()
-                        }
-                    }
-                }
-
-                PlaysActivityScaffold(
-                    playCount = plays.sumOf { it.quantity },
-                    filterType = filterType,
-                    sortType = sortType,
-                    snackbarHostState = snackbarHostState,
-                    onBack = { finish() },
-                    onFilter = ::filter,
-                    onSort = ::setSort,
-                    onRefreshOnDate = ::showDatePicker,
-                ) { paddingValues ->
-                    PlaysScreen(
-                        viewModel = viewModel,
-                        emptyStringResId = R.string.empty_plays,
-                        showGameName = true,
-                        gameId = com.boardgamegeek.provider.BggContract.INVALID_ID,
-                        gameName = "",
-                        heroImageUrl = "",
-                        arePlayersCustomSorted = false,
-                        iconColor = android.graphics.Color.TRANSPARENT,
-                        contentPadding = paddingValues,
-                    )
+        LaunchedEffect(viewModel) {
+            viewModel.errorMessageFlow.collect { message ->
+                if (!message.isNullOrBlank()) {
+                    snackbarHostState.showSnackbar(message)
+                    viewModel.clearErrorMessage()
                 }
             }
         }
-    }
 
-    private fun showDatePicker() {
-        val calendar = Calendar.getInstance()
-        DatePickerDialog(
-            this,
-            { _, year, month, day ->
-                viewModel.refreshPlaysByDate(GregorianCalendar(year, month, day).timeInMillis)
+        LaunchedEffect(viewModel) {
+            viewModel.loggedPlayResultFlow.collect { result ->
+                result?.let {
+                    context.notifyLoggedPlay(it)
+                    viewModel.clearLoggedPlayResult()
+                }
+            }
+        }
+
+        PlaysActivityScaffold(
+            playCount = plays.sumOf { it.quantity },
+            filterType = filterType,
+            sortType = sortType,
+            snackbarHostState = snackbarHostState,
+            onBack = { navigator.popBackStackOrFinish(context) },
+            onFilter = { type ->
+                FirebaseAnalytics.getInstance(context).logEvent("Filter") {
+                    param(FirebaseAnalytics.Param.CONTENT_TYPE, "Plays")
+                    bundle.putString("FilterBy", type.toString())
+                }
+                viewModel.setFilter(type)
             },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH),
-        ).show()
-    }
-
-    private fun setSort(type: PlaysViewModel.SortType) {
-        FirebaseAnalytics.getInstance(this).logEvent("Sort") {
-            param(FirebaseAnalytics.Param.CONTENT_TYPE, "Plays")
-            param("SortBy", type.toString())
+            onSort = { type ->
+                FirebaseAnalytics.getInstance(context).logEvent("Sort") {
+                    param(FirebaseAnalytics.Param.CONTENT_TYPE, "Plays")
+                    param("SortBy", type.toString())
+                }
+                viewModel.setSort(type)
+            },
+            onRefreshOnDate = {
+                val calendar = Calendar.getInstance()
+                DatePickerDialog(
+                    context,
+                    { _, year, month, day ->
+                        viewModel.refreshPlaysByDate(GregorianCalendar(year, month, day).timeInMillis)
+                    },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH),
+                ).show()
+            },
+        ) { paddingValues ->
+            PlaysScreen(
+                viewModel = viewModel,
+                emptyStringResId = R.string.empty_plays,
+                showGameName = true,
+                gameId = com.boardgamegeek.provider.BggContract.INVALID_ID,
+                gameName = "",
+                heroImageUrl = "",
+                arePlayersCustomSorted = false,
+                iconColor = android.graphics.Color.TRANSPARENT,
+                contentPadding = paddingValues,
+            )
         }
-        viewModel.setSort(type)
-    }
-
-    private fun filter(type: PlaysViewModel.FilterType) {
-        FirebaseAnalytics.getInstance(this).logEvent("Filter") {
-            param(FirebaseAnalytics.Param.CONTENT_TYPE, "Plays")
-            bundle.putString("FilterBy", type.toString())
-        }
-        viewModel.setFilter(type)
     }
 }
 

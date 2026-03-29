@@ -50,168 +50,6 @@
 				<action android:name="com.google.android.gms.actions.SEARCH_ACTION" />
 				<category android:name="android.intent.category.DEFAULT" />
 			</intent-filter>
-			<meta-data
-				android:name="android.app.shortcuts"
-				android:resource="@xml/shortcuts" />
-			<meta-data
-				android:name="android.app.searchable"
-				android:resource="@xml/searchable" />
-		</activity>
-		<activity
-			android:name=".ui.mechanic.MechanicActivity"
-			android:label="@string/title_mechanic">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-		<activity
-			android:name=".ui.category.CategoryActivity"
-			android:label="@string/title_category">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-
-		<activity-alias
-			android:name=".CreateShortcutActivity"
-			android:exported="true"
-			android:label="@string/title_game"
-			android:targetActivity=".ui.collection.CollectionActivity">
-			<intent-filter>
-				<action android:name="android.intent.action.CREATE_SHORTCUT" />
-
-				<category android:name="android.intent.category.DEFAULT" />
-			</intent-filter>
-
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity-alias>
-
-		<activity
-			android:name=".ui.collection.CollectionActivity"
-			android:label="@string/title_collection">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-
-		<activity
-			android:name=".ui.game.GameActivity"
-			android:exported="true"
-			android:label="@string/title_game" />
-		<activity
-			android:name=".ui.gamedetail.GameDetailActivity"
-			android:label="@string/title_game_detail" />
-		<activity
-			android:name=".ui.buddy.BuddyActivity"
-			android:exported="false"
-			android:label="@string/title_buddy">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.MainActivity" />
-		</activity>
-		<activity
-			android:name=".ui.buddycollection.BuddyCollectionActivity"
-			android:exported="false"
-			android:label="@string/title_collection" />
-		<activity
-			android:name=".ui.plays.BuddyPlaysActivity"
-			android:exported="false"
-			android:label="@string/title_plays" />
-		<activity
-			android:name=".ui.playercolors.PlayerColorsActivity"
-			android:label="@string/title_favorite_colors" />
-		<activity
-			android:name=".ui.playssummary.PlaysSummaryActivity"
-			android:exported="false"
-			android:label="@string/title_plays">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-		<activity
-			android:name=".ui.plays.PlaysActivity"
-			android:exported="false"
-			android:label="@string/title_plays">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.playssummary.PlaysSummaryActivity" />
-		</activity>
-		<activity
-			android:name=".ui.players.PlayersActivity"
-			android:exported="false"
-			android:label="@string/title_players">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.playssummary.PlaysSummaryActivity" />
-		</activity>
-		<activity
-			android:name=".ui.locations.LocationsActivity"
-			android:exported="false"
-			android:label="@string/title_locations">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.playssummary.PlaysSummaryActivity" />
-		</activity>
-		<activity
-			android:name=".ui.playstats.PlayStatsActivity"
-			android:exported="false"
-			android:label="@string/title_play_stats">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.playssummary.PlaysSummaryActivity" />
-		</activity>
-		<activity
-			android:name=".ui.play.PlayActivity"
-			android:exported="false"
-			android:label="@string/title_play">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.plays.PlaysActivity" />
-		</activity>
-		<activity
-			android:name=".ui.plays.PlayerPlaysActivity"
-			android:exported="false"
-			android:label="@string/title_player">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.players.PlayersActivity" />
-		</activity>
-		<activity
-			android:name=".ui.plays.LocationActivity"
-			android:exported="false"
-			android:label="@string/title_location">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.locations.LocationsActivity" />
-		</activity>
-		<activity
-			android:name=".ui.logplay.LogPlayActivity"
-			android:label="@string/title_log_play"
-			android:launchMode="singleTop" />
-		<activity
-			android:name=".ui.logplayer.LogPlayerActivity"
-			android:label="@string/title_log_player" />
-		<activity
-			android:name=".ui.gamecollectionitem.GameCollectionItemActivity"
-			android:label="@string/title_collection" />
-		<activity
-			android:name=".ui.plays.GamePlaysActivity"
-			android:label="@string/title_plays" />
-		<activity
-			android:name=".ui.playstats.GamePlayStatsActivity"
-			android:label="@string/title_play_stats" />
-		<activity
-			android:name=".ui.gamecolors.GameColorsActivity"
-			android:label="@string/title_colors" />
-		<activity
-			android:name=".ui.comments.CommentsActivity"
-			android:label="@string/title_comments" />
-		<activity
-			android:name=".pref.SettingsActivity"
-			android:exported="false"
-			android:label="@string/title_settings">
 			<intent-filter>
 				<action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />
 				<category android:name="android.intent.category.DEFAULT" />
@@ -232,15 +70,28 @@
 				<action android:name="@string/intent_action_data" />
 				<category android:name="android.intent.category.DEFAULT" />
 			</intent-filter>
+			<meta-data
+				android:name="android.app.shortcuts"
+				android:resource="@xml/shortcuts" />
+			<meta-data
+				android:name="android.app.searchable"
+				android:resource="@xml/searchable" />
 		</activity>
-		<activity
-			android:name=".ui.login.LoginActivity"
-			android:configChanges="orientation|screenSize"
-			android:excludeFromRecents="true"
-			android:label="@string/title_login"
-			android:theme="@style/Theme.bgglight.Dialog.NoTitle"
-			android:windowSoftInputMode="adjustResize|stateVisible" />
+		<activity-alias
+			android:name=".CreateShortcutActivity"
+			android:exported="true"
+			android:label="@string/title_game"
+			android:targetActivity=".ui.MainActivity">
+			<intent-filter>
+				<action android:name="android.intent.action.CREATE_SHORTCUT" />
 
+				<category android:name="android.intent.category.DEFAULT" />
+			</intent-filter>
+
+			<meta-data
+				android:name="android.support.PARENT_ACTIVITY"
+				android:value=".ui.MainActivity" />
+		</activity-alias>
 		<service
 			android:name="androidx.work.impl.foreground.SystemForegroundService"
 			android:foregroundServiceType="dataSync"
