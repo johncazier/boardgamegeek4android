@@ -58,50 +58,8 @@
 				android:resource="@xml/searchable" />
 		</activity>
 		<activity
-			android:name=".ui.collectiondetails.CollectionDetailsActivity"
-			android:label="@string/title_collection_details">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-		<activity
-			android:name=".ui.designers.DesignersActivity"
-			android:label="@string/title_designers">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-		<activity
-			android:name=".ui.artists.ArtistsActivity"
-			android:label="@string/title_artists">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-		<activity
-			android:name=".ui.publishers.PublishersActivity"
-			android:label="@string/title_publishers">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-		<activity
-			android:name=".ui.mechanics.MechanicsActivity"
-			android:label="@string/title_mechanics">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-		<activity
 			android:name=".ui.mechanic.MechanicActivity"
 			android:label="@string/title_mechanic">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-		<activity
-			android:name=".ui.categories.CategoriesActivity"
-			android:label="@string/title_categories">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
 				android:value=".ui.HomeActivity" />
@@ -131,24 +89,8 @@
 		</activity-alias>
 
 		<activity
-			android:name=".ui.hotness.HotnessActivity"
-			android:label="@string/title_hotness">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-
-		<activity
 			android:name=".ui.collection.CollectionActivity"
 			android:label="@string/title_collection">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-
-		<activity
-			android:name=".ui.topgames.TopGamesActivity"
-			android:label="@string/title_top_games">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
 				android:value=".ui.HomeActivity" />
@@ -159,31 +101,15 @@
 			android:exported="true"
 			android:label="@string/title_game" />
 		<activity
-			android:name=".ui.image.ImageActivity"
-			android:label="@string/title_image"
-			android:theme="@style/Theme.MaterialComponents.NoActionBar" />
-		<activity
 			android:name=".ui.gamedetail.GameDetailActivity"
 			android:label="@string/title_game_detail" />
-		<activity
-			android:name=".ui.person.PersonActivity"
-			android:exported="false"
-			android:label="@string/title_artist" />
-		<activity
-			android:name=".ui.buddies.BuddiesActivity"
-			android:exported="false"
-			android:label="@string/title_buddies">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
 		<activity
 			android:name=".ui.buddy.BuddyActivity"
 			android:exported="false"
 			android:label="@string/title_buddy">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.buddies.BuddiesActivity" />
+				android:value=".ui.MainActivity" />
 		</activity>
 		<activity
 			android:name=".ui.buddycollection.BuddyCollectionActivity"
@@ -261,16 +187,6 @@
 				android:value=".ui.locations.LocationsActivity" />
 		</activity>
 		<activity
-			android:name=".ui.search.SearchResultsActivity"
-			android:configChanges="keyboardHidden|orientation"
-			android:exported="false"
-			android:label=""
-			android:launchMode="singleTop">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-		<activity
 			android:name=".ui.logplay.LogPlayActivity"
 			android:label="@string/title_log_play"
 			android:launchMode="singleTop" />
@@ -292,53 +208,6 @@
 		<activity
 			android:name=".ui.comments.CommentsActivity"
 			android:label="@string/title_comments" />
-		<activity
-			android:name=".ui.forums.ForumsActivity"
-			android:label="@string/title_forums">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-		<activity
-			android:name=".ui.forum.ForumActivity"
-			android:label="@string/title_forum" />
-		<activity
-			android:name=".ui.geeklists.GeekListsActivity"
-			android:label="@string/title_geeklists">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-		<activity
-			android:name=".ui.geeklist.GeekListActivity"
-			android:label="@string/title_geeklist">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.geeklists.GeekListsActivity" />
-		</activity>
-		<activity
-			android:name=".ui.geeklistitem.GeekListItemActivity"
-			android:label="@string/title_geeklist" />
-		<activity
-			android:name=".ui.thread.ThreadActivity"
-			android:label="@string/title_thread" />
-		<activity
-			android:name=".ui.article.ArticleActivity"
-			android:label="Article" />
-		<activity
-			android:name=".ui.sync.SyncActivity"
-			android:label="@string/title_sync">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
-		<activity
-			android:name=".ui.data.DataActivity"
-			android:label="@string/title_backup">
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".ui.HomeActivity" />
-		</activity>
 		<activity
 			android:name=".pref.SettingsActivity"
 			android:exported="false"
@@ -413,7 +282,7 @@
 
 		<meta-data
 			android:name="android.app.default_searchable"
-			android:value=".ui.search.SearchResultsActivity" />
+			android:value=".ui.MainActivity" />
 		<meta-data
 			android:name="com.crashlytics.ApiKey"
 			android:value="ce3b2fdec1306105cd9f867446334e513aa09208" />

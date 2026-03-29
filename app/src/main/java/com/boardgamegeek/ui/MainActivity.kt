@@ -30,15 +30,21 @@ import kotlinx.serialization.json.Json
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private var pendingExternalRoute by mutableStateOf<AppRoute?>(null)
+    private var pendingExternalRouteShouldReplace by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        pendingExternalRoute = readIntentRoute(intent)
+        val initialNavigation = readIntentRoute(intent)
+        val initialRoute = initialNavigation?.route ?: resolveInitialRoute(this)
         setContent {
             BggApp(
-                initialRoute = pendingExternalRoute ?: resolveInitialRoute(this),
+                initialRoute = initialRoute,
                 pendingExternalRoute = pendingExternalRoute,
-                onExternalRouteConsumed = { pendingExternalRoute = null },
+                pendingExternalRouteShouldReplace = pendingExternalRouteShouldReplace,
+                onExternalRouteConsumed = {
+                    pendingExternalRoute = null
+                    pendingExternalRouteShouldReplace = false
+                },
             )
         }
     }
@@ -46,17 +52,23 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        pendingExternalRoute = readIntentRoute(intent)
+        readIntentRoute(intent)?.let {
+            pendingExternalRoute = it.route
+            pendingExternalRouteShouldReplace = it.replaceBackStack
+        }
     }
 
-    private fun readIntentRoute(intent: Intent): AppRoute? {
+    private fun readIntentRoute(intent: Intent): PendingRoute? {
         intent.getStringExtra(KEY_ROUTE)?.let { encoded ->
             return runCatching {
-                json.decodeFromString<AppRoute>(encoded)
+                PendingRoute(
+                    route = json.decodeFromString<AppRoute>(encoded),
+                    replaceBackStack = intent.getBooleanExtra(KEY_REPLACE_BACK_STACK, false),
+                )
             }.getOrNull()
         }
 
-        return when (intent.action) {
+        val route = when (intent.action) {
             Intent.ACTION_VIEW -> {
                 val uri = intent.data ?: return null
                 GameRoute(
@@ -72,10 +84,12 @@ class MainActivity : AppCompatActivity() {
 
             else -> null
         }
+        return route?.let { PendingRoute(it, replaceBackStack = false) }
     }
 
     companion object {
         private const val KEY_ROUTE = "app_route"
+        private const val KEY_REPLACE_BACK_STACK = "replace_back_stack"
         private const val ACTION_VOICE_SEARCH = "com.google.android.gms.actions.SEARCH_ACTION"
 
         private val json = Json {
@@ -83,13 +97,23 @@ class MainActivity : AppCompatActivity() {
             ignoreUnknownKeys = true
         }
 
-        fun createIntent(context: Context, route: AppRoute): Intent {
+        fun createIntent(
+            context: Context,
+            route: AppRoute,
+            replaceBackStack: Boolean = false,
+        ): Intent {
             return Intent(context, MainActivity::class.java).apply {
                 putExtra(KEY_ROUTE, json.encodeToString(AppRoute.serializer(), route))
+                putExtra(KEY_REPLACE_BACK_STACK, replaceBackStack)
             }
         }
     }
 }
+
+private data class PendingRoute(
+    val route: AppRoute,
+    val replaceBackStack: Boolean,
+)
 
 private fun resolveInitialRoute(context: Context): AppRoute {
     val prefs = context.preferences()

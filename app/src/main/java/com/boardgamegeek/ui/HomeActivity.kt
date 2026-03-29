@@ -3,9 +3,10 @@ package com.boardgamegeek.ui
 import android.os.Bundle
 import com.boardgamegeek.auth.Authenticator
 import com.boardgamegeek.extensions.*
-import com.boardgamegeek.ui.buddies.BuddiesActivity
-import com.boardgamegeek.ui.hotness.HotnessActivity
-import com.boardgamegeek.ui.playssummary.PlaysSummaryActivity
+import com.boardgamegeek.ui.navigation.BuddiesRoute
+import com.boardgamegeek.ui.navigation.CollectionDetailsRoute
+import com.boardgamegeek.ui.navigation.HotnessRoute
+import com.boardgamegeek.ui.navigation.PlaysSummaryRoute
 
 class HomeActivity : TopLevelActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,15 +17,15 @@ class HomeActivity : TopLevelActivity() {
             when {
                 Authenticator.isOldAuth(this) -> {
                     Authenticator.signOut(this)
-                    intentFor<HotnessActivity>()
+                    MainActivity.createIntent(this, HotnessRoute)
                 }
-                prefs.isCollectionSetToSync() -> intentFor<com.boardgamegeek.ui.collectiondetails.CollectionDetailsActivity>()
-                prefs[PREFERENCES_KEY_SYNC_PLAYS, false] == true -> intentFor<PlaysSummaryActivity>()
-                prefs[PREFERENCES_KEY_SYNC_BUDDIES, false] == true -> intentFor<BuddiesActivity>()
-                else -> intentFor<HotnessActivity>()
+                prefs.isCollectionSetToSync() -> MainActivity.createIntent(this, CollectionDetailsRoute)
+                prefs[PREFERENCES_KEY_SYNC_PLAYS, false] == true -> MainActivity.createIntent(this, PlaysSummaryRoute)
+                prefs[PREFERENCES_KEY_SYNC_BUDDIES, false] == true -> MainActivity.createIntent(this, BuddiesRoute)
+                else -> MainActivity.createIntent(this, HotnessRoute)
             }
         } else {
-            intentFor<HotnessActivity>()
+            MainActivity.createIntent(this, HotnessRoute)
         }
 
         startActivity(intent)

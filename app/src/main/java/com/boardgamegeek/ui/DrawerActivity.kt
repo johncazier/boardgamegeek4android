@@ -19,17 +19,21 @@ import com.boardgamegeek.auth.Authenticator
 import com.boardgamegeek.databinding.ActivityDrawerBaseBinding
 import com.boardgamegeek.model.User
 import com.boardgamegeek.extensions.*
-import com.boardgamegeek.ui.buddies.BuddiesActivity
-import com.boardgamegeek.ui.search.SearchResultsActivity
-import com.boardgamegeek.ui.sync.SyncActivity
-import com.boardgamegeek.ui.data.DataActivity
-import com.boardgamegeek.ui.playssummary.PlaysSummaryActivity
 import com.boardgamegeek.pref.SettingsActivity
-import com.boardgamegeek.ui.forums.ForumsActivity
-import com.boardgamegeek.ui.geeklists.GeekListsActivity
-import com.boardgamegeek.ui.hotness.HotnessActivity
 import com.boardgamegeek.ui.login.LoginActivity
-import com.boardgamegeek.ui.topgames.TopGamesActivity
+import com.boardgamegeek.ui.navigation.BuddiesRoute
+import com.boardgamegeek.ui.navigation.CollectionDetailsRoute
+import com.boardgamegeek.ui.navigation.CollectionRoute
+import com.boardgamegeek.ui.navigation.DataRoute
+import com.boardgamegeek.ui.navigation.ForumsRoute
+import com.boardgamegeek.ui.navigation.GeekListsRoute
+import com.boardgamegeek.ui.navigation.HotnessRoute
+import com.boardgamegeek.ui.navigation.LoginRoute
+import com.boardgamegeek.ui.navigation.PlaysSummaryRoute
+import com.boardgamegeek.ui.navigation.SearchRoute
+import com.boardgamegeek.ui.navigation.SettingsRoute
+import com.boardgamegeek.ui.navigation.SyncRoute
+import com.boardgamegeek.ui.navigation.TopGamesRoute
 import com.boardgamegeek.ui.viewmodel.SelfUserViewModel
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
@@ -83,7 +87,7 @@ abstract class DrawerActivity : BaseActivity() {
         }
 
         navigationView.getHeaderView(0).findViewById<Button>(R.id.signInButton)?.let {
-            it.setOnClickListener { startActivity<LoginActivity>() }
+            it.setOnClickListener { startActivity(MainActivity.createIntent(this, LoginRoute())) }
         }
 
         selfUserViewModel.user.observe(this) {
@@ -116,18 +120,18 @@ abstract class DrawerActivity : BaseActivity() {
     private fun selectItem(menuItemId: Int) {
         if (menuItemId != navigationItemId) {
             when (menuItemId) {
-                R.id.collection -> startActivity<com.boardgamegeek.ui.collection.CollectionActivity>()
-                R.id.collection_details -> startActivity<com.boardgamegeek.ui.collectiondetails.CollectionDetailsActivity>()
-                R.id.search -> startActivity<SearchResultsActivity>()
-                R.id.hotness -> startActivity<HotnessActivity>()
-                R.id.top_games -> startActivity<TopGamesActivity>()
-                R.id.geeklists -> startActivity<GeekListsActivity>()
-                R.id.plays -> startActivity<PlaysSummaryActivity>()
-                R.id.geek_buddies -> startActivity<BuddiesActivity>()
-                R.id.forums -> startActivity<ForumsActivity>()
-                R.id.sync -> startActivity<SyncActivity>()
-                R.id.data -> startActivity<DataActivity>()
-                R.id.settings -> startActivity<SettingsActivity>()
+                R.id.collection -> startActivity(MainActivity.createIntent(this, CollectionRoute))
+                R.id.collection_details -> startActivity(MainActivity.createIntent(this, CollectionDetailsRoute))
+                R.id.search -> startActivity(MainActivity.createIntent(this, SearchRoute()))
+                R.id.hotness -> startActivity(MainActivity.createIntent(this, HotnessRoute))
+                R.id.top_games -> startActivity(MainActivity.createIntent(this, TopGamesRoute))
+                R.id.geeklists -> startActivity(MainActivity.createIntent(this, GeekListsRoute))
+                R.id.plays -> startActivity(MainActivity.createIntent(this, PlaysSummaryRoute))
+                R.id.geek_buddies -> startActivity(MainActivity.createIntent(this, BuddiesRoute))
+                R.id.forums -> startActivity(MainActivity.createIntent(this, ForumsRoute))
+                R.id.sync -> startActivity(MainActivity.createIntent(this, SyncRoute))
+                R.id.data -> startActivity(MainActivity.createIntent(this, DataRoute))
+                R.id.settings -> startActivity(MainActivity.createIntent(this, SettingsRoute))
             }
         }
         drawerLayout.closeDrawer(navigationView)

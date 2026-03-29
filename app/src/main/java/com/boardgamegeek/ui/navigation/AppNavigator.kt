@@ -6,8 +6,11 @@ import androidx.navigation3.runtime.NavBackStack
 
 interface AppNavigator {
     val currentRoute: AppRoute?
+    val canPopBackStack: Boolean
 
     fun navigate(route: AppRoute)
+
+    fun replace(route: AppRoute)
 
     fun navigateTopLevel(route: AppRoute)
 
@@ -23,8 +26,15 @@ class BackStackAppNavigator(
 ) : AppNavigator {
     override val currentRoute: AppRoute?
         get() = backStack.lastOrNull() as? AppRoute
+    override val canPopBackStack: Boolean
+        get() = backStack.size > 1
 
     override fun navigate(route: AppRoute) {
+        backStack.add(route)
+    }
+
+    override fun replace(route: AppRoute) {
+        backStack.clear()
         backStack.add(route)
     }
 
@@ -33,8 +43,7 @@ class BackStackAppNavigator(
         if (current == route && backStack.size == 1) {
             return
         }
-        backStack.clear()
-        backStack.add(route)
+        replace(route)
     }
 
     override fun popBackStack() {

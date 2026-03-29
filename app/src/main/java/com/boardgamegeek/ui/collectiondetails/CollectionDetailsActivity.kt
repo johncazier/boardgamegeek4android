@@ -1,9 +1,5 @@
 package com.boardgamegeek.ui.collectiondetails
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material3.Icon
@@ -25,22 +21,6 @@ import com.boardgamegeek.ui.DrawerRoute
 import com.boardgamegeek.ui.navigation.BottomNavItem
 import com.boardgamegeek.ui.navigation.CollectionRoute
 import com.boardgamegeek.ui.navigation.LocalAppNavigator
-import dagger.hilt.android.AndroidEntryPoint
-
-@AndroidEntryPoint
-class CollectionDetailsActivity : ComponentActivity() {
-    private val viewModel by viewModels<CollectionDetailsViewModel>()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        viewModel.refresh()
-
-        setContent {
-            CollectionDetailsRouteScreen()
-        }
-    }
-}
 
 @Composable
 fun CollectionDetailsRouteScreen(

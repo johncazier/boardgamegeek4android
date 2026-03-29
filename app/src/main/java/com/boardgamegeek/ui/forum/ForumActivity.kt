@@ -1,11 +1,6 @@
 package com.boardgamegeek.ui.forum
 
 import android.content.Context
-import android.content.Intent
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -19,141 +14,139 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.boardgamegeek.R
-import com.boardgamegeek.model.Forum
 import com.boardgamegeek.extensions.clearTop
-import com.boardgamegeek.extensions.intentFor
-import com.boardgamegeek.extensions.getSerializableCompat
 import com.boardgamegeek.extensions.linkToBgg
+import com.boardgamegeek.model.Forum
 import com.boardgamegeek.provider.BggContract
-import com.boardgamegeek.ui.forums.ForumsActivity.Companion.startUp
-import com.boardgamegeek.ui.game.GameActivity.Companion.startUp
-import com.boardgamegeek.ui.person.PersonActivity.Companion.startUpForArtist
-import com.boardgamegeek.ui.person.PersonActivity.Companion.startUpForDesigner
-import com.boardgamegeek.ui.person.PersonActivity.Companion.startUpForPublisher
+import com.boardgamegeek.ui.MainActivity
+import com.boardgamegeek.ui.navigation.ForumRoute
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.popBackStackOrFinish
 import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
-import dagger.hilt.android.AndroidEntryPoint
+
+object ForumActivity {
+    fun start(
+        context: Context,
+        forumId: Int,
+        forumTitle: String,
+        objectId: Int,
+        objectName: String,
+        objectType: Forum.Type,
+    ) {
+        context.startActivity(createIntent(context, forumId, forumTitle, objectId, objectName, objectType))
+    }
+
+    fun startUp(
+        context: Context,
+        forumId: Int,
+        forumTitle: String,
+        objectId: Int,
+        objectName: String,
+        objectType: Forum.Type,
+    ) {
+        context.startActivity(
+            createIntent(
+                context = context,
+                forumId = forumId,
+                forumTitle = forumTitle,
+                objectId = objectId,
+                objectName = objectName,
+                objectType = objectType,
+                replaceBackStack = true,
+            ).clearTop(),
+        )
+    }
+
+    private fun createIntent(
+        context: Context,
+        forumId: Int,
+        forumTitle: String,
+        objectId: Int,
+        objectName: String,
+        objectType: Forum.Type,
+        replaceBackStack: Boolean = false,
+    ) = MainActivity.createIntent(
+        context = context,
+        route = ForumRoute(
+            forumId = forumId,
+            forumTitle = forumTitle,
+            objectId = objectId,
+            objectName = objectName,
+            objectType = objectType.name,
+        ),
+        replaceBackStack = replaceBackStack,
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
-@AndroidEntryPoint
-class ForumActivity : ComponentActivity() {
-    private val firebaseAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
-    private var forumId = BggContract.INVALID_ID
-    private var forumTitle = ""
-    private var objectId = BggContract.INVALID_ID
-    private var objectName = ""
-    private var objectType = Forum.Type.REGION
-    private val viewModel by viewModels<ForumViewModel>()
+@Composable
+fun ForumRouteScreen(
+    route: ForumRoute,
+    viewModel: ForumViewModel = hiltViewModel(),
+) {
+    val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
+    val firebaseAnalytics = remember(context) { FirebaseAnalytics.getInstance(context) }
+    val objectType = remember(route.objectType) { route.objectType.asForumType() }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        readIntent()
-        if (savedInstanceState == null) {
+    LaunchedEffect(route.forumId) {
+        if (route.forumId != BggContract.INVALID_ID) {
             firebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM) {
                 param(FirebaseAnalytics.Param.CONTENT_TYPE, "Forum")
-                param(FirebaseAnalytics.Param.ITEM_ID, forumId.toString())
-                param(FirebaseAnalytics.Param.ITEM_NAME, forumTitle)
-            }
-        }
-
-        setContent {
-            AppTheme {
-                Scaffold(
-                    topBar = {
-                        TopAppBar(
-                            title = {
-                                ForumTitle(objectName = objectName, forumTitle = forumTitle)
-                            },
-                            navigationIcon = {
-                                IconButton(onClick = ::navigateUp) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = stringResource(R.string.menu_back)
-                                    )
-                                }
-                            },
-                            actions = {
-                                IconButton(onClick = { linkToBgg("forum/$forumId") }) {
-                                    Icon(
-                                        imageVector = Icons.Default.OpenInBrowser,
-                                        contentDescription = stringResource(R.string.menu_view)
-                                    )
-                                }
-                            }
-                        )
-                    }
-                ) { paddingValues ->
-                    Box(modifier = Modifier.padding(paddingValues)) {
-                        ForumScreen(
-                            viewModel = viewModel,
-                            forumId = forumId,
-                            forumTitle = forumTitle,
-                            objectId = objectId,
-                            objectName = objectName,
-                            objectType = objectType,
-                        )
-                    }
-                }
+                param(FirebaseAnalytics.Param.ITEM_ID, route.forumId.toString())
+                param(FirebaseAnalytics.Param.ITEM_NAME, route.forumTitle)
             }
         }
     }
 
-    private fun readIntent() {
-        forumId = intent.getIntExtra(KEY_FORUM_ID, BggContract.INVALID_ID)
-        forumTitle = intent.getStringExtra(KEY_FORUM_TITLE).orEmpty()
-        objectId = intent.getIntExtra(KEY_OBJECT_ID, BggContract.INVALID_ID)
-        objectType = intent.getSerializableCompat(KEY_OBJECT_TYPE) ?: Forum.Type.REGION
-        objectName = intent.getStringExtra(KEY_OBJECT_NAME).orEmpty()
-    }
-
-    private fun navigateUp() {
-        when (objectType) {
-            Forum.Type.REGION -> startUp(this)
-            Forum.Type.GAME -> startUp(this, objectId, objectName)
-            Forum.Type.ARTIST -> startUpForArtist(this, objectId, objectName)
-            Forum.Type.DESIGNER -> startUpForDesigner(this, objectId, objectName)
-            Forum.Type.PUBLISHER -> startUpForPublisher(this, objectId, objectName)
-        }
-        finish()
-    }
-
-    companion object {
-        private const val KEY_FORUM_ID = "FORUM_ID"
-        private const val KEY_FORUM_TITLE = "FORUM_TITLE"
-        private const val KEY_OBJECT_ID = "OBJECT_ID"
-        private const val KEY_OBJECT_NAME = "OBJECT_NAME"
-        private const val KEY_OBJECT_TYPE = "OBJECT_TYPE"
-
-        fun start(context: Context, forumId: Int, forumTitle: String, objectId: Int, objectName: String, objectType: Forum.Type) {
-            context.startActivity(createIntent(context, forumId, forumTitle, objectId, objectName, objectType))
-        }
-
-        fun startUp(context: Context, forumId: Int, forumTitle: String, objectId: Int, objectName: String, objectType: Forum.Type) {
-            context.startActivity(createIntent(context, forumId, forumTitle, objectId, objectName, objectType).clearTop())
-        }
-
-        private fun createIntent(
-            context: Context,
-            forumId: Int,
-            forumTitle: String,
-            objectId: Int,
-            objectName: String,
-            objectType: Forum.Type
-        ): Intent {
-            return context.intentFor<ForumActivity>(
-                KEY_FORUM_ID to forumId,
-                KEY_FORUM_TITLE to forumTitle,
-                KEY_OBJECT_ID to objectId,
-                KEY_OBJECT_NAME to objectName,
-                KEY_OBJECT_TYPE to objectType,
-            )
+    AppTheme {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { ForumTitle(objectName = route.objectName, forumTitle = route.forumTitle) },
+                    navigationIcon = {
+                        IconButton(onClick = { navigator.popBackStackOrFinish(context) }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.menu_back),
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { context.linkToBgg("forum/${route.forumId}") }) {
+                            Icon(
+                                imageVector = Icons.Default.OpenInBrowser,
+                                contentDescription = stringResource(R.string.menu_view),
+                            )
+                        }
+                    },
+                )
+            },
+        ) { paddingValues ->
+            Box(modifier = Modifier.padding(paddingValues)) {
+                ForumScreen(
+                    viewModel = viewModel,
+                    forumId = route.forumId,
+                    forumTitle = route.forumTitle,
+                    objectId = route.objectId,
+                    objectName = route.objectName,
+                    objectType = objectType,
+                )
+            }
         }
     }
 }
+
+private fun String.asForumType(): Forum.Type = Forum.Type.entries.firstOrNull { it.name == this } ?: Forum.Type.REGION
 
 @Composable
 private fun ForumTitle(objectName: String, forumTitle: String) {

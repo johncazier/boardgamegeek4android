@@ -687,31 +687,31 @@ private fun CollectionCreditsTab() {
             CreditButton(
                 text = stringResource(R.string.title_designers),
                 icon = Icons.Filled.Edit,
-                onClick = { context.startActivity<DesignersActivity>() }
+                onClick = { DesignersActivity.start(context) }
             )
             CreditButton(
                 text = stringResource(R.string.title_artists),
                 icon = Icons.Filled.Brush,
-                onClick = { context.startActivity<ArtistsActivity>() }
+                onClick = { ArtistsActivity.start(context) }
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(padding)) {
             CreditButton(
                 text = stringResource(R.string.title_publishers),
                 icon = Icons.Filled.ImportContacts,
-                onClick = { context.startActivity<PublishersActivity>() }
+                onClick = { PublishersActivity.start(context) }
             )
             CreditButton(
                 text = stringResource(R.string.title_mechanics),
                 icon = Icons.Filled.Settings,
-                onClick = { context.startActivity<MechanicsActivity>() }
+                onClick = { MechanicsActivity.start(context) }
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(padding)) {
             CreditButton(
                 text = stringResource(R.string.title_categories),
                 icon = Icons.Filled.Category,
-                onClick = { context.startActivity<CategoriesActivity>() }
+                onClick = { CategoriesActivity.start(context) }
             )
         }
     }

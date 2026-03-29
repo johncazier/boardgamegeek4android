@@ -140,7 +140,7 @@ class LocationsActivity : ComponentActivity() {
                                         DropdownMenuItem(
                                             text = { Text(stringResource(R.string.menu_search)) },
                                             onClick = {
-                                                startActivity(Intent(this@LocationsActivity, SearchResultsActivity::class.java))
+                                                SearchResultsActivity.start(this@LocationsActivity)
                                                 showOverflowMenu = false
                                             }
                                         )
