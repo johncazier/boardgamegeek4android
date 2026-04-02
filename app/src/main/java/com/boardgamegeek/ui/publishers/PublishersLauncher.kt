@@ -29,17 +29,11 @@ import com.boardgamegeek.R
 import com.boardgamegeek.model.Company
 import com.boardgamegeek.ui.MainActivity
 import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.PersonRoute
 import com.boardgamegeek.ui.navigation.PublishersRoute
+import com.boardgamegeek.ui.navigation.SearchRoute
 import com.boardgamegeek.ui.navigation.popBackStackOrFinish
-import com.boardgamegeek.ui.person.PersonLauncher
-import com.boardgamegeek.ui.search.SearchResultsLauncher
 import com.boardgamegeek.ui.theme.AppTheme
-
-object PublishersLauncher {
-    fun start(context: Context) {
-        context.startActivity(MainActivity.createIntent(context, PublishersRoute))
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -147,7 +141,7 @@ fun PublishersRouteScreen(
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.menu_search)) },
                                     onClick = {
-                                        SearchResultsLauncher.start(context)
+                                        navigator.navigate(SearchRoute())
                                         showOverflowMenu = false
                                     },
                                 )
@@ -161,7 +155,7 @@ fun PublishersRouteScreen(
                 viewModel = viewModel,
                 paddingValues = paddingValues,
                 onPublisherClick = { publisher ->
-                    PersonLauncher.startForPublisher(context, publisher.id, publisher.name)
+                    navigator.navigate(PersonRoute(publisher.id, publisher.name, "PUBLISHER"))
                 },
             )
         }
