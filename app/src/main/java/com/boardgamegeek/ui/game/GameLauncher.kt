@@ -44,11 +44,6 @@ object GameLauncher {
         context.startActivity(intent)
     }
 
-    fun startUp(context: Context, gameId: Int, gameName: String, thumbnailUrl: String = "", heroImageUrl: String = thumbnailUrl) {
-        val intent = createIntent(context, gameId, gameName, thumbnailUrl, heroImageUrl) ?: return
-        context.startActivity(intent.clearTask().clearTop())
-    }
-
     fun createIntent(context: Context, gameId: Int, gameName: String, thumbnailUrl: String = "", heroImageUrl: String = ""): Intent? {
         if (gameId == BggContract.INVALID_ID) return null
         return MainActivity.createIntent(

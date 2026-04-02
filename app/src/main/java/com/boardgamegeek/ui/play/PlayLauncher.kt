@@ -41,8 +41,10 @@ import com.boardgamegeek.model.Play
 import com.boardgamegeek.model.PlayPlayer
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
 import com.boardgamegeek.ui.MainActivity
-import com.boardgamegeek.ui.logplay.LogPlayLauncher
+import com.boardgamegeek.ui.navigation.CollectionRoute
+import com.boardgamegeek.ui.navigation.GameRoute
 import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.LogPlayRoute
 import com.boardgamegeek.ui.navigation.PlayRoute
 import com.boardgamegeek.ui.navigation.popBackStackOrFinish
 import com.boardgamegeek.ui.theme.AppTheme
@@ -50,10 +52,6 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 
 object PlayLauncher {
-    fun start(context: Context, internalId: Long) {
-        context.startActivity(createIntent(context, internalId))
-    }
-
     fun createIntent(context: Context, internalId: Long): Intent {
         return MainActivity.createIntent(
             context = context,
@@ -125,12 +123,13 @@ fun PlayRouteScreen(
                                 param("Action", "Edit")
                                 param("GameName", currentPlay.gameName)
                             }
-                            LogPlayLauncher.editPlay(
-                                context,
-                                currentPlay.internalId,
-                                currentPlay.gameId,
-                                currentPlay.gameName,
-                                currentPlay.robustHeroImageUrl,
+                            navigator.navigate(
+                                LogPlayRoute(
+                                    internalId = currentPlay.internalId,
+                                    gameId = currentPlay.gameId,
+                                    gameName = currentPlay.gameName,
+                                    heroImageUrl = currentPlay.robustHeroImageUrl,
+                                ),
                             )
                         },
                     ) {
@@ -186,15 +185,16 @@ fun PlayRouteScreen(
                             param("Action", "Rematch")
                             param("GameName", targetPlay.gameName)
                         }
-                        LogPlayLauncher.rematch(
-                            context,
-                            targetPlay.internalId,
-                            targetPlay.gameId,
-                            targetPlay.gameName,
-                            targetPlay.robustHeroImageUrl,
-                            targetPlay.arePlayersCustomSorted(),
+                        navigator.navigate(
+                            LogPlayRoute(
+                                internalId = targetPlay.internalId,
+                                gameId = targetPlay.gameId,
+                                gameName = targetPlay.gameName,
+                                heroImageUrl = targetPlay.robustHeroImageUrl,
+                                customPlayerSort = targetPlay.arePlayersCustomSorted(),
+                                isRequestingRematch = true,
+                            ),
                         )
-                        navigator.popBackStackOrFinish(context)
                     },
                     onChangeGame = { targetPlay ->
                         firebaseAnalytics.logEvent("DataManipulation") {
@@ -202,8 +202,7 @@ fun PlayRouteScreen(
                             param("Action", "ChangeGame")
                             param("GameName", targetPlay.gameName)
                         }
-                        com.boardgamegeek.ui.collection.CollectionLauncher.startForGameChange(context, targetPlay.internalId)
-                        navigator.popBackStackOrFinish(context)
+                        navigator.navigate(CollectionRoute(changingGamePlayId = targetPlay.internalId))
                     },
                     onShare = { targetPlay ->
                         sharePlay(context, firebaseAnalytics, targetPlay)
@@ -215,15 +214,17 @@ fun PlayRouteScreen(
                 viewModel = viewModel,
                 contentPadding = paddingValues,
                 onThumbnailClicked = { targetPlay ->
-                    com.boardgamegeek.ui.game.GameLauncher.start(context, targetPlay.gameId, targetPlay.gameName)
+                    navigator.navigate(GameRoute(targetPlay.gameId, targetPlay.gameName))
                 },
                 onEndTimerClicked = { targetPlay ->
-                    LogPlayLauncher.endPlay(
-                        context,
-                        targetPlay.internalId,
-                        targetPlay.gameId,
-                        targetPlay.gameName,
-                        targetPlay.robustHeroImageUrl,
+                    navigator.navigate(
+                        LogPlayRoute(
+                            internalId = targetPlay.internalId,
+                            gameId = targetPlay.gameId,
+                            gameName = targetPlay.gameName,
+                            heroImageUrl = targetPlay.robustHeroImageUrl,
+                            isRequestingToEndPlay = true,
+                        ),
                     )
                 },
             )

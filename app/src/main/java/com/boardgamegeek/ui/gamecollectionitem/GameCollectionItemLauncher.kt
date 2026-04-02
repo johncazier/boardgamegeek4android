@@ -64,29 +64,6 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
-object GameCollectionItemLauncher {
-    fun start(context: Context, item: CollectionItem) {
-        if (item.internalId == BggContract.INVALID_ID.toLong()) return
-        context.startActivity(
-            MainActivity.createIntent(
-                context = context,
-                route = GameCollectionItemRoute(
-                    internalId = item.internalId,
-                    gameId = item.gameId,
-                    gameName = item.gameName,
-                    collectionId = item.collectionId,
-                    collectionName = item.collectionName,
-                    thumbnailUrl = item.thumbnailUrl,
-                    heroImageUrl = item.heroImageUrl,
-                    gameYearPublished = item.yearPublished,
-                    collectionYearPublished = item.collectionYearPublished,
-                ),
-            ),
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameCollectionItemRouteScreen(
     route: GameCollectionItemRoute,

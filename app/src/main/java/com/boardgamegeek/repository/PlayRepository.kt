@@ -28,7 +28,6 @@ import com.boardgamegeek.pref.SyncPrefs.Companion.TIMESTAMP_PLAYS_OLDEST_DATE
 import com.boardgamegeek.pref.clearPlaysTimestamps
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
 import com.boardgamegeek.ui.MainActivity
-import com.boardgamegeek.ui.playstats.PlayStatsLauncher
 import com.boardgamegeek.ui.navigation.PlayStatsRoute
 import com.boardgamegeek.work.PlayUploadWorker
 import com.boardgamegeek.work.SyncPlaysWorker

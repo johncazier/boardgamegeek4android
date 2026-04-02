@@ -32,14 +32,13 @@ import com.boardgamegeek.extensions.clearTask
 import com.boardgamegeek.extensions.clearTop
 import com.boardgamegeek.extensions.linkToBgg
 import com.boardgamegeek.ui.MainActivity
-import com.boardgamegeek.ui.buddycollection.BuddyCollectionLauncher
 import com.boardgamegeek.ui.navigation.BuddyRoute
+import com.boardgamegeek.ui.navigation.BuddyCollectionRoute
+import com.boardgamegeek.ui.navigation.BuddyPlaysRoute
 import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.PlayerPlaysRoute
 import com.boardgamegeek.ui.navigation.PlayerColorsRoute
 import com.boardgamegeek.ui.navigation.popBackStackOrFinish
-import com.boardgamegeek.ui.playercolors.PlayerColorsLauncher
-import com.boardgamegeek.ui.plays.BuddyPlaysLauncher
-import com.boardgamegeek.ui.plays.PlayerPlaysLauncher
 import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
@@ -49,12 +48,6 @@ import timber.log.Timber
 object BuddyLauncher {
     fun start(context: Context, username: String?, playerName: String?) {
         createIntent(context, username, playerName)?.let(context::startActivity)
-    }
-
-    fun startUp(context: Context, username: String?, playerName: String? = null) {
-        createIntent(context, username, playerName)?.let {
-            context.startActivity(it.clearTask().clearTop())
-        }
     }
 
     fun createIntent(context: Context, username: String?, playerName: String?): Intent? {
@@ -186,17 +179,17 @@ fun BuddyRouteScreen(
                     else showNicknameDialog = true
                 },
                 onOpenCollection = {
-                    BuddyCollectionLauncher.start(context, currentUsername)
+                    currentUsername?.let { navigator.navigate(BuddyCollectionRoute(it)) }
                 },
                 onOpenPlays = {
                     if (currentUsername.isNullOrBlank()) {
-                        PlayerPlaysLauncher.start(context, currentPlayerName)
+                        navigator.navigate(PlayerPlaysRoute(currentPlayerName.orEmpty()))
                     } else {
-                        BuddyPlaysLauncher.start(context, currentUsername)
+                        currentUsername?.let { navigator.navigate(BuddyPlaysRoute(it)) }
                     }
                 },
                 onOpenColors = {
-                    PlayerColorsLauncher.start(context, currentUsername, currentPlayerName)
+                    navigator.navigate(PlayerColorsRoute(currentUsername, currentPlayerName))
                 },
                 paddingValues = paddingValues,
             )

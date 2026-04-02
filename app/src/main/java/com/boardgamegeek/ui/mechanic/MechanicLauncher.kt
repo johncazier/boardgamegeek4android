@@ -36,20 +36,6 @@ import com.boardgamegeek.ui.navigation.popBackStackOrFinish
 import com.boardgamegeek.ui.theme.AppTheme
 import java.util.Locale
 
-object MechanicLauncher {
-    fun start(context: Context, mechanicId: Int, mechanicName: String) {
-        context.startActivity(
-            MainActivity.createIntent(
-                context = context,
-                route = MechanicRoute(
-                    mechanicId = mechanicId,
-                    mechanicName = mechanicName,
-                ),
-            ),
-        )
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MechanicRouteScreen(

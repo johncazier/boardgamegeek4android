@@ -30,16 +30,10 @@ import com.boardgamegeek.model.Person
 import com.boardgamegeek.ui.MainActivity
 import com.boardgamegeek.ui.navigation.ArtistsRoute
 import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.PersonRoute
+import com.boardgamegeek.ui.navigation.SearchRoute
 import com.boardgamegeek.ui.navigation.popBackStackOrFinish
-import com.boardgamegeek.ui.person.PersonLauncher
-import com.boardgamegeek.ui.search.SearchResultsLauncher
 import com.boardgamegeek.ui.theme.AppTheme
-
-object ArtistsLauncher {
-    fun start(context: Context) {
-        context.startActivity(MainActivity.createIntent(context, ArtistsRoute))
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -147,7 +141,7 @@ fun ArtistsRouteScreen(
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.menu_search)) },
                                     onClick = {
-                                        SearchResultsLauncher.start(context)
+                                        navigator.navigate(SearchRoute())
                                         showOverflowMenu = false
                                     },
                                 )
@@ -161,7 +155,7 @@ fun ArtistsRouteScreen(
                 viewModel = viewModel,
                 paddingValues = paddingValues,
                 onArtistClick = { artist ->
-                    PersonLauncher.startForArtist(context, artist.id, artist.name)
+                    navigator.navigate(PersonRoute(artist.id, artist.name, "ARTIST"))
                 },
             )
         }

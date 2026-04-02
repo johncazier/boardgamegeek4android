@@ -36,20 +36,6 @@ import com.boardgamegeek.ui.navigation.popBackStackOrFinish
 import com.boardgamegeek.ui.theme.AppTheme
 import java.util.Locale
 
-object CategoryLauncher {
-    fun start(context: Context, categoryId: Int, categoryName: String) {
-        context.startActivity(
-            MainActivity.createIntent(
-                context = context,
-                route = CategoryRoute(
-                    categoryId = categoryId,
-                    categoryName = categoryName,
-                ),
-            ),
-        )
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryRouteScreen(

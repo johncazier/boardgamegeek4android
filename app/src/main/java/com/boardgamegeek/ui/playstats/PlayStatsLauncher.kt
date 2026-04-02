@@ -23,12 +23,6 @@ import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 
-object PlayStatsLauncher {
-    fun start(context: Context) {
-        context.startActivity(MainActivity.createIntent(context, PlayStatsRoute))
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayStatsRouteScreen(

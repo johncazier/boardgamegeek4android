@@ -10,17 +10,6 @@ import com.boardgamegeek.ui.navigation.SearchRoute
 import com.boardgamegeek.ui.navigation.popBackStackOrFinish
 import com.boardgamegeek.ui.theme.AppTheme
 
-object SearchResultsLauncher {
-    fun start(context: Context, query: String = "") {
-        context.startActivity(
-            MainActivity.createIntent(
-                context = context,
-                route = SearchRoute(query = query),
-            ),
-        )
-    }
-}
-
 @Composable
 fun SearchRouteScreen(
     initialQuery: String,

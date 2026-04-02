@@ -27,8 +27,9 @@ import com.boardgamegeek.model.Status
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.AppScreen
 import com.boardgamegeek.ui.MainActivity
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.SearchRoute
 import com.boardgamegeek.ui.navigation.GeekListRoute
-import com.boardgamegeek.ui.search.SearchResultsLauncher
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
@@ -37,10 +38,6 @@ import com.google.firebase.analytics.logEvent
 object GeekListLauncher {
     fun start(context: Context, id: Int, title: String) {
         context.startActivity(createIntent(context, id, title))
-    }
-
-    fun startUp(context: Context, id: Int, title: String) {
-        context.startActivity(createIntent(context, id, title).clearTop())
     }
 
     private fun createIntent(context: Context, id: Int, title: String) = MainActivity.createIntent(
@@ -58,6 +55,7 @@ fun GeekListRouteScreen(
     viewModel: GeekListViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
 
     LaunchedEffect(route.geekListId, route.geekListTitle) {
         if (route.geekListId != BggContract.INVALID_ID) {
@@ -83,7 +81,7 @@ fun GeekListRouteScreen(
         topBarTitle = currentGeekListTitle,
         currentScreenRouteFromActivity = "",
         onSearchClick = {
-            SearchResultsLauncher.start(context)
+            navigator.navigate(SearchRoute())
         },
         topBarActions = {
             IconButton(onClick = {

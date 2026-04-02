@@ -34,17 +34,6 @@ import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 
-object LocationLauncher {
-    fun start(context: Context, locationName: String) {
-        context.startActivity(
-            MainActivity.createIntent(
-                context = context,
-                route = LocationRoute(locationName = locationName),
-            ),
-        )
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LocationPlaysScaffold(

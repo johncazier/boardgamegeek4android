@@ -19,18 +19,6 @@ import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 
-object PlayerPlaysLauncher {
-    fun start(context: Context, playerName: String?) {
-        if (playerName.isNullOrBlank()) return
-        context.startActivity(
-            MainActivity.createIntent(
-                context = context,
-                route = PlayerPlaysRoute(playerName = playerName),
-            ),
-        )
-    }
-}
-
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 private fun PlayerPlaysScaffold(

@@ -28,18 +28,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.model.Mechanic
 import com.boardgamegeek.ui.MainActivity
-import com.boardgamegeek.ui.mechanic.MechanicLauncher
 import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.MechanicRoute
 import com.boardgamegeek.ui.navigation.MechanicsRoute
+import com.boardgamegeek.ui.navigation.SearchRoute
 import com.boardgamegeek.ui.navigation.popBackStackOrFinish
-import com.boardgamegeek.ui.search.SearchResultsLauncher
 import com.boardgamegeek.ui.theme.AppTheme
-
-object MechanicsLauncher {
-    fun start(context: Context) {
-        context.startActivity(MainActivity.createIntent(context, MechanicsRoute))
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -135,7 +129,7 @@ fun MechanicsRouteScreen(
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.menu_search)) },
                                     onClick = {
-                                        SearchResultsLauncher.start(context)
+                                        navigator.navigate(SearchRoute())
                                         showOverflowMenu = false
                                     },
                                 )
@@ -149,7 +143,7 @@ fun MechanicsRouteScreen(
                 viewModel = viewModel,
                 paddingValues = paddingValues,
                 onMechanicClick = { mechanic ->
-                    MechanicLauncher.start(context, mechanic.id, mechanic.name)
+                    navigator.navigate(MechanicRoute(mechanic.id, mechanic.name))
                 },
             )
         }

@@ -20,7 +20,8 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.boardgamegeek.R
 import com.boardgamegeek.model.GeekList
-import com.boardgamegeek.ui.geeklist.GeekListLauncher
+import com.boardgamegeek.ui.navigation.GeekListRoute
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
 
 @Composable
 fun GeekListsScreen(
@@ -88,12 +89,12 @@ fun GeekListsScreen(
 
 @Composable
 fun GeekListRow(geekList: GeekList) {
-    val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                GeekListLauncher.start(context, geekList.id, geekList.title)
+                navigator.navigate(GeekListRoute(geekList.id, geekList.title))
             }
             .padding(16.dp)
     ) {

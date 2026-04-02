@@ -28,29 +28,14 @@ import com.boardgamegeek.extensions.createStatusMap
 import com.boardgamegeek.mappers.mapFromResourceToEnum
 import com.boardgamegeek.mappers.mapToResource
 import com.boardgamegeek.ui.MainActivity
-import com.boardgamegeek.ui.game.GameLauncher
 import com.boardgamegeek.ui.navigation.BuddyCollectionRoute
+import com.boardgamegeek.ui.navigation.GameRoute
 import com.boardgamegeek.ui.navigation.LocalAppNavigator
 import com.boardgamegeek.ui.navigation.popBackStackOrFinish
 import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import timber.log.Timber
-
-object BuddyCollectionLauncher {
-    fun start(context: Context, buddyName: String?) {
-        if (buddyName.isNullOrBlank()) {
-            Timber.w("Missing buddy name.")
-            return
-        }
-        context.startActivity(
-            MainActivity.createIntent(
-                context = context,
-                route = BuddyCollectionRoute(buddyName = buddyName),
-            ),
-        )
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,7 +102,7 @@ fun BuddyCollectionRouteScreen(
                             IconButton(
                                 onClick = {
                                     collection.randomOrNull()?.let { randomItem ->
-                                        GameLauncher.start(context, randomItem.gameId, randomItem.gameName, randomItem.thumbnailUrl)
+                                        navigator.navigate(GameRoute(randomItem.gameId, randomItem.gameName, randomItem.thumbnailUrl))
                                     }
                                 },
                             ) {
@@ -135,7 +120,7 @@ fun BuddyCollectionRouteScreen(
                 resource = collectionResource,
                 paddingValues = paddingValues,
                 onGameClick = { item ->
-                    GameLauncher.start(context, item.gameId, item.gameName, item.thumbnailUrl)
+                    navigator.navigate(GameRoute(item.gameId, item.gameName, item.thumbnailUrl))
                 },
             )
         }

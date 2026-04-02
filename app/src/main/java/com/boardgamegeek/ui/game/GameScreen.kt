@@ -32,9 +32,10 @@ import com.boardgamegeek.extensions.linkToBgg
 import com.boardgamegeek.extensions.logPlayPreference
 import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.extensions.shareGame
-import com.boardgamegeek.ui.image.ImageLauncher
 import com.boardgamegeek.ui.logplay.LogPlayLauncher
 import com.boardgamegeek.ui.game.GameViewModel
+import com.boardgamegeek.ui.navigation.ImageRoute
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
 import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.coroutines.launch
 
@@ -60,6 +61,7 @@ fun GameScreen(
     snackbarHostState: SnackbarHostState,
 ) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val activity = context as FragmentActivity
     var activeDialog by remember { mutableStateOf<GameDialogType?>(null) }
     val game by viewModel.game.collectAsStateWithLifecycle()
@@ -231,6 +233,7 @@ fun GameOverflowMenuAction(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val activity = context as FragmentActivity
     val imageToView = heroUrl.ifBlank { imageUrl.ifBlank { thumbnailUrl } }
 
@@ -286,7 +289,7 @@ fun GameOverflowMenuAction(
             text = { Text(stringResource(R.string.menu_view_image)) },
             onClick = {
                 expanded = false
-                ImageLauncher.start(context, imageToView)
+                navigator.navigate(ImageRoute(imageToView))
             },
             enabled = imageToView.isNotBlank()
         )

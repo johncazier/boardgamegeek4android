@@ -43,21 +43,6 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import kotlinx.coroutines.launch
 
-object GameColorsLauncher {
-    fun start(context: Context, gameId: Int, gameName: String, @ColorInt iconColor: Int) {
-        context.startActivity(
-            MainActivity.createIntent(
-                context = context,
-                route = GameColorsRoute(
-                    gameId = gameId,
-                    gameName = gameName,
-                    iconColor = iconColor,
-                ),
-            ),
-        )
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameColorsRouteScreen(

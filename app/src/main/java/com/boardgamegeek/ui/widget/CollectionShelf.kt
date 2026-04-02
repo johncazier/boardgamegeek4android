@@ -21,7 +21,6 @@ import com.boardgamegeek.R
 import com.boardgamegeek.databinding.RowCollectionItemBinding
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.model.CollectionItem
-import com.boardgamegeek.ui.game.GameLauncher
 import com.boardgamegeek.ui.adapter.AutoUpdatableAdapter
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import kotlin.properties.Delegates
@@ -90,6 +89,8 @@ class CollectionShelf @JvmOverloads constructor(
         @MenuRes private val menuResourceId: Int = ResourcesCompat.ID_NULL,
         private val onMenuClick: ((item: CollectionItem, menuItem: MenuItem) -> Boolean)? = null,
         private val bindBadge: ((item: CollectionItem) -> Pair<CharSequence, Int>)? = null,
+        private val onItemClick: ((item: CollectionItem) -> Unit)? = null,
+        private val onItemLongClick: ((item: CollectionItem) -> Unit)? = onItemClick,
     ) : Adapter<CollectionItemAdapter.CollectionItemViewHolder>(), AutoUpdatableAdapter {
         var items: List<CollectionItem> by Delegates.observable(emptyList()) { _, oldValue, newValue ->
             autoNotify(oldValue, newValue) { old, new ->
@@ -144,11 +145,9 @@ class CollectionShelf @JvmOverloads constructor(
                         }
                     }
                 }
-                itemView.setOnClickListener {
-                    GameLauncher.start(itemView.context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
-                }
+                itemView.setOnClickListener { onItemClick?.invoke(item) }
                 itemView.setOnLongClickListener {
-                    GameLauncher.start(itemView.context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
+                    onItemLongClick?.invoke(item)
                     true
                 }
             }

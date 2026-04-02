@@ -53,7 +53,8 @@ import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
 import com.boardgamegeek.ui.logplay.LogPlayLauncher
-import com.boardgamegeek.ui.play.PlayLauncher
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.PlayRoute
 import com.boardgamegeek.util.XmlApiMarkupConverter
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -77,6 +78,7 @@ fun PlaysScreen(
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val plays by viewModel.plays.collectAsStateWithLifecycle()
     val filterType by viewModel.filterType.collectAsStateWithLifecycle()
     val sortType by viewModel.sortType.collectAsStateWithLifecycle()
@@ -182,7 +184,7 @@ fun PlaysScreen(
                                     isSelected = isSelected,
                                     onClick = {
                                         if (selectedIds.isEmpty()) {
-                                            PlayLauncher.start(context, row.play.internalId)
+                                            navigator.navigate(PlayRoute(row.play.internalId))
                                         } else {
                                             selectedIds = selectedIds.toggle(row.play.internalId)
                                         }

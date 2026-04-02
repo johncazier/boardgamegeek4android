@@ -40,12 +40,6 @@ import com.google.firebase.analytics.logEvent
 import java.util.Calendar
 import java.util.GregorianCalendar
 
-object PlaysLauncher {
-    fun start(context: Context) {
-        context.startActivity(MainActivity.createIntent(context, PlaysRoute))
-    }
-}
-
 @Composable
 fun PlaysRouteScreen(
     viewModel: PlaysViewModel = hiltViewModel(),

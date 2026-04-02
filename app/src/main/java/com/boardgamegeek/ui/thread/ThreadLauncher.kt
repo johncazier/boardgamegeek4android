@@ -59,31 +59,6 @@ object ThreadLauncher {
         context.startActivity(createIntent(context, threadId, threadSubject, forumId, forumTitle, objectId, objectName, objectType))
     }
 
-    fun startUp(
-        context: Context,
-        threadId: Int,
-        threadSubject: String,
-        forumId: Int,
-        forumTitle: String,
-        objectId: Int,
-        objectName: String,
-        objectType: Forum.Type,
-    ) {
-        context.startActivity(
-            createIntent(
-                context = context,
-                threadId = threadId,
-                threadSubject = threadSubject,
-                forumId = forumId,
-                forumTitle = forumTitle,
-                objectId = objectId,
-                objectName = objectName,
-                objectType = objectType,
-                replaceBackStack = true,
-            ).clearTop(),
-        )
-    }
-
     private fun createIntent(
         context: Context,
         threadId: Int,

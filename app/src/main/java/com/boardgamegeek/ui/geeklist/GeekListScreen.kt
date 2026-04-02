@@ -20,9 +20,10 @@ import com.boardgamegeek.R
 import com.boardgamegeek.extensions.formatTimestamp
 import com.boardgamegeek.model.*
 import com.boardgamegeek.provider.BggContract
-import com.boardgamegeek.ui.geeklistitem.GeekListItemLauncher
 import com.boardgamegeek.ui.components.BggHtmlText
 import com.boardgamegeek.ui.components.HtmlText
+import com.boardgamegeek.ui.geeklistitem.toRoute
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
 import com.boardgamegeek.util.XmlApiMarkupConverter
 import kotlinx.coroutines.launch
 
@@ -150,13 +151,13 @@ fun GeekListItems(geekListResource: RefreshableResource<GeekList>) {
 
 @Composable
 fun GeekListItemRow(geekList: GeekList, geekListItem: GeekListItem, order: Int) {
-    val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     Row(
         modifier = Modifier
             .fillMaxSize()
             .clickable {
                 if (geekListItem.objectId != BggContract.INVALID_ID) {
-                    GeekListItemLauncher.start(context, geekList, geekListItem, order)
+                    navigator.navigate(geekListItem.toRoute(geekList.id, geekList.title, order))
                 }
             }
             .padding(16.dp),

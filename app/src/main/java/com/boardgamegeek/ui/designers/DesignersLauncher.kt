@@ -30,16 +30,10 @@ import com.boardgamegeek.model.Person
 import com.boardgamegeek.ui.MainActivity
 import com.boardgamegeek.ui.navigation.DesignersRoute
 import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.PersonRoute
+import com.boardgamegeek.ui.navigation.SearchRoute
 import com.boardgamegeek.ui.navigation.popBackStackOrFinish
-import com.boardgamegeek.ui.person.PersonLauncher
-import com.boardgamegeek.ui.search.SearchResultsLauncher
 import com.boardgamegeek.ui.theme.AppTheme
-
-object DesignersLauncher {
-    fun start(context: Context) {
-        context.startActivity(MainActivity.createIntent(context, DesignersRoute))
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -147,7 +141,7 @@ fun DesignersRouteScreen(
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.menu_search)) },
                                     onClick = {
-                                        SearchResultsLauncher.start(context)
+                                        navigator.navigate(SearchRoute())
                                         showOverflowMenu = false
                                     },
                                 )
@@ -161,7 +155,7 @@ fun DesignersRouteScreen(
                 viewModel = viewModel,
                 paddingValues = paddingValues,
                 onDesignerClick = { designer ->
-                    PersonLauncher.startForDesigner(context, designer.id, designer.name)
+                    navigator.navigate(PersonRoute(designer.id, designer.name, "DESIGNER"))
                 },
             )
         }

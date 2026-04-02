@@ -38,15 +38,16 @@ import com.boardgamegeek.R
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.model.CollectionItem
 import com.boardgamegeek.model.CollectionStatus
-import com.boardgamegeek.ui.artists.ArtistsLauncher
-import com.boardgamegeek.ui.categories.CategoriesLauncher
-import com.boardgamegeek.ui.designers.DesignersLauncher
-import com.boardgamegeek.ui.game.GameLauncher
-import com.boardgamegeek.ui.gamecollectionitem.GameCollectionItemLauncher
-import com.boardgamegeek.ui.logplay.LogPlayLauncher
-import com.boardgamegeek.ui.mechanics.MechanicsLauncher
-import com.boardgamegeek.ui.publishers.PublishersLauncher
-import com.boardgamegeek.ui.startActivity
+import com.boardgamegeek.ui.navigation.AppNavigator
+import com.boardgamegeek.ui.navigation.ArtistsRoute
+import com.boardgamegeek.ui.navigation.CategoriesRoute
+import com.boardgamegeek.ui.navigation.DesignersRoute
+import com.boardgamegeek.ui.navigation.GameCollectionItemRoute
+import com.boardgamegeek.ui.navigation.GameRoute
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.LogPlayRoute
+import com.boardgamegeek.ui.navigation.MechanicsRoute
+import com.boardgamegeek.ui.navigation.PublishersRoute
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 
@@ -106,6 +107,7 @@ fun CollectionDetailsScreen(
 @Composable
 private fun CollectionBrowseTab(viewModel: CollectionDetailsViewModel) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val recentlyViewed by viewModel.recentlyViewedItems.collectAsStateWithLifecycle(emptyList())
     val friendlessFavorites by viewModel.friendlessFavoriteItems.collectAsStateWithLifecycle(emptyList())
     val friendless by viewModel.friendless.collectAsStateWithLifecycle(0)
@@ -124,7 +126,7 @@ private fun CollectionBrowseTab(viewModel: CollectionDetailsViewModel) {
             header = stringResource(R.string.title_recently_viewed),
             items = recentlyViewed,
             menuRes = R.menu.collection_shelf,
-            onMenuClick = browseMenuHandler(context),
+            onMenuClick = browseMenuHandler(navigator),
         ) { item -> ratingBadge(context, item.averageRating) }
 
         CollectionShelfView(
@@ -133,7 +135,7 @@ private fun CollectionBrowseTab(viewModel: CollectionDetailsViewModel) {
             items = friendlessFavorites,
             count = friendless,
             menuRes = R.menu.collection_shelf,
-            onMenuClick = browseMenuHandler(context),
+            onMenuClick = browseMenuHandler(navigator),
         ) { item -> ratingBadge(context, item.rating) }
 
         CollectionShelfView(
@@ -141,7 +143,7 @@ private fun CollectionBrowseTab(viewModel: CollectionDetailsViewModel) {
             helpText = stringResource(R.string.info_hidden_gems),
             items = underrated,
             menuRes = R.menu.collection_shelf,
-            onMenuClick = browseMenuHandler(context),
+            onMenuClick = browseMenuHandler(navigator),
         ) { item -> ratingBadge(context, item.rating) }
 
         CollectionShelfView(
@@ -149,7 +151,7 @@ private fun CollectionBrowseTab(viewModel: CollectionDetailsViewModel) {
             helpText = stringResource(R.string.info_hawt),
             items = hawt,
             menuRes = R.menu.collection_shelf,
-            onMenuClick = browseMenuHandler(context),
+            onMenuClick = browseMenuHandler(navigator),
         ) { item -> ratingBadge(context, item.rating) }
     }
 }
@@ -157,6 +159,7 @@ private fun CollectionBrowseTab(viewModel: CollectionDetailsViewModel) {
 @Composable
 private fun CollectionOwnTab(viewModel: CollectionDetailsViewModel) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val growthRate by viewModel.growthRate.collectAsStateWithLifecycle(0)
     val utilization by viewModel.utilization.collectAsStateWithLifecycle(0.0)
     val games by viewModel.own.collectAsStateWithLifecycle()
@@ -190,7 +193,7 @@ private fun CollectionOwnTab(viewModel: CollectionDetailsViewModel) {
             items = games?.first.orEmpty(),
             count = games?.second,
             menuRes = R.menu.collection_shelf,
-            onMenuClick = browseMenuHandler(context),
+            onMenuClick = browseMenuHandler(navigator),
         ) { item -> ratingBadge(context, item.averageRating) }
 
         CollectionShelfView(
@@ -198,7 +201,7 @@ private fun CollectionOwnTab(viewModel: CollectionDetailsViewModel) {
             items = expansions?.first.orEmpty(),
             count = expansions?.second,
             menuRes = R.menu.collection_shelf,
-            onMenuClick = browseMenuHandler(context),
+            onMenuClick = browseMenuHandler(navigator),
         ) { item -> ratingBadge(context, item.averageRating) }
 
         CollectionShelfView(
@@ -206,7 +209,7 @@ private fun CollectionOwnTab(viewModel: CollectionDetailsViewModel) {
             items = accessories?.first.orEmpty(),
             count = accessories?.second,
             menuRes = R.menu.collection_shelf,
-            onMenuClick = browseMenuHandler(context),
+            onMenuClick = browseMenuHandler(navigator),
         ) { item -> ratingBadge(context, item.averageRating) }
 
         CollectionShelfView(
@@ -215,7 +218,7 @@ private fun CollectionOwnTab(viewModel: CollectionDetailsViewModel) {
             items = recentlyAcquired?.first.orEmpty(),
             count = recentlyAcquired?.second,
             menuRes = R.menu.collection_shelf,
-            onMenuClick = browseMenuHandler(context),
+            onMenuClick = browseMenuHandler(navigator),
         ) { item -> item.acquiredFrom to Color.WHITE }
 
         CollectionShelfView(
@@ -223,7 +226,7 @@ private fun CollectionOwnTab(viewModel: CollectionDetailsViewModel) {
             helpText = stringResource(R.string.info_hawt),
             items = hawt,
             menuRes = R.menu.collection_shelf,
-            onMenuClick = browseMenuHandler(context),
+            onMenuClick = browseMenuHandler(navigator),
         ) { item -> ratingBadge(context, item.averageRating) }
     }
 }
@@ -231,6 +234,7 @@ private fun CollectionOwnTab(viewModel: CollectionDetailsViewModel) {
 @Composable
 private fun CollectionPlayTab(viewModel: CollectionDetailsViewModel) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val syncStatuses by viewModel.syncCollectionStatuses.collectAsStateWithLifecycle()
     val playerCountType by viewModel.playerCountType.collectAsStateWithLifecycle()
 
@@ -324,7 +328,7 @@ private fun CollectionPlayTab(viewModel: CollectionDetailsViewModel) {
             items = friendlessShouldPlay?.first.orEmpty(),
             count = friendlessShouldPlay?.second,
             menuRes = R.menu.collection_shelf_play,
-            onMenuClick = playMenuHandler(context, viewModel, context),
+            onMenuClick = playMenuHandler(context, navigator, viewModel, context),
         ) { item -> ratingBadge(context, item.rating) }
 
         if (syncStatuses.contains(CollectionStatus.WantToPlay)) {
@@ -333,7 +337,7 @@ private fun CollectionPlayTab(viewModel: CollectionDetailsViewModel) {
                 items = wantToPlay?.first.orEmpty(),
                 count = wantToPlay?.second,
                 menuRes = R.menu.collection_shelf_want_to_play,
-                onMenuClick = playMenuHandler(context, viewModel, context),
+                onMenuClick = playMenuHandler(context, navigator, viewModel, context),
             ) { item -> ratingBadge(context, item.averageRating) }
         }
 
@@ -342,7 +346,7 @@ private fun CollectionPlayTab(viewModel: CollectionDetailsViewModel) {
             items = recentlyPlayed?.first.orEmpty(),
             count = recentlyPlayed?.second,
             menuRes = R.menu.collection_shelf_play,
-            onMenuClick = playMenuHandler(context, viewModel, context),
+            onMenuClick = playMenuHandler(context, navigator, viewModel, context),
         ) { item -> ratingBadge(context, item.averageRating) }
 
         CollectionShelfView(
@@ -351,7 +355,7 @@ private fun CollectionPlayTab(viewModel: CollectionDetailsViewModel) {
             items = shelfOfOpportunity?.first.orEmpty(),
             count = shelfOfOpportunity?.second,
             menuRes = R.menu.collection_shelf_play,
-            onMenuClick = playMenuHandler(context, viewModel, context),
+            onMenuClick = playMenuHandler(context, navigator, viewModel, context),
         ) { item -> ratingBadge(context, item.averageRating) }
 
         CollectionShelfView(
@@ -360,7 +364,7 @@ private fun CollectionPlayTab(viewModel: CollectionDetailsViewModel) {
             items = shelfOfNewOpportunity?.first.orEmpty(),
             count = shelfOfNewOpportunity?.second,
             menuRes = R.menu.collection_shelf_play,
-            onMenuClick = playMenuHandler(context, viewModel, context),
+            onMenuClick = playMenuHandler(context, navigator, viewModel, context),
         ) { item ->
             item.acquisitionDate.formatDateTime(context, flags = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_ABBREV_ALL) to Color.WHITE
         }
@@ -370,6 +374,7 @@ private fun CollectionPlayTab(viewModel: CollectionDetailsViewModel) {
 @Composable
 private fun CollectionAcquireTab(viewModel: CollectionDetailsViewModel) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val syncStatuses by viewModel.syncCollectionStatuses.collectAsStateWithLifecycle()
     val acquireStats by viewModel.collectionAcquireStats.collectAsStateWithLifecycle()
     val preordered by viewModel.preordered.collectAsStateWithLifecycle()
@@ -412,7 +417,7 @@ private fun CollectionAcquireTab(viewModel: CollectionDetailsViewModel) {
                 items = preordered?.first.orEmpty(),
                 count = preordered?.second,
                 menuRes = R.menu.collection_shelf_preordered,
-                onMenuClick = acquireMenuHandler(context, viewModel, context) { itemToAcquire = it },
+                onMenuClick = acquireMenuHandler(navigator, viewModel, context) { itemToAcquire = it },
             ) { item ->
                 item.acquisitionDate.formatDateTime(context, flags = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_ABBREV_ALL) to Color.WHITE
             }
@@ -424,7 +429,7 @@ private fun CollectionAcquireTab(viewModel: CollectionDetailsViewModel) {
                 items = wishlist?.first.orEmpty(),
                 count = wishlist?.second,
                 menuRes = R.menu.collection_shelf_wishlist,
-                onMenuClick = acquireMenuHandler(context, viewModel, context) { itemToAcquire = it },
+                onMenuClick = acquireMenuHandler(navigator, viewModel, context) { itemToAcquire = it },
             ) { item ->
                 item.wishListPriority.asWishListPriority(context) to item.wishListPriority.toDouble().toColor(BggColors.fiveStageColors)
             }
@@ -436,7 +441,7 @@ private fun CollectionAcquireTab(viewModel: CollectionDetailsViewModel) {
                 items = wantToBuy?.first.orEmpty(),
                 count = wantToBuy?.second,
                 menuRes = R.menu.collection_shelf_want_to_buy,
-                onMenuClick = acquireMenuHandler(context, viewModel, context) { itemToAcquire = it },
+                onMenuClick = acquireMenuHandler(navigator, viewModel, context) { itemToAcquire = it },
             ) { item -> ratingBadge(context, item.averageRating) }
         }
 
@@ -445,28 +450,28 @@ private fun CollectionAcquireTab(viewModel: CollectionDetailsViewModel) {
             items = wantInTrade?.first.orEmpty(),
             count = wantInTrade?.second,
             menuRes = R.menu.collection_shelf_want_in_trade,
-            onMenuClick = acquireMenuHandler(context, viewModel, context) { itemToAcquire = it },
+            onMenuClick = acquireMenuHandler(navigator, viewModel, context) { itemToAcquire = it },
         ) { item -> ratingBadge(context, item.averageRating) }
 
         CollectionShelfView(
             header = stringResource(R.string.title_favorite_unowned),
             items = favoriteUnowned,
             menuRes = R.menu.collection_shelf_acquire,
-            onMenuClick = acquireMenuHandler(context, viewModel, context) { itemToAcquire = it },
+            onMenuClick = acquireMenuHandler(navigator, viewModel, context) { itemToAcquire = it },
         ) { item -> ratingBadge(context, item.rating) }
 
         CollectionShelfView(
             header = stringResource(R.string.title_played_unowned),
             items = playedUnowned,
             menuRes = R.menu.collection_shelf_acquire,
-            onMenuClick = acquireMenuHandler(context, viewModel, context) { itemToAcquire = it },
+            onMenuClick = acquireMenuHandler(navigator, viewModel, context) { itemToAcquire = it },
         ) { item -> context.getQuantityText(R.plurals.plays_suffix, item.numberOfPlays, item.numberOfPlays) to Color.WHITE }
 
         CollectionShelfView(
             header = stringResource(R.string.title_hawt_unowned),
             items = hawtUnowned,
             menuRes = R.menu.collection_shelf_acquire,
-            onMenuClick = acquireMenuHandler(context, viewModel, context) { itemToAcquire = it },
+            onMenuClick = acquireMenuHandler(navigator, viewModel, context) { itemToAcquire = it },
         ) { item -> ratingBadge(context, item.averageRating) }
     }
 
@@ -493,6 +498,7 @@ private fun CollectionAcquireTab(viewModel: CollectionDetailsViewModel) {
 @Composable
 private fun CollectionDivestTab(viewModel: CollectionDetailsViewModel) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val syncStatuses by viewModel.syncCollectionStatuses.collectAsStateWithLifecycle()
     val own by viewModel.own.collectAsStateWithLifecycle()
     val regretFactor by viewModel.regretFactor.collectAsStateWithLifecycle(0)
@@ -543,7 +549,7 @@ private fun CollectionDivestTab(viewModel: CollectionDetailsViewModel) {
                 items = forTrade?.first.orEmpty(),
                 count = forTrade?.second,
                 menuRes = R.menu.collection_shelf_for_trade,
-                onMenuClick = divestMenuHandler(context, viewModel, context) { itemForConditionEdit = it },
+                onMenuClick = divestMenuHandler(navigator, viewModel, context) { itemForConditionEdit = it },
             ) { item -> ratingBadge(context, item.geekRating) }
 
             CollectionShelfView(
@@ -551,7 +557,7 @@ private fun CollectionDivestTab(viewModel: CollectionDetailsViewModel) {
                 items = forTradeWithoutCondition?.first.orEmpty(),
                 count = forTradeWithoutCondition?.second,
                 menuRes = R.menu.collection_shelf_divest_for_trade_without_condition,
-                onMenuClick = divestMenuHandler(context, viewModel, context) { itemForConditionEdit = it },
+                onMenuClick = divestMenuHandler(navigator, viewModel, context) { itemForConditionEdit = it },
             ) { item -> ratingBadge(context, item.geekRating) }
         }
 
@@ -561,7 +567,7 @@ private fun CollectionDivestTab(viewModel: CollectionDetailsViewModel) {
                 items = previouslyOwned?.first.orEmpty(),
                 count = previouslyOwned?.second,
                 menuRes = R.menu.collection_shelf,
-                onMenuClick = divestMenuHandler(context, viewModel, context) { itemForConditionEdit = it },
+                onMenuClick = divestMenuHandler(navigator, viewModel, context) { itemForConditionEdit = it },
             ) { item -> ratingBadge(context, item.geekRating) }
         }
 
@@ -571,7 +577,7 @@ private fun CollectionDivestTab(viewModel: CollectionDetailsViewModel) {
             items = whyOwn?.first.orEmpty(),
             count = whyOwn?.second,
             menuRes = R.menu.collection_shelf_offer_trade,
-            onMenuClick = divestMenuHandler(context, viewModel, context) { itemForConditionEdit = it },
+            onMenuClick = divestMenuHandler(navigator, viewModel, context) { itemForConditionEdit = it },
         ) { item ->
             val dateFormat = DateFormat.getDateFormat(context)
             (item.lastPlayDate?.let { dateFormat.format(it) } ?: "") to Color.WHITE
@@ -595,6 +601,7 @@ private fun CollectionDivestTab(viewModel: CollectionDetailsViewModel) {
 @Composable
 private fun CollectionAnalyzeTab(viewModel: CollectionDetailsViewModel) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val analyzeStats by viewModel.collectionAnalyzeStats.collectAsStateWithLifecycle()
     val ratable by viewModel.ratableItems.collectAsStateWithLifecycle()
     val commentable by viewModel.commentableItems.collectAsStateWithLifecycle()
@@ -633,7 +640,7 @@ private fun CollectionAnalyzeTab(viewModel: CollectionDetailsViewModel) {
             items = ratable?.first.orEmpty(),
             count = ratable?.second,
             menuRes = R.menu.collection_shelf_rate,
-            onMenuClick = analyzeMenuHandler(context, onShowRatingDialog = { itemForRating = it }, onShowCommentDialog = { itemForComment = it }),
+            onMenuClick = analyzeMenuHandler(navigator, onShowRatingDialog = { itemForRating = it }, onShowCommentDialog = { itemForComment = it }),
         ) { item -> context.getQuantityText(R.plurals.plays_suffix, item.numberOfPlays, item.numberOfPlays) to Color.WHITE }
 
         CollectionShelfView(
@@ -641,7 +648,7 @@ private fun CollectionAnalyzeTab(viewModel: CollectionDetailsViewModel) {
             items = commentable?.first.orEmpty(),
             count = commentable?.second,
             menuRes = R.menu.collection_shelf_comment,
-            onMenuClick = analyzeMenuHandler(context, onShowRatingDialog = { itemForRating = it }, onShowCommentDialog = { itemForComment = it }),
+            onMenuClick = analyzeMenuHandler(navigator, onShowRatingDialog = { itemForRating = it }, onShowCommentDialog = { itemForComment = it }),
         ) { item -> ratingBadge(context, item.rating) }
     }
 
@@ -674,8 +681,7 @@ private fun CollectionAnalyzeTab(viewModel: CollectionDetailsViewModel) {
 @Composable
 private fun CollectionCreditsTab() {
     val padding = dimensionResource(R.dimen.padding_standard)
-
-    val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
 
     Column(
         modifier = Modifier
@@ -687,31 +693,31 @@ private fun CollectionCreditsTab() {
             CreditButton(
                 text = stringResource(R.string.title_designers),
                 icon = Icons.Filled.Edit,
-                onClick = { DesignersLauncher.start(context) }
+                onClick = { navigator.navigate(DesignersRoute) }
             )
             CreditButton(
                 text = stringResource(R.string.title_artists),
                 icon = Icons.Filled.Brush,
-                onClick = { ArtistsLauncher.start(context) }
+                onClick = { navigator.navigate(ArtistsRoute) }
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(padding)) {
             CreditButton(
                 text = stringResource(R.string.title_publishers),
                 icon = Icons.Filled.ImportContacts,
-                onClick = { PublishersLauncher.start(context) }
+                onClick = { navigator.navigate(PublishersRoute) }
             )
             CreditButton(
                 text = stringResource(R.string.title_mechanics),
                 icon = Icons.Filled.Settings,
-                onClick = { MechanicsLauncher.start(context) }
+                onClick = { navigator.navigate(MechanicsRoute) }
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(padding)) {
             CreditButton(
                 text = stringResource(R.string.title_categories),
                 icon = Icons.Filled.Category,
-                onClick = { CategoriesLauncher.start(context) }
+                onClick = { navigator.navigate(CategoriesRoute) }
             )
         }
     }
@@ -754,6 +760,7 @@ private fun CollectionShelfView(
     badge: ((CollectionItem) -> Pair<CharSequence, Int>)? = null,
 ) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     if (items.isEmpty()) return
 
     val headerText = count?.let { "$header - $it" } ?: header
@@ -798,24 +805,8 @@ private fun CollectionShelfView(
                     item = item,
                     menuOptions = menuOptions,
                     badge = badge?.invoke(item),
-                    onClick = {
-                        GameLauncher.start(
-                            context = context,
-                            gameId = item.gameId,
-                            gameName = item.gameName,
-                            thumbnailUrl = item.thumbnailUrl,
-                            heroImageUrl = item.heroImageUrl
-                        )
-                    },
-                    onLongClick = {
-                        GameLauncher.start(
-                            context = context,
-                            gameId = item.gameId,
-                            gameName = item.gameName,
-                            thumbnailUrl = item.thumbnailUrl,
-                            heroImageUrl = item.heroImageUrl
-                        )
-                    },
+                    onClick = { navigator.navigate(item.toGameRoute()) },
+                    onLongClick = { navigator.navigate(item.toGameRoute()) },
                     onMenuClick = { menuItemId ->
                         onMenuClick?.invoke(item, menuItemId) ?: false
                     }
@@ -1269,15 +1260,15 @@ private fun AcquireCollectionItemDialog(
     )
 }
 
-private fun browseMenuHandler(context: android.content.Context) =
+private fun browseMenuHandler(navigator: AppNavigator) =
     { item: CollectionItem, menuItemId: Int ->
         when (menuItemId) {
             R.id.menu_view_game -> {
-                GameLauncher.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
+                navigator.navigate(item.toGameRoute())
                 true
             }
             R.id.menu_view_item -> {
-                GameCollectionItemLauncher.start(context, item)
+                navigator.navigate(item.toGameCollectionItemRoute())
                 true
             }
             else -> false
@@ -1286,27 +1277,22 @@ private fun browseMenuHandler(context: android.content.Context) =
 
 private fun playMenuHandler(
     context: android.content.Context,
+    navigator: AppNavigator,
     viewModel: CollectionDetailsViewModel,
     dialogContext: android.content.Context
 ) = { item: CollectionItem, menuItemId: Int ->
     when (menuItemId) {
         R.id.menu_view_game -> {
-            GameLauncher.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
+            navigator.navigate(item.toGameRoute())
             true
         }
         R.id.menu_view_item -> {
-            GameCollectionItemLauncher.start(context, item)
+            navigator.navigate(item.toGameCollectionItemRoute())
             true
         }
         R.id.menu_play_game -> {
             when (context.preferences().logPlayPreference()) {
-                LOG_PLAY_TYPE_FORM -> LogPlayLauncher.logPlay(
-                    context,
-                    item.gameId,
-                    item.gameName,
-                    item.robustHeroImageUrl,
-                    item.arePlayersCustomSorted
-                )
+                LOG_PLAY_TYPE_FORM -> navigator.navigate(item.toLogPlayRoute())
                 LOG_PLAY_TYPE_QUICK -> {
                     dialogContext.createThemedBuilder()
                         .setMessage(context.getString(R.string.are_you_sure_log_quick_play, item.gameName))
@@ -1317,13 +1303,7 @@ private fun playMenuHandler(
                         .setCancelable(true)
                         .show()
                 }
-                else -> LogPlayLauncher.logPlay(
-                    context,
-                    item.gameId,
-                    item.gameName,
-                    item.robustHeroImageUrl,
-                    item.arePlayersCustomSorted
-                )
+                else -> navigator.navigate(item.toLogPlayRoute())
             }
             true
         }
@@ -1345,7 +1325,7 @@ private fun playMenuHandler(
 }
 
 private fun acquireMenuHandler(
-    context: android.content.Context,
+    navigator: AppNavigator,
     viewModel: CollectionDetailsViewModel,
     dialogContext: android.content.Context,
     onShowAcquireDialog: (CollectionItem) -> Unit,
@@ -1356,11 +1336,11 @@ private fun acquireMenuHandler(
             true
         }
         R.id.menu_view_game -> {
-            GameLauncher.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
+            navigator.navigate(item.toGameRoute())
             true
         }
         R.id.menu_view_item -> {
-            GameCollectionItemLauncher.start(context, item)
+            navigator.navigate(item.toGameCollectionItemRoute())
             true
         }
         R.id.menu_remove_preordered -> {
@@ -1384,7 +1364,7 @@ private fun acquireMenuHandler(
 }
 
 private fun divestMenuHandler(
-    context: android.content.Context,
+    navigator: AppNavigator,
     viewModel: CollectionDetailsViewModel,
     dialogContext: android.content.Context,
     onShowConditionDialog: (CollectionItem) -> Unit,
@@ -1393,7 +1373,7 @@ private fun divestMenuHandler(
         R.id.menu_remove_for_trade -> {
             dialogContext.createThemedBuilder()
                 .setTitle(item.collectionName)
-                .setMessage(context.getString(R.string.msg_remove_status, context.getString(R.string.collection_status_for_trade)))
+                .setMessage(dialogContext.getString(R.string.msg_remove_status, dialogContext.getString(R.string.collection_status_for_trade)))
                 .setCancelable(true)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.remove) { _: DialogInterface?, _: Int ->
@@ -1425,11 +1405,11 @@ private fun divestMenuHandler(
             true
         }
         R.id.menu_view_game -> {
-            GameLauncher.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
+            navigator.navigate(item.toGameRoute())
             true
         }
         R.id.menu_view_item -> {
-            GameCollectionItemLauncher.start(context, item)
+            navigator.navigate(item.toGameCollectionItemRoute())
             true
         }
         else -> false
@@ -1437,17 +1417,17 @@ private fun divestMenuHandler(
 }
 
 private fun analyzeMenuHandler(
-    context: android.content.Context,
+    navigator: AppNavigator,
     onShowRatingDialog: (CollectionItem) -> Unit,
     onShowCommentDialog: (CollectionItem) -> Unit,
 ) = { item: CollectionItem, menuItemId: Int ->
     when (menuItemId) {
         R.id.menu_view_game -> {
-            GameLauncher.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
+            navigator.navigate(item.toGameRoute())
             true
         }
         R.id.menu_view_item -> {
-            GameCollectionItemLauncher.start(context, item)
+            navigator.navigate(item.toGameCollectionItemRoute())
             true
         }
         R.id.menu_rate_item -> {
@@ -1480,6 +1460,32 @@ private fun confirmRemoveStatus(
         .create()
         .show()
 }
+
+private fun CollectionItem.toGameRoute() = GameRoute(
+    gameId = gameId,
+    gameName = gameName,
+    thumbnailUrl = thumbnailUrl,
+    heroImageUrl = heroImageUrl,
+)
+
+private fun CollectionItem.toGameCollectionItemRoute() = GameCollectionItemRoute(
+    internalId = internalId,
+    gameId = gameId,
+    gameName = gameName,
+    collectionId = collectionId,
+    collectionName = collectionName,
+    thumbnailUrl = thumbnailUrl,
+    heroImageUrl = heroImageUrl,
+    gameYearPublished = yearPublished,
+    collectionYearPublished = collectionYearPublished,
+)
+
+private fun CollectionItem.toLogPlayRoute() = LogPlayRoute(
+    gameId = gameId,
+    gameName = gameName,
+    heroImageUrl = robustHeroImageUrl,
+    customPlayerSort = arePlayersCustomSorted,
+)
 
 private fun ratingBadge(context: android.content.Context, rating: Double): Pair<String, Int> {
     val text = rating.asPersonalRating(context, ResourcesCompat.ID_NULL)

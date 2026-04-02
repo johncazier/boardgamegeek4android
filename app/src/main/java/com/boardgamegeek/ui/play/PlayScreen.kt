@@ -58,8 +58,9 @@ import com.boardgamegeek.extensions.getTextColor
 import com.boardgamegeek.extensions.startTimerWithSystemTime
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.model.PlayPlayer
-import com.boardgamegeek.ui.buddy.BuddyLauncher
 import com.boardgamegeek.ui.components.HtmlText
+import com.boardgamegeek.ui.navigation.BuddyRoute
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
 import com.boardgamegeek.ui.play.PlayViewModel
 import com.boardgamegeek.util.XmlApiMarkupConverter
 
@@ -354,13 +355,14 @@ private fun LabeledValueRow(label: String, value: String) {
 @Composable
 private fun PlayPlayerRow(player: PlayPlayer) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val seatColor = remember(player.color) { player.color.asColorRgb() }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = player.username.isNotBlank()) {
-                BuddyLauncher.start(context, player.username, player.name)
+                navigator.navigate(BuddyRoute(player.username, player.name))
             }
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,

@@ -28,18 +28,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.model.Category
 import com.boardgamegeek.ui.MainActivity
-import com.boardgamegeek.ui.category.CategoryLauncher
+import com.boardgamegeek.ui.navigation.CategoryRoute
 import com.boardgamegeek.ui.navigation.CategoriesRoute
 import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.SearchRoute
 import com.boardgamegeek.ui.navigation.popBackStackOrFinish
-import com.boardgamegeek.ui.search.SearchResultsLauncher
 import com.boardgamegeek.ui.theme.AppTheme
-
-object CategoriesLauncher {
-    fun start(context: Context) {
-        context.startActivity(MainActivity.createIntent(context, CategoriesRoute))
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -135,7 +129,7 @@ fun CategoriesRouteScreen(
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.menu_search)) },
                                     onClick = {
-                                        SearchResultsLauncher.start(context)
+                                        navigator.navigate(SearchRoute())
                                         showOverflowMenu = false
                                     },
                                 )
@@ -149,7 +143,7 @@ fun CategoriesRouteScreen(
                 viewModel = viewModel,
                 paddingValues = paddingValues,
                 onCategoryClick = { category ->
-                    CategoryLauncher.start(context, category.id, category.name)
+                    navigator.navigate(CategoryRoute(category.id, category.name))
                 },
             )
         }

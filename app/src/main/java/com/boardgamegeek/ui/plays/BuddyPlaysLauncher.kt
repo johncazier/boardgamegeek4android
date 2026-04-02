@@ -19,18 +19,6 @@ import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 
-object BuddyPlaysLauncher {
-    fun start(context: Context, buddyName: String?) {
-        if (buddyName.isNullOrBlank()) return
-        context.startActivity(
-            MainActivity.createIntent(
-                context = context,
-                route = BuddyPlaysRoute(buddyName = buddyName),
-            ),
-        )
-    }
-}
-
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 private fun SimplePlaysScaffold(

@@ -17,33 +17,20 @@ import com.boardgamegeek.model.GeekListItem
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.AppScreen
 import com.boardgamegeek.ui.MainActivity
-import com.boardgamegeek.ui.game.GameLauncher
+import com.boardgamegeek.ui.navigation.GameRoute
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.SearchRoute
 import com.boardgamegeek.ui.navigation.GeekListCommentRoute
 import com.boardgamegeek.ui.navigation.GeekListItemRoute
-import com.boardgamegeek.ui.search.SearchResultsLauncher
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
 
-object GeekListItemLauncher {
-    fun start(context: Context, geekList: GeekList, item: GeekListItem, order: Int) {
-        context.startActivity(
-            MainActivity.createIntent(
-                context = context,
-                route = item.toRoute(
-                    geekListId = geekList.id,
-                    geekListTitle = geekList.title,
-                    order = order,
-                ),
-            ),
-        )
-    }
-}
-
 @Composable
 fun GeekListItemRouteScreen(route: GeekListItemRoute) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val geekListItem = route.toGeekListItem()
 
     LaunchedEffect(route.objectId, route.objectName) {
@@ -60,13 +47,13 @@ fun GeekListItemRouteScreen(route: GeekListItemRoute) {
         topBarTitle = geekListItem.objectName,
         currentScreenRouteFromActivity = "",
         onSearchClick = {
-            SearchResultsLauncher.start(context)
+            navigator.navigate(SearchRoute())
         },
         topBarActions = {
             IconButton(onClick = {
                 if (geekListItem.isBoardGame) {
                     if (geekListItem.objectId != BggContract.INVALID_ID && geekListItem.objectName.isNotBlank()) {
-                        GameLauncher.start(context, geekListItem.objectId, geekListItem.objectName)
+                        navigator.navigate(GameRoute(geekListItem.objectId, geekListItem.objectName))
                     }
                 } else if (geekListItem.objectUrl.isNotBlank()) {
                     context.link(geekListItem.objectUrl)
@@ -88,7 +75,7 @@ fun GeekListItemRouteScreen(route: GeekListItemRoute) {
     }
 }
 
-private fun GeekListItem.toRoute(
+fun GeekListItem.toRoute(
     geekListId: Int,
     geekListTitle: String,
     order: Int,

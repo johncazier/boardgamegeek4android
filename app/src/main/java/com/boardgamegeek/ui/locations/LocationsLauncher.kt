@@ -30,20 +30,15 @@ import com.boardgamegeek.R
 import com.boardgamegeek.model.Location
 import com.boardgamegeek.ui.MainActivity
 import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.LocationRoute
 import com.boardgamegeek.ui.navigation.LocationsRoute
+import com.boardgamegeek.ui.navigation.SearchRoute
 import com.boardgamegeek.ui.navigation.popBackStackOrFinish
-import com.boardgamegeek.ui.search.SearchResultsLauncher
 import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
-
-object LocationsLauncher {
-    fun start(context: Context) {
-        context.startActivity(MainActivity.createIntent(context, LocationsRoute))
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -138,7 +133,7 @@ fun LocationsRouteScreen(
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.menu_search)) },
                                     onClick = {
-                                        SearchResultsLauncher.start(context)
+                                        navigator.navigate(SearchRoute())
                                         showOverflowMenu = false
                                     },
                                 )
@@ -152,7 +147,7 @@ fun LocationsRouteScreen(
                 viewModel = viewModel,
                 paddingValues = paddingValues,
                 onLocationClick = { locationName ->
-                    com.boardgamegeek.ui.plays.LocationLauncher.start(context, locationName)
+                    navigator.navigate(LocationRoute(locationName))
                 },
             )
         }

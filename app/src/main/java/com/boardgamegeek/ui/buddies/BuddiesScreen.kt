@@ -41,7 +41,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.model.User
-import com.boardgamegeek.ui.buddy.BuddyLauncher
+import com.boardgamegeek.ui.navigation.BuddyRoute
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -157,11 +158,18 @@ private fun BuddyRow(
     buddy: User,
 ) {
     val displayName = if (buddy.fullName.isBlank()) buddy.username else buddy.fullName
-    val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { BuddyLauncher.start(context, buddy.username, buddy.fullName) }
+            .clickable {
+                navigator.navigate(
+                    BuddyRoute(
+                        username = buddy.username.takeIf { it.isNotBlank() },
+                        playerName = buddy.fullName.takeIf { it.isNotBlank() },
+                    ),
+                )
+            }
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {

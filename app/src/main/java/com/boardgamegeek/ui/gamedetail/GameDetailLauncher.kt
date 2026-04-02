@@ -27,22 +27,6 @@ import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 
-object GameDetailLauncher {
-    fun start(context: Context, title: String, gameId: Int, gameName: String, type: ProducerType) {
-        context.startActivity(
-            MainActivity.createIntent(
-                context = context,
-                route = GameDetailRoute(
-                    title = title,
-                    gameId = gameId,
-                    gameName = gameName,
-                    producerType = type.name,
-                ),
-            ),
-        )
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameDetailRouteScreen(

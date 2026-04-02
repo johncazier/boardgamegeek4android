@@ -100,18 +100,20 @@ import com.boardgamegeek.model.GameSubtype
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.model.Status
 import com.boardgamegeek.provider.BggContract
-import com.boardgamegeek.ui.comments.CommentsLauncher
-import com.boardgamegeek.ui.forum.ForumLauncher
-import com.boardgamegeek.ui.gamecollectionitem.GameCollectionItemLauncher
-import com.boardgamegeek.ui.gamecolors.GameColorsLauncher
-import com.boardgamegeek.ui.gamedetail.GameDetailLauncher
-import com.boardgamegeek.ui.plays.GamePlaysLauncher
-import com.boardgamegeek.ui.person.PersonLauncher
-import com.boardgamegeek.ui.play.PlayLauncher
 import com.boardgamegeek.ui.forums.ForumsViewModel
 import com.boardgamegeek.ui.game.GameViewModel
+import com.boardgamegeek.ui.navigation.CommentsRoute
+import com.boardgamegeek.ui.navigation.ForumRoute
+import com.boardgamegeek.ui.navigation.GameCollectionItemRoute
+import com.boardgamegeek.ui.navigation.GameColorsRoute
+import com.boardgamegeek.ui.navigation.GameDetailRoute
+import com.boardgamegeek.ui.navigation.GamePlayStatsRoute
+import com.boardgamegeek.ui.navigation.GamePlaysRoute
+import com.boardgamegeek.ui.navigation.GameRoute
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.PersonRoute
+import com.boardgamegeek.ui.navigation.PlayRoute
 import com.boardgamegeek.util.XmlApiMarkupConverter
-import com.boardgamegeek.ui.playstats.GamePlayStatsLauncher
 import java.text.DecimalFormat
 import java.text.NumberFormat
 
@@ -176,6 +178,7 @@ private fun GameInfoContent(
     onShowLanguagePoll: () -> Unit,
 ) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val gameIconTint = rememberGameIconTint(game.iconColor)
     val scoreFormat = remember { DecimalFormat("#,##0.00") }
     val rankSeparator = " \u2022 "
@@ -274,7 +277,7 @@ private fun GameInfoContent(
                 },
                 onClick = {
                     if (game.numberOfRatings > 0 || game.numberOfComments > 0) {
-                        CommentsLauncher.startRating(context, game.id, game.name)
+                        navigator.navigate(CommentsRoute(game.id, game.name, sortType = 1))
                     }
                 }
             )
@@ -769,6 +772,7 @@ fun GameLinksTab(viewModel: GameViewModel) {
 @Composable
 fun GameForumsTab(gameId: Int, gameName: String) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val viewModel: ForumsViewModel = viewModel()
     val forumsState by viewModel.forums.collectAsStateWithLifecycle()
     val numberFormat = remember { NumberFormat.getNumberInstance() }
@@ -814,13 +818,14 @@ fun GameForumsTab(gameId: Int, gameName: String) {
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
-                                                ForumLauncher.start(
-                                                    context,
-                                                    forum.id,
-                                                    forum.title,
-                                                    gameId,
-                                                    gameName,
-                                                    com.boardgamegeek.model.Forum.Type.GAME
+                                                navigator.navigate(
+                                                    ForumRoute(
+                                                        forumId = forum.id,
+                                                        forumTitle = forum.title,
+                                                        objectId = gameId,
+                                                        objectName = gameName,
+                                                        objectType = com.boardgamegeek.model.Forum.Type.GAME.name,
+                                                    ),
                                                 )
                                             }
                                             .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -920,7 +925,7 @@ private fun CreditsSection(
     iconColor: Color,
 ) {
     if (items.isEmpty()) return
-    val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val sectionTitle = stringResource(titleRes)
 
     Text(
@@ -949,13 +954,7 @@ private fun CreditsSection(
             }
             AssistChip(
                 onClick = {
-                    GameDetailLauncher.start(
-                        context,
-                        sectionTitle,
-                        gameId,
-                        gameName,
-                        type
-                    )
+                    navigator.navigate(GameDetailRoute(sectionTitle, gameId, gameName, type.name))
                 },
                 label = { Text(stringResource(R.string.more_suffix, items.size - limit + 1)) },
                 leadingIcon = { Icon(painter = painterResource(iconRes), contentDescription = null) }
@@ -975,7 +974,7 @@ private fun LinkedItemsSection(
     iconColor: Color,
 ) {
     if (items.isEmpty()) return
-    val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val sectionTitle = stringResource(titleRes)
     Text(
         text = sectionTitle,
@@ -995,13 +994,7 @@ private fun LinkedItemsSection(
             }
             AssistChip(
                 onClick = {
-                    GameDetailLauncher.start(
-                        context,
-                        sectionTitle,
-                        gameId,
-                        gameName,
-                        type
-                    )
+                    navigator.navigate(GameDetailRoute(sectionTitle, gameId, gameName, type.name))
                 },
                 label = { Text(stringResource(R.string.more_suffix, items.size - limit + 1)) },
                 leadingIcon = { Icon(painter = painterResource(iconRes), contentDescription = null) }
@@ -1016,13 +1009,13 @@ private fun ProducerChip(
     @DrawableRes iconRes: Int,
     type: GameViewModel.ProducerType,
 ) {
-    val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     AssistChip(
         onClick = {
             when (type) {
-                GameViewModel.ProducerType.ARTIST -> PersonLauncher.startForArtist(context, producer.id, producer.name)
-                GameViewModel.ProducerType.DESIGNER -> PersonLauncher.startForDesigner(context, producer.id, producer.name)
-                GameViewModel.ProducerType.PUBLISHER -> PersonLauncher.startForPublisher(context, producer.id, producer.name)
+                GameViewModel.ProducerType.ARTIST -> navigator.navigate(PersonRoute(producer.id, producer.name, "ARTIST"))
+                GameViewModel.ProducerType.DESIGNER -> navigator.navigate(PersonRoute(producer.id, producer.name, "DESIGNER"))
+                GameViewModel.ProducerType.PUBLISHER -> navigator.navigate(PersonRoute(producer.id, producer.name, "PUBLISHER"))
                 else -> {}
             }
         },
@@ -1043,9 +1036,9 @@ private fun ProducerChip(
 
 @Composable
 private fun LinkedItemChip(producer: GameDetail) {
-    val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     AssistChip(
-        onClick = { GameLauncher.start(context, producer.id, producer.name) },
+        onClick = { navigator.navigate(GameRoute(producer.id, producer.name)) },
         label = { Text(producer.name) }
     )
 }
@@ -1078,11 +1071,12 @@ private fun HtmlText(text: String, modifier: Modifier = Modifier) {
 @Composable
 private fun CollectionItemRow(item: CollectionItem, xmlConverter: XmlApiMarkupConverter) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = item.internalId != BggContract.INVALID_ID.toLong()) {
-                GameCollectionItemLauncher.start(context, item)
+                navigator.navigate(item.toGameCollectionItemRoute())
             }
             .padding(12.dp)
     ) {
@@ -1226,6 +1220,7 @@ private fun LinkRow(
 @Composable
 private fun PlaysSummarySection(game: Game, plays: List<Play>) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val playCount = plays.sumOf { it.quantity }
     val (count, description, color) = playCount.asPlayCount(context)
 
@@ -1247,14 +1242,15 @@ private fun PlaysSummarySection(game: Game, plays: List<Play>) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                GamePlaysLauncher.start(
-                    context,
-                    game.id,
-                    game.name,
-                    game.heroImageUrl,
-                    game.thumbnailUrl,
-                    game.customPlayerSort,
-                    game.iconColor
+                navigator.navigate(
+                    GamePlaysRoute(
+                        gameId = game.id,
+                        gameName = game.name,
+                        heroImageUrl = game.heroImageUrl,
+                        thumbnailUrl = game.thumbnailUrl,
+                        arePlayersCustomSorted = game.customPlayerSort,
+                        iconColor = game.iconColor,
+                    ),
                 )
             }
     )
@@ -1278,6 +1274,7 @@ private fun InProgressSection(plays: List<Play>) {
 @Composable
 private fun InProgressRow(play: Play) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val timeText by produceState(initialValue = "", play.startTime, play.dateInMillis) {
         while (true) {
             value = when {
@@ -1295,7 +1292,7 @@ private fun InProgressRow(play: Play) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { PlayLauncher.start(context, play.internalId) }
+            .clickable { navigator.navigate(PlayRoute(play.internalId)) }
             .padding(vertical = 8.dp)
     ) {
         Text(text = timeText, style = MaterialTheme.typography.bodyMedium)
@@ -1306,12 +1303,13 @@ private fun InProgressRow(play: Play) {
 @Composable
 private fun LastPlaySection(plays: List<Play>) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val lastPlay = plays.filter { it.dirtyTimestamp == 0L }.maxByOrNull { it.dateInMillis } ?: return
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { PlayLauncher.start(context, lastPlay.internalId) }
+            .clickable { navigator.navigate(PlayRoute(lastPlay.internalId)) }
             .padding(vertical = 8.dp)
     ) {
         Text(text = context.getSpannedText(R.string.last_played_prefix, lastPlay.dateForDisplay(context)).toString())
@@ -1321,7 +1319,7 @@ private fun LastPlaySection(plays: List<Play>) {
 
 @Composable
 private fun StatsSection(game: Game, plays: List<Play>) {
-    val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     if (plays.isEmpty()) return
     ListItem(
         leadingContent = {
@@ -1334,19 +1332,20 @@ private fun StatsSection(game: Game, plays: List<Play>) {
         headlineContent = { Text(text = stringResource(R.string.title_play_stats)) },
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { GamePlayStatsLauncher.start(context, game.id, game.name, game.iconColor) }
+            .clickable { navigator.navigate(GamePlayStatsRoute(game.id, game.name, game.iconColor)) }
     )
 }
 
 @Composable
 private fun ColorsSection(game: Game, colors: List<String>) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     if (colors.isEmpty()) return
     val knownColors = colors.all { it.isKnownColor() }
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { GameColorsLauncher.start(context, game.id, game.name, game.iconColor) }
+            .clickable { navigator.navigate(GameColorsRoute(game.id, game.name, game.iconColor)) }
             .padding(vertical = 8.dp)
     ) {
         Text(
@@ -1367,3 +1366,15 @@ private fun ColorsSection(game: Game, colors: List<String>) {
         }
     }
 }
+
+private fun CollectionItem.toGameCollectionItemRoute() = GameCollectionItemRoute(
+    internalId = internalId,
+    gameId = gameId,
+    gameName = gameName,
+    collectionId = collectionId,
+    collectionName = collectionName,
+    thumbnailUrl = thumbnailUrl,
+    heroImageUrl = heroImageUrl,
+    gameYearPublished = yearPublished,
+    collectionYearPublished = collectionYearPublished,
+)

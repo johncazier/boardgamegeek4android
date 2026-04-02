@@ -28,21 +28,6 @@ import com.boardgamegeek.ui.theme.AppTheme
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 
-object GamePlayStatsLauncher {
-    fun start(context: Context, gameId: Int, gameName: String, @ColorInt headerColor: Int) {
-        context.startActivity(
-            MainActivity.createIntent(
-                context = context,
-                route = GamePlayStatsRoute(
-                    gameId = gameId,
-                    gameName = gameName,
-                    headerColor = headerColor,
-                ),
-            ),
-        )
-    }
-}
-
 @Composable
 fun GamePlayStatsRouteScreen(
     route: GamePlayStatsRoute,

@@ -21,18 +21,6 @@ import com.boardgamegeek.ui.navigation.popBackStackOrFinish
 import com.boardgamegeek.ui.theme.AppTheme
 
 object GamePlaysLauncher {
-    fun start(
-        context: Context,
-        gameId: Int,
-        gameName: String,
-        heroImageUrl: String,
-        thumbnailUrl: String,
-        arePlayersCustomSorted: Boolean,
-        @ColorInt iconColor: Int,
-    ) {
-        context.startActivity(createIntent(context, gameId, gameName, heroImageUrl, thumbnailUrl, arePlayersCustomSorted, iconColor))
-    }
-
     fun createIntent(
         context: Context,
         gameId: Int,

@@ -71,24 +71,6 @@ import com.google.firebase.analytics.logEvent
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-object PlayerColorsLauncher {
-    fun start(context: Context, buddyName: String?, playerName: String?) {
-        if (buddyName.isNullOrBlank() && playerName.isNullOrBlank()) {
-            Timber.w("Can't launch - missing both buddy name and username.")
-            return
-        }
-        context.startActivity(
-            MainActivity.createIntent(
-                context = context,
-                route = PlayerColorsRoute(
-                    buddyName = buddyName,
-                    playerName = playerName,
-                ),
-            ),
-        )
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerColorsRouteScreen(

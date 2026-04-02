@@ -32,10 +32,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.model.GameDetail
-import com.boardgamegeek.ui.person.PersonLauncher
-import com.boardgamegeek.ui.game.GameLauncher
 import com.boardgamegeek.ui.game.GameViewModel
 import com.boardgamegeek.ui.game.GameViewModel.ProducerType
+import com.boardgamegeek.ui.navigation.GameRoute
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.PersonRoute
 import androidx.compose.foundation.shape.CircleShape
 
 @Composable
@@ -43,7 +44,7 @@ fun GameDetailScreen(
     viewModel: GameViewModel,
     paddingValues: PaddingValues,
 ) {
-    val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val type by viewModel.producerType.collectAsStateWithLifecycle()
     val producers by viewModel.producers.collectAsStateWithLifecycle()
 
@@ -75,10 +76,10 @@ fun GameDetailScreen(
                         onClick = {
                             when (type) {
                                 ProducerType.EXPANSION,
-                                ProducerType.BASE_GAME -> GameLauncher.start(context, producer.id, producer.name)
-                                ProducerType.PUBLISHER -> PersonLauncher.startForPublisher(context, producer.id, producer.name)
-                                ProducerType.ARTIST -> PersonLauncher.startForArtist(context, producer.id, producer.name)
-                                ProducerType.DESIGNER -> PersonLauncher.startForDesigner(context, producer.id, producer.name)
+                                ProducerType.BASE_GAME -> navigator.navigate(GameRoute(producer.id, producer.name))
+                                ProducerType.PUBLISHER -> navigator.navigate(PersonRoute(producer.id, producer.name, "PUBLISHER"))
+                                ProducerType.ARTIST -> navigator.navigate(PersonRoute(producer.id, producer.name, "ARTIST"))
+                                ProducerType.DESIGNER -> navigator.navigate(PersonRoute(producer.id, producer.name, "DESIGNER"))
                                 else -> {}
                             }
                         }

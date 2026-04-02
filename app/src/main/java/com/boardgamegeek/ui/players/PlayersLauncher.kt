@@ -36,10 +36,6 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 
 object PlayersLauncher {
-    fun start(context: Context) {
-        context.startActivity(MainActivity.createIntent(context, PlayersRoute()))
-    }
-
     fun startByPlayCount(context: Context) {
         context.startActivity(
             MainActivity.createIntent(

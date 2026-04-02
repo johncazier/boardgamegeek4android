@@ -52,13 +52,15 @@ import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.extensions.setColorViewValue
 import com.boardgamegeek.extensions.toast
 import com.boardgamegeek.model.PlayerColor
-import com.boardgamegeek.ui.buddy.BuddyLauncher
-import com.boardgamegeek.ui.locations.LocationsLauncher
-import com.boardgamegeek.ui.plays.LocationLauncher
-import com.boardgamegeek.ui.plays.PlaysLauncher
-import com.boardgamegeek.ui.play.PlayLauncher
-import com.boardgamegeek.ui.players.PlayersLauncher
-import com.boardgamegeek.ui.playstats.PlayStatsLauncher
+import com.boardgamegeek.ui.navigation.BuddyRoute
+import com.boardgamegeek.ui.navigation.LocalAppNavigator
+import com.boardgamegeek.ui.navigation.LocationRoute
+import com.boardgamegeek.ui.navigation.LocationsRoute
+import com.boardgamegeek.ui.navigation.PlayRoute
+import com.boardgamegeek.ui.navigation.PlayerColorsRoute
+import com.boardgamegeek.ui.navigation.PlayersRoute
+import com.boardgamegeek.ui.navigation.PlaysRoute
+import com.boardgamegeek.ui.navigation.PlayStatsRoute
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -68,6 +70,7 @@ fun PlaysSummaryScreen(
     snackbarHostState: SnackbarHostState,
 ) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val scrollState = rememberScrollState()
 
     val isRefreshing by viewModel.isSyncing.collectAsStateWithLifecycle()
@@ -136,7 +139,7 @@ fun PlaysSummaryScreen(
             SectionHeader(
                 title = stringResource(R.string.title_plays),
                 actionText = playsMoreText(context, playCount),
-                onAction = { PlaysLauncher.start(context) }
+                onAction = { navigator.navigate(PlaysRoute) }
             )
 
             if (playsInProgress.isNotEmpty() || playsNotInProgress.isNotEmpty()) {
@@ -148,7 +151,7 @@ fun PlaysSummaryScreen(
                                 items = playsInProgress,
                                 itemTitle = { it.gameName },
                                 itemSubtitle = { it.describe(context, true) },
-                                onItemClick = { play -> PlayLauncher.start(context, play.internalId) }
+                                onItemClick = { play -> navigator.navigate(PlayRoute(play.internalId)) }
                             )
                             HorizontalDivider()
                         }
@@ -158,7 +161,7 @@ fun PlaysSummaryScreen(
                                 items = playsNotInProgress,
                                 itemTitle = { it.gameName },
                                 itemSubtitle = { it.describe(context, true) },
-                                onItemClick = { play -> PlayLauncher.start(context, play.internalId) }
+                                onItemClick = { play -> navigator.navigate(PlayRoute(play.internalId)) }
                             )
                         }
                     }
@@ -169,7 +172,7 @@ fun PlaysSummaryScreen(
             SectionHeader(
                 title = stringResource(R.string.title_players),
                 actionText = stringResource(R.string.more),
-                onAction = { PlayersLauncher.start(context) },
+                onAction = { navigator.navigate(PlayersRoute()) },
                 actionVisible = players.isNotEmpty()
             )
 
@@ -179,7 +182,14 @@ fun PlaysSummaryScreen(
                         items = players,
                         itemTitle = { it.description },
                         itemSubtitle = { context.getQuantityText(R.plurals.plays_suffix, it.playCount, it.playCount).toString() },
-                        onItemClick = { player -> BuddyLauncher.start(context, player.username, player.name) }
+                        onItemClick = { player ->
+                            navigator.navigate(
+                                BuddyRoute(
+                                    username = player.username.takeIf { it.isNotBlank() },
+                                    playerName = player.name.takeIf { it.isNotBlank() },
+                                ),
+                            )
+                        }
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -188,7 +198,7 @@ fun PlaysSummaryScreen(
             SectionHeader(
                 title = stringResource(R.string.title_locations),
                 actionText = stringResource(R.string.more),
-                onAction = { LocationsLauncher.start(context) },
+                onAction = { navigator.navigate(LocationsRoute) },
                 actionVisible = locations.isNotEmpty()
             )
 
@@ -198,7 +208,7 @@ fun PlaysSummaryScreen(
                         items = locations,
                         itemTitle = { it.name },
                         itemSubtitle = { context.getQuantityText(R.plurals.plays_suffix, it.playCount, it.playCount).toString() },
-                        onItemClick = { location -> LocationLauncher.start(context, location.name) }
+                        onItemClick = { location -> navigator.navigate(LocationRoute(location.name)) }
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -212,7 +222,7 @@ fun PlaysSummaryScreen(
                     if (resolvedUsername.isNullOrBlank()) {
                         context.toast("Can't figure out your username.")
                     } else {
-                        com.boardgamegeek.ui.playercolors.PlayerColorsLauncher.start(context, resolvedUsername, null)
+                        navigator.navigate(PlayerColorsRoute(buddyName = resolvedUsername, playerName = null))
                     }
                 },
                 actionVisible = true
@@ -237,7 +247,7 @@ fun PlaysSummaryScreen(
             SectionHeader(
                 title = stringResource(R.string.title_play_stats),
                 actionText = stringResource(R.string.more),
-                onAction = { PlayStatsLauncher.start(context) }
+                onAction = { navigator.navigate(PlayStatsRoute) }
             )
 
             Card(modifier = Modifier.fillMaxWidth()) {
