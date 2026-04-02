@@ -2,7 +2,7 @@ package com.boardgamegeek.ui.topgames
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.boardgamegeek.R
 import com.boardgamegeek.ui.AppScreen
 import com.boardgamegeek.ui.navigation.BottomNavItem

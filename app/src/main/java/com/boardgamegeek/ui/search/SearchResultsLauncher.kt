@@ -1,12 +1,9 @@
 package com.boardgamegeek.ui.search
 
-import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.boardgamegeek.ui.MainActivity
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.boardgamegeek.ui.navigation.GameRoute
 import com.boardgamegeek.ui.navigation.LocalAppNavigator
-import com.boardgamegeek.ui.navigation.SearchRoute
 import com.boardgamegeek.ui.navigation.popBackStackOrFinish
 import com.boardgamegeek.ui.theme.AppTheme
 

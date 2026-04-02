@@ -1,6 +1,5 @@
 package com.boardgamegeek.ui.plays
 
-import android.content.Context
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.Composable
@@ -9,9 +8,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.boardgamegeek.R
-import com.boardgamegeek.ui.MainActivity
 import com.boardgamegeek.ui.navigation.LocalAppNavigator
 import com.boardgamegeek.ui.navigation.PlayerPlaysRoute
 import com.boardgamegeek.ui.navigation.popBackStackOrFinish

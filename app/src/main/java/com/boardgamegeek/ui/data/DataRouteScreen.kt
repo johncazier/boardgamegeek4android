@@ -3,7 +3,7 @@ package com.boardgamegeek.ui.data
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.compose.ui.res.stringResource
 import com.boardgamegeek.R
 import com.boardgamegeek.ui.AppScreen
