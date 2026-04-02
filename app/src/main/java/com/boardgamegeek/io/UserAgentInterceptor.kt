@@ -1,6 +1,7 @@
 package com.boardgamegeek.io
 
 import android.content.Context
+import com.boardgamegeek.BuildConfig
 import com.boardgamegeek.extensions.versionName
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -19,11 +20,7 @@ class UserAgentInterceptor(private val context: Context? = null) : Interceptor {
     }
 
     private fun constructUserAgent(): String {
-        val userAgent = "BGG4Android"
-        return if (context == null) {
-            userAgent
-        } else {
-            "$userAgent/${context.versionName()}"
-        }
+        val version = context?.versionName().orEmpty().ifBlank { BuildConfig.VERSION_NAME }
+        return "BoardGameGeek/$version"
     }
 }
