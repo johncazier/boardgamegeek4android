@@ -1,5 +1,8 @@
 package com.boardgamegeek.ui
 
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -284,6 +287,18 @@ fun BggApp(
             backStack = backStack,
             entryProvider = entries,
             onBack = { navigator.popBackStack() },
+            transitionSpec = {
+                ContentTransform(
+                    targetContentEnter = EnterTransition.None,
+                    initialContentExit = ExitTransition.None,
+                )
+            },
+            popTransitionSpec = {
+                ContentTransform(
+                    targetContentEnter = EnterTransition.None,
+                    initialContentExit = ExitTransition.None,
+                )
+            },
         )
     }
 }
