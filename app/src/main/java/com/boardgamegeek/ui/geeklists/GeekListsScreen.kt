@@ -30,55 +30,57 @@ fun GeekListsScreen(
 ) {
     val lazyPagingItems = viewModel.geekLists.collectAsLazyPagingItems()
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .padding(paddingValues)) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            items(
-                count = lazyPagingItems.itemCount,
-                key = lazyPagingItems.itemKey { it.id }
-            ) { index ->
-                val item = lazyPagingItems[index]
-                if (item != null) {
-                    GeekListRow(geekList = item)
-                    HorizontalDivider()
-                }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+    ) {
+        when (val refresh = lazyPagingItems.loadState.refresh) {
+            is LoadState.Loading -> {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
+            is LoadState.Error -> {
+                Text(
+                    text = refresh.error.localizedMessage ?: "",
+                    modifier = Modifier.align(Alignment.Center),
+                )
+            }
+            is LoadState.NotLoading -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(
+                        count = lazyPagingItems.itemCount,
+                        key = lazyPagingItems.itemKey { it.id }
+                    ) { index ->
+                        val item = lazyPagingItems[index]
+                        if (item != null) {
+                            GeekListRow(geekList = item)
+                            HorizontalDivider()
+                        }
+                    }
 
-            lazyPagingItems.loadState.apply {
-                when {
-                    refresh is LoadState.Loading -> {
-                        item {
-                            CircularProgressIndicator(modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp))
+                    lazyPagingItems.loadState.apply {
+                        if (append is LoadState.Loading) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }
                         }
-                    }
-                    append is LoadState.Loading -> {
-                        item {
-                            CircularProgressIndicator(modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp))
-                        }
-                    }
-                    refresh is LoadState.Error -> {
-                        val e = lazyPagingItems.loadState.refresh as LoadState.Error
-                        item {
-                            Text(
-                                text = e.error.localizedMessage ?: "",
-                                modifier = Modifier.padding(16.dp)
-                            )
-                        }
-                    }
-                    append is LoadState.Error -> {
-                        val e = lazyPagingItems.loadState.append as LoadState.Error
-                        item {
-                            Text(
-                                text = e.error.localizedMessage ?: "",
-                                modifier = Modifier.padding(16.dp)
-                            )
+                        if (append is LoadState.Error) {
+                            val e = lazyPagingItems.loadState.append as LoadState.Error
+                            item {
+                                Text(
+                                    text = e.error.localizedMessage ?: "",
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
                         }
                     }
                 }
