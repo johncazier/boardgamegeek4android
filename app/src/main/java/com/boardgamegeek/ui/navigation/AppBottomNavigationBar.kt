@@ -1,5 +1,9 @@
 package com.boardgamegeek.ui.navigation
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.LibraryBooks
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.boardgamegeek.R
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -13,10 +17,26 @@ fun AppBottomNavigationBar(
     onItemSelected: (route: String) -> Unit
 ) {
     val items = listOf(
-        BottomNavItem.Collection,
-        BottomNavItem.Hotness,
-        BottomNavItem.TopGames,
-        BottomNavItem.GeekLists
+        BottomBarItem(
+            route = BottomNavItem.Collection.route,
+            titleRes = R.string.title_collection,
+            icon = Icons.AutoMirrored.Filled.LibraryBooks,
+        ),
+        BottomBarItem(
+            route = BottomNavItem.Hotness.route,
+            titleRes = BottomNavItem.Hotness.titleRes,
+            icon = BottomNavItem.Hotness.icon,
+        ),
+        BottomBarItem(
+            route = BottomNavItem.TopGames.route,
+            titleRes = BottomNavItem.TopGames.titleRes,
+            icon = BottomNavItem.TopGames.icon,
+        ),
+        BottomBarItem(
+            route = BottomNavItem.GeekLists.route,
+            titleRes = BottomNavItem.GeekLists.titleRes,
+            icon = BottomNavItem.GeekLists.icon,
+        ),
     )
 
     NavigationBar { // This is the Material 3 Bottom Navigation Bar
@@ -34,6 +54,12 @@ fun AppBottomNavigationBar(
         }
     }
 }
+
+private data class BottomBarItem(
+    val route: String,
+    val titleRes: Int,
+    val icon: ImageVector,
+)
 
 @Preview
 @Composable

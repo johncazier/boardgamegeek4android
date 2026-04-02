@@ -80,8 +80,17 @@ fun AppScreen(
             drawerContent = {
                 ModalDrawerSheet {
                     Text("BoardGameGeek", modifier = Modifier.padding(16.dp))
+                    NavigationDrawerItem(
+                        icon = { Icon(Icons.AutoMirrored.Filled.LibraryBooks, contentDescription = null) },
+                        label = { Text(stringResource(R.string.title_collection)) },
+                        selected = currentDrawerRouteFromActivity == DrawerRoute.CollectionDetails,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            navigator.navigate(CollectionDetailsRoute)
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+                    )
                     listOf(
-                        BottomNavItem.Collection,
                         BottomNavItem.Hotness,
                         BottomNavItem.TopGames,
                         BottomNavItem.GeekLists,
@@ -99,12 +108,12 @@ fun AppScreen(
                     }
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.AutoMirrored.Filled.LibraryBooks, contentDescription = null) },
-                        label = { Text(stringResource(R.string.title_collection_details)) },
-                        selected = currentDrawerRouteFromActivity == DrawerRoute.CollectionDetails,
+                        icon = { Icon(BottomNavItem.Collection.icon, contentDescription = null) },
+                        label = { Text(stringResource(R.string.title_legacy_collection)) },
+                        selected = currentDrawerRouteFromActivity == BottomNavItem.Collection.route,
                         onClick = {
                             scope.launch { drawerState.close() }
-                            navigator.navigate(CollectionDetailsRoute)
+                            navigator.navigateTopLevel(CollectionRoute())
                         },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
                     )
@@ -235,7 +244,7 @@ private fun BottomNavItem.toRoute() = when (this) {
 }
 
 private fun String.toBottomNavRoute() = when (this) {
-    BottomNavItem.Collection.route -> CollectionRoute()
+    BottomNavItem.Collection.route -> CollectionDetailsRoute
     BottomNavItem.TopGames.route -> TopGamesRoute
     BottomNavItem.GeekLists.route -> GeekListsRoute
     else -> HotnessRoute

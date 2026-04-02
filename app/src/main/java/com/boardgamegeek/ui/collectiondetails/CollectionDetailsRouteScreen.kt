@@ -51,7 +51,7 @@ fun CollectionDetailsRouteScreen(
     }
 
     AppScreen(
-        topBarTitle = stringResource(R.string.title_collection_details),
+        topBarTitle = stringResource(R.string.title_collection),
         currentScreenRouteFromActivity = BottomNavItem.Collection.route,
         currentDrawerRouteFromActivity = DrawerRoute.CollectionDetails,
         drawerGesturesEnabled = false,

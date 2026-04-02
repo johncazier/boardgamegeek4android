@@ -299,6 +299,12 @@ fun BggApp(
                     initialContentExit = ExitTransition.None,
                 )
             },
+            predictivePopTransitionSpec = {
+                ContentTransform(
+                    targetContentEnter = EnterTransition.None,
+                    initialContentExit = ExitTransition.None,
+                )
+            },
         )
     }
 }
