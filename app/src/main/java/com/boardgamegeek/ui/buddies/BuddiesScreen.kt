@@ -41,7 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.model.User
-import com.boardgamegeek.ui.buddy.BuddyActivity
+import com.boardgamegeek.ui.buddy.BuddyLauncher
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -161,7 +161,7 @@ private fun BuddyRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { BuddyActivity.start(context, buddy.username, buddy.fullName) }
+            .clickable { BuddyLauncher.start(context, buddy.username, buddy.fullName) }
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {

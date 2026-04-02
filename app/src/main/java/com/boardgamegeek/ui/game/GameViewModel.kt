@@ -41,7 +41,7 @@ import com.boardgamegeek.repository.GameRepository
 import com.boardgamegeek.repository.ImageRepository
 import com.boardgamegeek.repository.PlayRepository
 import com.boardgamegeek.repository.PublisherRepository
-import com.boardgamegeek.ui.game.GameActivity
+import com.boardgamegeek.ui.game.GameLauncher
 import com.boardgamegeek.util.RemoteConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -578,7 +578,7 @@ class GameViewModel @Inject constructor(
             val gameName = game.value?.name.orEmpty()
             val thumbnailUrl = game.value?.thumbnailUrl.orEmpty()
             val bitmap = imageRepository.fetchThumbnail(thumbnailUrl.ensureHttpsScheme())
-            GameActivity.createShortcutInfo(context, gameId, gameName, bitmap)?.let { info ->
+            GameLauncher.createShortcutInfo(context, gameId, gameName, bitmap)?.let { info ->
                 ShortcutManagerCompat.requestPinShortcut(context, info, null)
             }
         }

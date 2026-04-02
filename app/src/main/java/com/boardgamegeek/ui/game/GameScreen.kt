@@ -32,8 +32,8 @@ import com.boardgamegeek.extensions.linkToBgg
 import com.boardgamegeek.extensions.logPlayPreference
 import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.extensions.shareGame
-import com.boardgamegeek.ui.image.ImageActivity
-import com.boardgamegeek.ui.logplay.LogPlayActivity
+import com.boardgamegeek.ui.image.ImageLauncher
+import com.boardgamegeek.ui.logplay.LogPlayLauncher
 import com.boardgamegeek.ui.game.GameViewModel
 import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.coroutines.launch
@@ -273,7 +273,7 @@ fun GameOverflowMenuAction(
                 text = { Text("${stringResource(R.string.menu_log_play)} (${stringResource(R.string.menu_log_play_short)})") },
                 onClick = {
                     expanded = false
-                    LogPlayActivity.logPlay(
+                    LogPlayLauncher.logPlay(
                         context,
                     gameId,
                     gameName,
@@ -286,7 +286,7 @@ fun GameOverflowMenuAction(
             text = { Text(stringResource(R.string.menu_view_image)) },
             onClick = {
                 expanded = false
-                ImageActivity.start(context, imageToView)
+                ImageLauncher.start(context, imageToView)
             },
             enabled = imageToView.isNotBlank()
         )
@@ -405,7 +405,7 @@ private fun logPlay(
     arePlayersCustomSorted: Boolean,
 ) {
     when (activity.preferences().logPlayPreference()) {
-        LOG_PLAY_TYPE_FORM -> LogPlayActivity.logPlay(
+        LOG_PLAY_TYPE_FORM -> LogPlayLauncher.logPlay(
             activity,
             gameId,
             gameName,
@@ -413,7 +413,7 @@ private fun logPlay(
             arePlayersCustomSorted
         )
         LOG_PLAY_TYPE_QUICK -> viewModel.logQuickPlay(gameId, gameName)
-        else -> LogPlayActivity.logPlay(
+        else -> LogPlayLauncher.logPlay(
             activity,
             gameId,
             gameName,

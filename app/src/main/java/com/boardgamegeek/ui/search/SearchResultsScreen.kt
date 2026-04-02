@@ -54,7 +54,7 @@ import com.boardgamegeek.extensions.shareGame
 import com.boardgamegeek.extensions.shareGames
 import com.boardgamegeek.model.SearchResult
 import com.boardgamegeek.model.Status
-import com.boardgamegeek.ui.logplay.LogPlayActivity
+import com.boardgamegeek.ui.logplay.LogPlayLauncher
 import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.coroutines.flow.collectLatest
 
@@ -177,7 +177,7 @@ fun SearchResultsScreen(
                                 results = searchResults?.data.orEmpty(),
                                 onClearSelection = { selectedIds = emptySet() },
                                 onLogPlay = { result ->
-                                    LogPlayActivity.logPlay(context, result.id, result.name)
+                                    LogPlayLauncher.logPlay(context, result.id, result.name)
                                 },
                                 onQuickLogPlay = { result ->
                                     viewModel.logQuickPlay(result.id, result.name)

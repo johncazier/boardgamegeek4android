@@ -35,7 +35,7 @@ import com.boardgamegeek.model.PersonStats
 import com.boardgamegeek.model.Status
 import com.boardgamegeek.ui.forums.ForumsScreen
 import com.boardgamegeek.ui.forums.ForumsViewModel
-import com.boardgamegeek.ui.game.GameActivity
+import com.boardgamegeek.ui.game.GameLauncher
 import com.boardgamegeek.ui.linkedcollection.LinkedCollectionScreen
 import java.text.DecimalFormat
 
@@ -118,7 +118,7 @@ fun PersonScreen(
                         isRefreshing = details?.status == Status.REFRESHING,
                         onRefresh = viewModel::refresh,
                         onItemClick = { item ->
-                            GameActivity.start(
+                            GameLauncher.start(
                                 context = context,
                                 gameId = item.gameId,
                                 gameName = item.gameName,

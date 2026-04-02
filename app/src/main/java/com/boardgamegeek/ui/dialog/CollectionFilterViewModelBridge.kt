@@ -5,7 +5,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.boardgamegeek.filterer.CollectionFilterer
-import com.boardgamegeek.ui.collection.CollectionActivity
+import com.boardgamegeek.ui.collection.CollectionLauncher
 import com.boardgamegeek.ui.collection.CollectionViewModel
 import com.boardgamegeek.ui.viewmodel.CollectionViewViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -21,7 +21,7 @@ interface CollectionFilterViewModelBridge {
 }
 
 fun FragmentActivity.collectionFilterViewModelBridge(): CollectionFilterViewModelBridge {
-    return if (this is CollectionActivity) {
+    return if (this is CollectionLauncher) {
         val viewModel = ViewModelProvider(this)[CollectionViewModel::class.java]
         ComposeCollectionFilterViewModelBridge(viewModel)
     } else {

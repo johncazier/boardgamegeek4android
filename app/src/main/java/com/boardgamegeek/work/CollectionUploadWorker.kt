@@ -14,7 +14,7 @@ import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.repository.GameCollectionRepository
 import com.boardgamegeek.ui.MainActivity
 import com.boardgamegeek.ui.navigation.CollectionRoute
-import com.boardgamegeek.ui.game.GameActivity
+import com.boardgamegeek.ui.game.GameLauncher
 import com.boardgamegeek.util.LargeIconLoader
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -94,7 +94,7 @@ class CollectionUploadWorker @AssistedInject constructor(
             }
 
             fun buildAndNotify(context: Context, title: CharSequence, message: CharSequence, largeIcon: Bitmap? = null) {
-                val intent = GameActivity.createIntent(
+                val intent = GameLauncher.createIntent(
                     context,
                     result.item.gameId,
                     result.item.gameName,

@@ -21,11 +21,11 @@ import com.boardgamegeek.R
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.model.PlayUploadResult
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
-import com.boardgamegeek.ui.logplay.LogPlayActivity
+import com.boardgamegeek.ui.logplay.LogPlayLauncher
 import com.boardgamegeek.ui.MainActivity
-import com.boardgamegeek.ui.play.PlayActivity
-import com.boardgamegeek.ui.plays.GamePlaysActivity
-import com.boardgamegeek.ui.plays.PlaysActivity
+import com.boardgamegeek.ui.play.PlayLauncher
+import com.boardgamegeek.ui.plays.GamePlaysLauncher
+import com.boardgamegeek.ui.plays.PlaysLauncher
 import com.boardgamegeek.ui.navigation.HotnessRoute
 import com.boardgamegeek.ui.navigation.PlaysRoute
 import com.boardgamegeek.util.LargeIconLoader
@@ -104,7 +104,7 @@ private fun Context.buildAndNotifyPlaying(
     largeIcon: Bitmap? = null
 ) {
     val builder = createNotificationBuilder(gameName, NotificationChannels.PLAYING)
-    val intent = PlayActivity.createIntent(this, internalId).clearTop().newTask()
+    val intent = PlayLauncher.createIntent(this, internalId).clearTop().newTask()
     val pendingIntent = PendingIntent.getActivity(
         this,
         0,
@@ -185,7 +185,7 @@ fun Context.notifyLoggedPlay(result: PlayUploadResult) {
 
         fun buildAndNotify(context: Context, title: CharSequence, message: CharSequence, largeIcon: Bitmap? = null) {
             val intent = if (result.status == PlayUploadResult.Status.DELETE || result.play.internalId == INVALID_ID.toLong())
-                GamePlaysActivity.createIntent(
+                GamePlaysLauncher.createIntent(
                     context,
                     result.play.gameId,
                     result.play.gameName,
@@ -193,7 +193,7 @@ fun Context.notifyLoggedPlay(result: PlayUploadResult) {
                     result.play.thumbnailUrl,
                 )
             else
-                PlayActivity.createIntent(context, result.play.internalId)
+                PlayLauncher.createIntent(context, result.play.internalId)
 
             val builder = context.createNotificationBuilder(title, NotificationChannels.SYNC_UPLOAD, intent)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
@@ -213,7 +213,7 @@ fun Context.notifyLoggedPlay(result: PlayUploadResult) {
 
 private fun createRematchAction(context: Context, play: Play): NotificationCompat.Action? {
     return if (play.internalId != INVALID_ID.toLong()) {
-        val intent = LogPlayActivity.createRematchIntent(
+        val intent = LogPlayLauncher.createRematchIntent(
             context,
             play.internalId,
             play.gameId,

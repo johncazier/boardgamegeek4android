@@ -10,7 +10,7 @@ import com.boardgamegeek.R
 import com.boardgamegeek.databinding.RowCollectionBinding
 import com.boardgamegeek.model.CollectionItem
 import com.boardgamegeek.extensions.*
-import com.boardgamegeek.ui.game.GameActivity
+import com.boardgamegeek.ui.game.GameLauncher
 
 class LinkedCollectionAdapter :
     ListAdapter<CollectionItem, LinkedCollectionAdapter.DetailViewHolder>(
@@ -38,7 +38,7 @@ class LinkedCollectionAdapter :
             binding.ratingView.text = item.rating.asPersonalRating(itemView.context)
             binding.ratingView.setTextViewBackground(item.rating.toColor(BggColors.ratingColors))
             itemView.setOnClickListener { _ ->
-                GameActivity.start(
+                GameLauncher.start(
                     itemView.context,
                     item.gameId,
                     item.gameName,

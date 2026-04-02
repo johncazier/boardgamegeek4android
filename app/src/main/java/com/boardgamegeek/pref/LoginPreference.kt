@@ -9,7 +9,7 @@ import com.boardgamegeek.extensions.get
 import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.ui.MainActivity
 import com.boardgamegeek.ui.navigation.LoginRoute
-import com.boardgamegeek.ui.login.LoginActivity
+import com.boardgamegeek.ui.login.LoginLauncher
 
 class LoginPreference(context: Context, attrs: AttributeSet) : Preference(context, attrs) {
     private var username = context.preferences()[AccountPreferences.KEY_USERNAME, ""]

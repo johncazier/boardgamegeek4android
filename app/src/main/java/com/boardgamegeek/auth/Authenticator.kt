@@ -11,7 +11,7 @@ import com.boardgamegeek.extensions.AccountPreferences
 import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.extensions.set
 import com.boardgamegeek.repository.AuthRepository
-import com.boardgamegeek.ui.login.LoginActivity
+import com.boardgamegeek.ui.login.LoginLauncher
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import timber.log.Timber
 import java.io.IOException
@@ -30,7 +30,7 @@ class Authenticator(
         options: Bundle
     ): Bundle {
         Timber.v("Adding account: accountType=%s, authTokenType=%s", accountType, authTokenType)
-        return LoginActivity.createIntentBundle(context, response, null)
+        return LoginLauncher.createIntentBundle(context, response, null)
     }
 
     @Throws(NetworkErrorException::class)
@@ -78,7 +78,7 @@ class Authenticator(
         // If we get here, then we couldn't access the user's password - so we need to re-prompt them for their
         // credentials. We do that by creating an intent to display our AuthenticatorActivity panel.
         Timber.i("Expired credentials...")
-        return LoginActivity.createIntentBundle(context, response, account.name)
+        return LoginLauncher.createIntentBundle(context, response, account.name)
     }
 
     override fun getAuthTokenLabel(authTokenType: String): String? {

@@ -31,7 +31,7 @@ import com.boardgamegeek.extensions.formatTimestamp
 import com.boardgamegeek.extensions.toFormattedString
 import com.boardgamegeek.model.Forum
 import com.boardgamegeek.model.Thread
-import com.boardgamegeek.ui.thread.ThreadActivity
+import com.boardgamegeek.ui.thread.ThreadLauncher
 
 @Composable
 fun ForumScreen(
@@ -80,7 +80,7 @@ fun ForumScreen(
                                 ForumThreadRow(
                                     thread = thread,
                                     onClick = {
-                                        ThreadActivity.start(
+                                        ThreadLauncher.start(
                                             context,
                                             thread.threadId,
                                             thread.subject,

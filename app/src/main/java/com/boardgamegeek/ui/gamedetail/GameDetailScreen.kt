@@ -32,8 +32,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.model.GameDetail
-import com.boardgamegeek.ui.person.PersonActivity
-import com.boardgamegeek.ui.game.GameActivity
+import com.boardgamegeek.ui.person.PersonLauncher
+import com.boardgamegeek.ui.game.GameLauncher
 import com.boardgamegeek.ui.game.GameViewModel
 import com.boardgamegeek.ui.game.GameViewModel.ProducerType
 import androidx.compose.foundation.shape.CircleShape
@@ -75,10 +75,10 @@ fun GameDetailScreen(
                         onClick = {
                             when (type) {
                                 ProducerType.EXPANSION,
-                                ProducerType.BASE_GAME -> GameActivity.start(context, producer.id, producer.name)
-                                ProducerType.PUBLISHER -> PersonActivity.startForPublisher(context, producer.id, producer.name)
-                                ProducerType.ARTIST -> PersonActivity.startForArtist(context, producer.id, producer.name)
-                                ProducerType.DESIGNER -> PersonActivity.startForDesigner(context, producer.id, producer.name)
+                                ProducerType.BASE_GAME -> GameLauncher.start(context, producer.id, producer.name)
+                                ProducerType.PUBLISHER -> PersonLauncher.startForPublisher(context, producer.id, producer.name)
+                                ProducerType.ARTIST -> PersonLauncher.startForArtist(context, producer.id, producer.name)
+                                ProducerType.DESIGNER -> PersonLauncher.startForDesigner(context, producer.id, producer.name)
                                 else -> {}
                             }
                         }

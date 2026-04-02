@@ -52,8 +52,8 @@ import com.boardgamegeek.extensions.logPlayPreference
 import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.provider.BggContract.Companion.INVALID_ID
-import com.boardgamegeek.ui.logplay.LogPlayActivity
-import com.boardgamegeek.ui.play.PlayActivity
+import com.boardgamegeek.ui.logplay.LogPlayLauncher
+import com.boardgamegeek.ui.play.PlayLauncher
 import com.boardgamegeek.util.XmlApiMarkupConverter
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -113,9 +113,9 @@ fun PlaysScreen(
                 FloatingActionButton(
                     onClick = {
                         when (context.preferences().logPlayPreference()) {
-                            LOG_PLAY_TYPE_FORM -> LogPlayActivity.logPlay(context, gameId, gameName, heroImageUrl, arePlayersCustomSorted)
+                            LOG_PLAY_TYPE_FORM -> LogPlayLauncher.logPlay(context, gameId, gameName, heroImageUrl, arePlayersCustomSorted)
                             LOG_PLAY_TYPE_QUICK -> viewModel.logQuickPlay(gameId, gameName)
-                            else -> LogPlayActivity.logPlay(context, gameId, gameName, heroImageUrl, arePlayersCustomSorted)
+                            else -> LogPlayLauncher.logPlay(context, gameId, gameName, heroImageUrl, arePlayersCustomSorted)
                         }
                     },
                     containerColor = iconColor
@@ -145,7 +145,7 @@ fun PlaysScreen(
                         }
                         IconButton(enabled = selectedIds.size == 1, onClick = {
                             selectedPlays.firstOrNull()?.let { play ->
-                                LogPlayActivity.editPlay(context, play.internalId, play.gameId, play.gameName, play.robustHeroImageUrl)
+                                LogPlayLauncher.editPlay(context, play.internalId, play.gameId, play.gameName, play.robustHeroImageUrl)
                                 selectedIds = emptySet()
                             }
                         }) {
@@ -182,7 +182,7 @@ fun PlaysScreen(
                                     isSelected = isSelected,
                                     onClick = {
                                         if (selectedIds.isEmpty()) {
-                                            PlayActivity.start(context, row.play.internalId)
+                                            PlayLauncher.start(context, row.play.internalId)
                                         } else {
                                             selectedIds = selectedIds.toggle(row.play.internalId)
                                         }

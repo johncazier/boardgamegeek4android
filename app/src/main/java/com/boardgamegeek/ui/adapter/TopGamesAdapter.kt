@@ -10,7 +10,7 @@ import com.boardgamegeek.extensions.asYear
 import com.boardgamegeek.extensions.inflate
 import com.boardgamegeek.extensions.loadThumbnail
 import com.boardgamegeek.provider.BggContract
-import com.boardgamegeek.ui.game.GameActivity
+import com.boardgamegeek.ui.game.GameLauncher
 import kotlin.properties.Delegates
 
 class TopGamesAdapter : RecyclerView.Adapter<TopGamesAdapter.ViewHolder>(), AutoUpdatableAdapter {
@@ -47,7 +47,7 @@ class TopGamesAdapter : RecyclerView.Adapter<TopGamesAdapter.ViewHolder>(), Auto
             binding.thumbnailView.loadThumbnail(game.thumbnailUrl)
 
             itemView.setOnClickListener {
-                GameActivity.start(
+                GameLauncher.start(
                     itemView.context,
                     game.id,
                     game.name,

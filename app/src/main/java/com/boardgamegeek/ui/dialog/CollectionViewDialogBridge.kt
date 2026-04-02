@@ -3,7 +3,7 @@ package com.boardgamegeek.ui.dialog
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import com.boardgamegeek.model.CollectionView
-import com.boardgamegeek.ui.collection.CollectionActivity
+import com.boardgamegeek.ui.collection.CollectionLauncher
 import com.boardgamegeek.ui.collection.CollectionViewModel
 import com.boardgamegeek.ui.viewmodel.CollectionViewViewModel
 
@@ -17,7 +17,7 @@ interface CollectionViewDialogBridge {
 }
 
 fun FragmentActivity.collectionViewDialogBridge(): CollectionViewDialogBridge {
-    return if (this is CollectionActivity) {
+    return if (this is CollectionLauncher) {
         val viewModel = ViewModelProvider(this)[CollectionViewModel::class.java]
         ComposeCollectionViewDialogBridge(viewModel)
     } else {

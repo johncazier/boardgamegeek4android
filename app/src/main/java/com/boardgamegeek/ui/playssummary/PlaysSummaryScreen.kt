@@ -52,13 +52,13 @@ import com.boardgamegeek.extensions.preferences
 import com.boardgamegeek.extensions.setColorViewValue
 import com.boardgamegeek.extensions.toast
 import com.boardgamegeek.model.PlayerColor
-import com.boardgamegeek.ui.buddy.BuddyActivity
-import com.boardgamegeek.ui.locations.LocationsActivity
-import com.boardgamegeek.ui.plays.LocationActivity
-import com.boardgamegeek.ui.plays.PlaysActivity
-import com.boardgamegeek.ui.play.PlayActivity
-import com.boardgamegeek.ui.players.PlayersActivity
-import com.boardgamegeek.ui.playstats.PlayStatsActivity
+import com.boardgamegeek.ui.buddy.BuddyLauncher
+import com.boardgamegeek.ui.locations.LocationsLauncher
+import com.boardgamegeek.ui.plays.LocationLauncher
+import com.boardgamegeek.ui.plays.PlaysLauncher
+import com.boardgamegeek.ui.play.PlayLauncher
+import com.boardgamegeek.ui.players.PlayersLauncher
+import com.boardgamegeek.ui.playstats.PlayStatsLauncher
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -136,7 +136,7 @@ fun PlaysSummaryScreen(
             SectionHeader(
                 title = stringResource(R.string.title_plays),
                 actionText = playsMoreText(context, playCount),
-                onAction = { PlaysActivity.start(context) }
+                onAction = { PlaysLauncher.start(context) }
             )
 
             if (playsInProgress.isNotEmpty() || playsNotInProgress.isNotEmpty()) {
@@ -148,7 +148,7 @@ fun PlaysSummaryScreen(
                                 items = playsInProgress,
                                 itemTitle = { it.gameName },
                                 itemSubtitle = { it.describe(context, true) },
-                                onItemClick = { play -> PlayActivity.start(context, play.internalId) }
+                                onItemClick = { play -> PlayLauncher.start(context, play.internalId) }
                             )
                             HorizontalDivider()
                         }
@@ -158,7 +158,7 @@ fun PlaysSummaryScreen(
                                 items = playsNotInProgress,
                                 itemTitle = { it.gameName },
                                 itemSubtitle = { it.describe(context, true) },
-                                onItemClick = { play -> PlayActivity.start(context, play.internalId) }
+                                onItemClick = { play -> PlayLauncher.start(context, play.internalId) }
                             )
                         }
                     }
@@ -169,7 +169,7 @@ fun PlaysSummaryScreen(
             SectionHeader(
                 title = stringResource(R.string.title_players),
                 actionText = stringResource(R.string.more),
-                onAction = { PlayersActivity.start(context) },
+                onAction = { PlayersLauncher.start(context) },
                 actionVisible = players.isNotEmpty()
             )
 
@@ -179,7 +179,7 @@ fun PlaysSummaryScreen(
                         items = players,
                         itemTitle = { it.description },
                         itemSubtitle = { context.getQuantityText(R.plurals.plays_suffix, it.playCount, it.playCount).toString() },
-                        onItemClick = { player -> BuddyActivity.start(context, player.username, player.name) }
+                        onItemClick = { player -> BuddyLauncher.start(context, player.username, player.name) }
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -188,7 +188,7 @@ fun PlaysSummaryScreen(
             SectionHeader(
                 title = stringResource(R.string.title_locations),
                 actionText = stringResource(R.string.more),
-                onAction = { LocationsActivity.start(context) },
+                onAction = { LocationsLauncher.start(context) },
                 actionVisible = locations.isNotEmpty()
             )
 
@@ -198,7 +198,7 @@ fun PlaysSummaryScreen(
                         items = locations,
                         itemTitle = { it.name },
                         itemSubtitle = { context.getQuantityText(R.plurals.plays_suffix, it.playCount, it.playCount).toString() },
-                        onItemClick = { location -> LocationActivity.start(context, location.name) }
+                        onItemClick = { location -> LocationLauncher.start(context, location.name) }
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -212,7 +212,7 @@ fun PlaysSummaryScreen(
                     if (resolvedUsername.isNullOrBlank()) {
                         context.toast("Can't figure out your username.")
                     } else {
-                        com.boardgamegeek.ui.playercolors.PlayerColorsActivity.start(context, resolvedUsername, null)
+                        com.boardgamegeek.ui.playercolors.PlayerColorsLauncher.start(context, resolvedUsername, null)
                     }
                 },
                 actionVisible = true
@@ -237,7 +237,7 @@ fun PlaysSummaryScreen(
             SectionHeader(
                 title = stringResource(R.string.title_play_stats),
                 actionText = stringResource(R.string.more),
-                onAction = { PlayStatsActivity.start(context) }
+                onAction = { PlayStatsLauncher.start(context) }
             )
 
             Card(modifier = Modifier.fillMaxWidth()) {

@@ -28,7 +28,7 @@ import com.boardgamegeek.R
 import com.boardgamegeek.extensions.formatTimestamp
 import com.boardgamegeek.model.Forum
 import com.boardgamegeek.model.Status
-import com.boardgamegeek.ui.forum.ForumActivity
+import com.boardgamegeek.ui.forum.ForumLauncher
 import java.text.NumberFormat
 
 @Composable
@@ -119,7 +119,7 @@ fun ForumsScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
-                                                ForumActivity.start(
+                                                ForumLauncher.start(
                                                     context,
                                                     forum.id,
                                                     forum.title,

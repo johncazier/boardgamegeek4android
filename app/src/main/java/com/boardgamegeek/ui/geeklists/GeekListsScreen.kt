@@ -20,7 +20,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.boardgamegeek.R
 import com.boardgamegeek.model.GeekList
-import com.boardgamegeek.ui.geeklist.GeekListActivity
+import com.boardgamegeek.ui.geeklist.GeekListLauncher
 
 @Composable
 fun GeekListsScreen(
@@ -93,7 +93,7 @@ fun GeekListRow(geekList: GeekList) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                GeekListActivity.start(context, geekList.id, geekList.title)
+                GeekListLauncher.start(context, geekList.id, geekList.title)
             }
             .padding(16.dp)
     ) {

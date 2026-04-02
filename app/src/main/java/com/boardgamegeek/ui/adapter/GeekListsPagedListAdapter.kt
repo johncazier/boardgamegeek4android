@@ -9,7 +9,7 @@ import com.boardgamegeek.R
 import com.boardgamegeek.databinding.RowGeeklistBinding
 import com.boardgamegeek.model.GeekList
 import com.boardgamegeek.extensions.inflate
-import com.boardgamegeek.ui.geeklist.GeekListActivity
+import com.boardgamegeek.ui.geeklist.GeekListLauncher
 
 class GeekListsPagedListAdapter : PagingDataAdapter<GeekList, GeekListsPagedListAdapter.GeekListsViewHolder>(diffCallback) {
     companion object {
@@ -36,7 +36,7 @@ class GeekListsPagedListAdapter : PagingDataAdapter<GeekList, GeekListsPagedList
             binding.creatorView.text = geekList.username
             binding.numberOfItemsView.text = geekList.numberOfItems.toString()
             binding.numberOfThumbsView.text = geekList.numberOfThumbs.toString()
-            itemView.setOnClickListener { v -> GeekListActivity.start(v.context, geekList.id, geekList.title) }
+            itemView.setOnClickListener { v -> GeekListLauncher.start(v.context, geekList.id, geekList.title) }
         }
     }
 }

@@ -38,14 +38,14 @@ import com.boardgamegeek.R
 import com.boardgamegeek.extensions.*
 import com.boardgamegeek.model.CollectionItem
 import com.boardgamegeek.model.CollectionStatus
-import com.boardgamegeek.ui.artists.ArtistsActivity
-import com.boardgamegeek.ui.categories.CategoriesActivity
-import com.boardgamegeek.ui.designers.DesignersActivity
-import com.boardgamegeek.ui.game.GameActivity
-import com.boardgamegeek.ui.gamecollectionitem.GameCollectionItemActivity
-import com.boardgamegeek.ui.logplay.LogPlayActivity
-import com.boardgamegeek.ui.mechanics.MechanicsActivity
-import com.boardgamegeek.ui.publishers.PublishersActivity
+import com.boardgamegeek.ui.artists.ArtistsLauncher
+import com.boardgamegeek.ui.categories.CategoriesLauncher
+import com.boardgamegeek.ui.designers.DesignersLauncher
+import com.boardgamegeek.ui.game.GameLauncher
+import com.boardgamegeek.ui.gamecollectionitem.GameCollectionItemLauncher
+import com.boardgamegeek.ui.logplay.LogPlayLauncher
+import com.boardgamegeek.ui.mechanics.MechanicsLauncher
+import com.boardgamegeek.ui.publishers.PublishersLauncher
 import com.boardgamegeek.ui.startActivity
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
@@ -687,31 +687,31 @@ private fun CollectionCreditsTab() {
             CreditButton(
                 text = stringResource(R.string.title_designers),
                 icon = Icons.Filled.Edit,
-                onClick = { DesignersActivity.start(context) }
+                onClick = { DesignersLauncher.start(context) }
             )
             CreditButton(
                 text = stringResource(R.string.title_artists),
                 icon = Icons.Filled.Brush,
-                onClick = { ArtistsActivity.start(context) }
+                onClick = { ArtistsLauncher.start(context) }
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(padding)) {
             CreditButton(
                 text = stringResource(R.string.title_publishers),
                 icon = Icons.Filled.ImportContacts,
-                onClick = { PublishersActivity.start(context) }
+                onClick = { PublishersLauncher.start(context) }
             )
             CreditButton(
                 text = stringResource(R.string.title_mechanics),
                 icon = Icons.Filled.Settings,
-                onClick = { MechanicsActivity.start(context) }
+                onClick = { MechanicsLauncher.start(context) }
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(padding)) {
             CreditButton(
                 text = stringResource(R.string.title_categories),
                 icon = Icons.Filled.Category,
-                onClick = { CategoriesActivity.start(context) }
+                onClick = { CategoriesLauncher.start(context) }
             )
         }
     }
@@ -799,7 +799,7 @@ private fun CollectionShelfView(
                     menuOptions = menuOptions,
                     badge = badge?.invoke(item),
                     onClick = {
-                        GameActivity.start(
+                        GameLauncher.start(
                             context = context,
                             gameId = item.gameId,
                             gameName = item.gameName,
@@ -808,7 +808,7 @@ private fun CollectionShelfView(
                         )
                     },
                     onLongClick = {
-                        GameActivity.start(
+                        GameLauncher.start(
                             context = context,
                             gameId = item.gameId,
                             gameName = item.gameName,
@@ -1273,11 +1273,11 @@ private fun browseMenuHandler(context: android.content.Context) =
     { item: CollectionItem, menuItemId: Int ->
         when (menuItemId) {
             R.id.menu_view_game -> {
-                GameActivity.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
+                GameLauncher.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
                 true
             }
             R.id.menu_view_item -> {
-                GameCollectionItemActivity.start(context, item)
+                GameCollectionItemLauncher.start(context, item)
                 true
             }
             else -> false
@@ -1291,16 +1291,16 @@ private fun playMenuHandler(
 ) = { item: CollectionItem, menuItemId: Int ->
     when (menuItemId) {
         R.id.menu_view_game -> {
-            GameActivity.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
+            GameLauncher.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
             true
         }
         R.id.menu_view_item -> {
-            GameCollectionItemActivity.start(context, item)
+            GameCollectionItemLauncher.start(context, item)
             true
         }
         R.id.menu_play_game -> {
             when (context.preferences().logPlayPreference()) {
-                LOG_PLAY_TYPE_FORM -> LogPlayActivity.logPlay(
+                LOG_PLAY_TYPE_FORM -> LogPlayLauncher.logPlay(
                     context,
                     item.gameId,
                     item.gameName,
@@ -1317,7 +1317,7 @@ private fun playMenuHandler(
                         .setCancelable(true)
                         .show()
                 }
-                else -> LogPlayActivity.logPlay(
+                else -> LogPlayLauncher.logPlay(
                     context,
                     item.gameId,
                     item.gameName,
@@ -1356,11 +1356,11 @@ private fun acquireMenuHandler(
             true
         }
         R.id.menu_view_game -> {
-            GameActivity.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
+            GameLauncher.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
             true
         }
         R.id.menu_view_item -> {
-            GameCollectionItemActivity.start(context, item)
+            GameCollectionItemLauncher.start(context, item)
             true
         }
         R.id.menu_remove_preordered -> {
@@ -1425,11 +1425,11 @@ private fun divestMenuHandler(
             true
         }
         R.id.menu_view_game -> {
-            GameActivity.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
+            GameLauncher.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
             true
         }
         R.id.menu_view_item -> {
-            GameCollectionItemActivity.start(context, item)
+            GameCollectionItemLauncher.start(context, item)
             true
         }
         else -> false
@@ -1443,11 +1443,11 @@ private fun analyzeMenuHandler(
 ) = { item: CollectionItem, menuItemId: Int ->
     when (menuItemId) {
         R.id.menu_view_game -> {
-            GameActivity.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
+            GameLauncher.start(context, item.gameId, item.gameName, item.thumbnailUrl, item.heroImageUrl)
             true
         }
         R.id.menu_view_item -> {
-            GameCollectionItemActivity.start(context, item)
+            GameCollectionItemLauncher.start(context, item)
             true
         }
         R.id.menu_rate_item -> {

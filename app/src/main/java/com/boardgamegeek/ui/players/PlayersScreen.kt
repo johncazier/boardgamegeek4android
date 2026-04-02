@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.model.Player
-import com.boardgamegeek.ui.buddy.BuddyActivity
+import com.boardgamegeek.ui.buddy.BuddyLauncher
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -106,7 +106,7 @@ fun PlayersScreen(
                                     PlayerRow(
                                         player = player,
                                         displayText = viewModel.getDisplayText(player),
-                                        onClick = { BuddyActivity.start(it, player.username, player.name) }
+                                        onClick = { BuddyLauncher.start(it, player.username, player.name) }
                                     )
                                     HorizontalDivider()
                                 }

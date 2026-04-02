@@ -50,7 +50,7 @@ import com.boardgamegeek.extensions.showClickableAlertDialog
 import com.boardgamegeek.model.CollectionStatus
 import com.boardgamegeek.model.HIndex
 import com.boardgamegeek.model.PlayStats
-import com.boardgamegeek.ui.players.PlayersActivity
+import com.boardgamegeek.ui.players.PlayersLauncher
 import java.text.DecimalFormat
 import java.util.Locale
 
@@ -143,7 +143,7 @@ fun PlayStatsScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { PlayersActivity.startByPlayCount(context) }
+                        .clickable { PlayersLauncher.startByPlayCount(context) }
                 ) {
                     val rows = remember(playerStats) { buildHIndexRows(playerStats!!.hIndex, playerStats!!.hIndexPlayers) }
                     HIndexTable(rows = rows)

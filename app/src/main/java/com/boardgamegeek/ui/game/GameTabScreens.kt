@@ -100,18 +100,18 @@ import com.boardgamegeek.model.GameSubtype
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.model.Status
 import com.boardgamegeek.provider.BggContract
-import com.boardgamegeek.ui.comments.CommentsActivity
-import com.boardgamegeek.ui.forum.ForumActivity
-import com.boardgamegeek.ui.gamecollectionitem.GameCollectionItemActivity
-import com.boardgamegeek.ui.gamecolors.GameColorsActivity
-import com.boardgamegeek.ui.gamedetail.GameDetailActivity
-import com.boardgamegeek.ui.plays.GamePlaysActivity
-import com.boardgamegeek.ui.person.PersonActivity
-import com.boardgamegeek.ui.play.PlayActivity
+import com.boardgamegeek.ui.comments.CommentsLauncher
+import com.boardgamegeek.ui.forum.ForumLauncher
+import com.boardgamegeek.ui.gamecollectionitem.GameCollectionItemLauncher
+import com.boardgamegeek.ui.gamecolors.GameColorsLauncher
+import com.boardgamegeek.ui.gamedetail.GameDetailLauncher
+import com.boardgamegeek.ui.plays.GamePlaysLauncher
+import com.boardgamegeek.ui.person.PersonLauncher
+import com.boardgamegeek.ui.play.PlayLauncher
 import com.boardgamegeek.ui.forums.ForumsViewModel
 import com.boardgamegeek.ui.game.GameViewModel
 import com.boardgamegeek.util.XmlApiMarkupConverter
-import com.boardgamegeek.ui.playstats.GamePlayStatsActivity
+import com.boardgamegeek.ui.playstats.GamePlayStatsLauncher
 import java.text.DecimalFormat
 import java.text.NumberFormat
 
@@ -274,7 +274,7 @@ private fun GameInfoContent(
                 },
                 onClick = {
                     if (game.numberOfRatings > 0 || game.numberOfComments > 0) {
-                        CommentsActivity.startRating(context, game.id, game.name)
+                        CommentsLauncher.startRating(context, game.id, game.name)
                     }
                 }
             )
@@ -814,7 +814,7 @@ fun GameForumsTab(gameId: Int, gameName: String) {
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
-                                                ForumActivity.start(
+                                                ForumLauncher.start(
                                                     context,
                                                     forum.id,
                                                     forum.title,
@@ -949,7 +949,7 @@ private fun CreditsSection(
             }
             AssistChip(
                 onClick = {
-                    GameDetailActivity.start(
+                    GameDetailLauncher.start(
                         context,
                         sectionTitle,
                         gameId,
@@ -995,7 +995,7 @@ private fun LinkedItemsSection(
             }
             AssistChip(
                 onClick = {
-                    GameDetailActivity.start(
+                    GameDetailLauncher.start(
                         context,
                         sectionTitle,
                         gameId,
@@ -1020,9 +1020,9 @@ private fun ProducerChip(
     AssistChip(
         onClick = {
             when (type) {
-                GameViewModel.ProducerType.ARTIST -> PersonActivity.startForArtist(context, producer.id, producer.name)
-                GameViewModel.ProducerType.DESIGNER -> PersonActivity.startForDesigner(context, producer.id, producer.name)
-                GameViewModel.ProducerType.PUBLISHER -> PersonActivity.startForPublisher(context, producer.id, producer.name)
+                GameViewModel.ProducerType.ARTIST -> PersonLauncher.startForArtist(context, producer.id, producer.name)
+                GameViewModel.ProducerType.DESIGNER -> PersonLauncher.startForDesigner(context, producer.id, producer.name)
+                GameViewModel.ProducerType.PUBLISHER -> PersonLauncher.startForPublisher(context, producer.id, producer.name)
                 else -> {}
             }
         },
@@ -1045,7 +1045,7 @@ private fun ProducerChip(
 private fun LinkedItemChip(producer: GameDetail) {
     val context = LocalContext.current
     AssistChip(
-        onClick = { GameActivity.start(context, producer.id, producer.name) },
+        onClick = { GameLauncher.start(context, producer.id, producer.name) },
         label = { Text(producer.name) }
     )
 }
@@ -1082,7 +1082,7 @@ private fun CollectionItemRow(item: CollectionItem, xmlConverter: XmlApiMarkupCo
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = item.internalId != BggContract.INVALID_ID.toLong()) {
-                GameCollectionItemActivity.start(context, item)
+                GameCollectionItemLauncher.start(context, item)
             }
             .padding(12.dp)
     ) {
@@ -1247,7 +1247,7 @@ private fun PlaysSummarySection(game: Game, plays: List<Play>) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                GamePlaysActivity.start(
+                GamePlaysLauncher.start(
                     context,
                     game.id,
                     game.name,
@@ -1295,7 +1295,7 @@ private fun InProgressRow(play: Play) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { PlayActivity.start(context, play.internalId) }
+            .clickable { PlayLauncher.start(context, play.internalId) }
             .padding(vertical = 8.dp)
     ) {
         Text(text = timeText, style = MaterialTheme.typography.bodyMedium)
@@ -1311,7 +1311,7 @@ private fun LastPlaySection(plays: List<Play>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { PlayActivity.start(context, lastPlay.internalId) }
+            .clickable { PlayLauncher.start(context, lastPlay.internalId) }
             .padding(vertical = 8.dp)
     ) {
         Text(text = context.getSpannedText(R.string.last_played_prefix, lastPlay.dateForDisplay(context)).toString())
@@ -1334,7 +1334,7 @@ private fun StatsSection(game: Game, plays: List<Play>) {
         headlineContent = { Text(text = stringResource(R.string.title_play_stats)) },
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { GamePlayStatsActivity.start(context, game.id, game.name, game.iconColor) }
+            .clickable { GamePlayStatsLauncher.start(context, game.id, game.name, game.iconColor) }
     )
 }
 
@@ -1346,7 +1346,7 @@ private fun ColorsSection(game: Game, colors: List<String>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { GameColorsActivity.start(context, game.id, game.name, game.iconColor) }
+            .clickable { GameColorsLauncher.start(context, game.id, game.name, game.iconColor) }
             .padding(vertical = 8.dp)
     ) {
         Text(
