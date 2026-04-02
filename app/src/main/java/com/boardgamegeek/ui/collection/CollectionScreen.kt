@@ -59,7 +59,7 @@ fun CollectionScreen(
     val effectiveSort by viewModel.effectiveSort.collectAsState()
     val effectiveFilters by viewModel.effectiveFilters.collectAsState()
 
-    val isLoading = isRefreshing || isFiltering
+    val isLoading = collectionItems == null || isRefreshing || isFiltering
 
     val context = LocalContext.current
     val activity = remember(context) { context as? FragmentActivity }
@@ -76,7 +76,7 @@ fun CollectionScreen(
     }
 
     LaunchedEffect(collectionItems, pendingScrollToTop) {
-        if (pendingScrollToTop && collectionItems.isNotEmpty()) {
+        if (pendingScrollToTop && !collectionItems.isNullOrEmpty()) {
             listState.scrollToItem(0)
             pendingScrollToTop = false
         }
@@ -87,7 +87,7 @@ fun CollectionScreen(
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        if (collectionItems.isEmpty()) {
+        if (collectionItems.isNullOrEmpty()) {
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {
@@ -97,9 +97,10 @@ fun CollectionScreen(
                 )
             }
         } else {
+            val loadedItems = collectionItems.orEmpty()
             val sorter = effectiveSort?.first
-            val groupedItems = remember(collectionItems, sorter) {
-                collectionItems.groupBy { item ->
+            val groupedItems = remember(loadedItems, sorter) {
+                loadedItems.groupBy { item ->
                     sorter?.getHeaderText(item) ?: "-"
                 }
             }

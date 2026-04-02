@@ -134,24 +134,28 @@ class CollectionViewModel @Inject constructor(
         combined.values.filter { !currentRemovedTypes.contains(it.type) }
     }.stateInWhileSubscribed(viewModelScope, emptyList())
 
-    private val allItemsFlow: StateFlow<List<CollectionItem>> = // Renamed to avoid confusion with `items`
+    private val allItemsFlow: StateFlow<List<CollectionItem>?> = // Renamed to avoid confusion with `items`
         gameCollectionRepository.loadAllAsFlow()
             .distinctUntilChanged()
             .catch { e ->
                 errorMessageEvents.emit(Event(e.localizedMessage.ifEmpty { "Error loading collection" }))
                 emit(emptyList())
             }
-            .stateInWhileSubscribed(viewModelScope, emptyList())
+            .stateInWhileSubscribed(viewModelScope, null)
 
     val isFilteringFlow = MutableStateFlow(true)
 
     // Throttled items for UI, combines all pieces
-    val itemsFlow: StateFlow<List<CollectionItem>> = combine(
+    val itemsFlow: StateFlow<List<CollectionItem>?> = combine(
         allItemsFlow,
         effectiveFilters,
         effectiveSort,
         selectedViewId // To re-trigger filtering for default view logic
     ) { itemList, filters, sortPair, currentViewId ->
+        if (itemList == null) {
+            return@combine null
+        }
+
         isFilteringFlow.value = true // Indicate filtering starts
         if (itemList.isEmpty() && filters.isEmpty() && sortPair == null) {
             isFilteringFlow.value = false
@@ -175,7 +179,7 @@ class CollectionViewModel @Inject constructor(
     }
         .debounce(300)
         .distinctUntilChanged()
-        .stateInWhileSubscribed(viewModelScope, emptyList())
+        .stateInWhileSubscribed(viewModelScope, null)
 
 
     // --- Event Flows (using SharedFlow for one-time events) ---
