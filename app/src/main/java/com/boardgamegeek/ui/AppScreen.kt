@@ -52,7 +52,6 @@ import com.boardgamegeek.ui.navigation.SearchRoute
 import com.boardgamegeek.ui.navigation.SettingsRoute
 import com.boardgamegeek.ui.navigation.SyncRoute
 import com.boardgamegeek.ui.navigation.TopGamesRoute
-import com.boardgamegeek.ui.theme.AppTheme
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,9 +70,8 @@ fun AppScreen(
 ) {
     val navigator = LocalAppNavigator.current
 
-    AppTheme {
-        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-        val scope = rememberCoroutineScope()
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
         ModalNavigationDrawer(
             drawerState = drawerState,
@@ -229,7 +227,6 @@ fun AppScreen(
                 content(paddingValues)
             }
         }
-    }
 }
 
 object DrawerRoute {

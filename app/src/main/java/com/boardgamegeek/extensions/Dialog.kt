@@ -44,7 +44,7 @@ fun Activity.createDiscardDialog(
 }
 
 fun Context.createThemedBuilder(): AlertDialog.Builder {
-    return MaterialAlertDialogBuilder(this, R.style.Theme_bgglight_Dialog_Alert)
+    return MaterialAlertDialogBuilder(this, R.style.Theme_Bgg_Dialog_Alert)
 }
 
 fun Context.showClickableAlertDialog(@StringRes titleResId: Int, message: String) {

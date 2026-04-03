@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
     private var platformLoginHandler by mutableStateOf<((String) -> Unit)?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(com.boardgamegeek.R.style.Theme_bgglight)
+        setTheme(com.boardgamegeek.R.style.Theme_Bgg)
         super.onCreate(savedInstanceState)
         updatePlatformLoginHandler(intent)
         val initialNavigation = readIntentRoute(intent)

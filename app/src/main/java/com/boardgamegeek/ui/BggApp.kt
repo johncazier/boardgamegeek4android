@@ -107,6 +107,7 @@ import com.boardgamegeek.ui.publishers.PublishersRouteScreen
 import com.boardgamegeek.ui.search.SearchRouteScreen
 import com.boardgamegeek.ui.settings.SettingsRouteScreen
 import com.boardgamegeek.ui.sync.SyncRouteScreen
+import com.boardgamegeek.ui.theme.AppTheme
 import com.boardgamegeek.ui.thread.ThreadRouteScreen
 import com.boardgamegeek.ui.topgames.TopGamesRouteScreen
 
@@ -118,10 +119,11 @@ fun BggApp(
     onExternalRouteConsumed: () -> Unit,
     onLoginSuccess: ((String) -> Unit)? = null,
 ) {
-    val backStack = rememberNavBackStack(initialRoute)
-    val navigator = remember(backStack) { BackStackAppNavigator(backStack) }
-    val routeResultCoordinator = rememberRouteResultCoordinator()
-    val entries = entryProvider<NavKey> {
+    AppTheme {
+        val backStack = rememberNavBackStack(initialRoute)
+        val navigator = remember(backStack) { BackStackAppNavigator(backStack) }
+        val routeResultCoordinator = rememberRouteResultCoordinator()
+        val entries = entryProvider<NavKey> {
         entry<CollectionRoute> {
             CollectionRouteScreen(route = it)
         }
@@ -266,46 +268,47 @@ fun BggApp(
         entry<GeekListItemRoute> {
             GeekListItemRouteScreen(route = it)
         }
-    }
-
-    LaunchedEffect(pendingExternalRoute, pendingExternalRouteShouldReplace) {
-        pendingExternalRoute?.let {
-            if (pendingExternalRouteShouldReplace) {
-                navigator.replace(it)
-            } else {
-                navigator.navigate(it)
-            }
-            onExternalRouteConsumed()
         }
-    }
 
-    androidx.compose.runtime.CompositionLocalProvider(
-        LocalAppNavigator provides navigator,
-        LocalRouteResultCoordinator provides routeResultCoordinator,
-    ) {
-        NavDisplay(
-            backStack = backStack,
-            entryProvider = entries,
-            onBack = { navigator.popBackStack() },
-            transitionSpec = {
-                ContentTransform(
-                    targetContentEnter = EnterTransition.None,
-                    initialContentExit = ExitTransition.None,
-                )
-            },
-            popTransitionSpec = {
-                ContentTransform(
-                    targetContentEnter = EnterTransition.None,
-                    initialContentExit = ExitTransition.None,
-                )
-            },
-            predictivePopTransitionSpec = {
-                ContentTransform(
-                    targetContentEnter = EnterTransition.None,
-                    initialContentExit = ExitTransition.None,
-                )
-            },
-        )
+        LaunchedEffect(pendingExternalRoute, pendingExternalRouteShouldReplace) {
+            pendingExternalRoute?.let {
+                if (pendingExternalRouteShouldReplace) {
+                    navigator.replace(it)
+                } else {
+                    navigator.navigate(it)
+                }
+                onExternalRouteConsumed()
+            }
+        }
+
+        androidx.compose.runtime.CompositionLocalProvider(
+            LocalAppNavigator provides navigator,
+            LocalRouteResultCoordinator provides routeResultCoordinator,
+        ) {
+            NavDisplay(
+                backStack = backStack,
+                entryProvider = entries,
+                onBack = { navigator.popBackStack() },
+                transitionSpec = {
+                    ContentTransform(
+                        targetContentEnter = EnterTransition.None,
+                        initialContentExit = ExitTransition.None,
+                    )
+                },
+                popTransitionSpec = {
+                    ContentTransform(
+                        targetContentEnter = EnterTransition.None,
+                        initialContentExit = ExitTransition.None,
+                    )
+                },
+                predictivePopTransitionSpec = {
+                    ContentTransform(
+                        targetContentEnter = EnterTransition.None,
+                        initialContentExit = ExitTransition.None,
+                    )
+                },
+            )
+        }
     }
 }
 

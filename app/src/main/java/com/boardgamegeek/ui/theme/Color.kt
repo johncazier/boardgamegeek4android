@@ -129,7 +129,7 @@ val onErrorContainerDark = Color(0xFFFFDAD6)
 val backgroundDark = Color(0xFF131318)
 val onBackgroundDark = Color(0xFFE4E1E9)
 val surfaceDark = Color(0xFF131318)
-val onSurfaceDark = Color(0xFFE4E1E9)
+val onSurfaceDark = Color(0xFFD7D4DC)
 val surfaceVariantDark = Color(0xFF46464F)
 val onSurfaceVariantDark = Color(0xFFC7C5D0)
 val outlineDark = Color(0xFF91909A)
@@ -217,7 +217,6 @@ val surfaceContainerLowDarkHighContrast = Color(0xFF1F1F25)
 val surfaceContainerDarkHighContrast = Color(0xFF303036)
 val surfaceContainerHighDarkHighContrast = Color(0xFF3B3B41)
 val surfaceContainerHighestDarkHighContrast = Color(0xFF47464C)
-
 
 
 

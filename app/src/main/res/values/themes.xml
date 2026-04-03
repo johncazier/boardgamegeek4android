@@ -1,51 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-	<style name="SplashTheme" parent="Theme.MaterialComponents.NoActionBar">
+	<style name="Theme.Bgg.Splash" parent="Theme.Material3.DayNight.NoActionBar">
 		<item name="android:windowBackground">@drawable/background_splash</item>
 	</style>
 
-	<style name="Theme.bgglight" parent="Theme.bgglight.Base">
-		<item name="colorPrimary">@color/primary</item>
-		<item name="colorPrimaryDark">@color/primary_dark</item>
-		<item name="colorAccent">@color/accent</item>
-		<item name="windowActionModeOverlay">true</item>
-		<item name="actionModeBackground">@color/primary</item>
-		<item name="actionBarTheme">@style/ThemeOverlay.MaterialComponents.Dark.ActionBar</item>
-		<item name="actionBarPopupTheme">@style/ThemeOverlay.MaterialComponents.Light</item>
-		<item name="bottomSheetDialogTheme">@style/ModalBottomSheetDialog</item>
-		<item name="android:windowTranslucentStatus">true</item>
+	<style name="Theme.Bgg" parent="Theme.Material3.DayNight.NoActionBar">
+		<item name="materialAlertDialogTheme">@style/Theme.Bgg.Dialog.Alert</item>
 	</style>
 
-	<style name="Theme.bgglight.Base" parent="@style/Theme.MaterialComponents.Light.NoActionBar"/>
-
-	<style name="Theme.bgglight.About">
-		<item name="drawerArrowStyle">@style/MyDrawerArrowStyle</item>
-		<item name="colorControlNormal">@android:color/white</item>
-	</style>
-
-	<style name="MyDrawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">
-		<item name="spinBars">false</item>
-		<item name="color">@android:color/white</item>
-	</style>
-
-	<style name="Theme.bgglight.Dialog" parent="@style/Theme.MaterialComponents.Light.Dialog">
-		<item name="android:windowNoTitle">false</item>
-		<item name="colorPrimary">@color/primary</item>
-		<item name="colorPrimaryDark">@color/primary_dark</item>
-		<item name="colorAccent">@color/accent</item>
-	</style>
-
-	<style name="Theme.bgglight.Dialog.Alert" parent="@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+	<style name="Theme.Bgg.Dialog.Alert" parent="@style/ThemeOverlay.Material3.MaterialAlertDialog">
 		<item name="android:windowNoTitle">true</item>
-		<item name="colorPrimary">@color/primary</item>
-		<item name="colorPrimaryDark">@color/primary_dark</item>
-		<item name="colorAccent">@color/accent</item>
 		<item name="materialAlertDialogTitleTextStyle">@style/MaterialAlertDialog.App.Title.Text</item>
-	</style>
-
-	<style name="Theme.bgglight.Dialog.NoTitle">
-		<item name="android:windowNoTitle">true</item>
 	</style>
 
 </resources>
