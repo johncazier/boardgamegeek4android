@@ -55,7 +55,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -438,7 +437,7 @@ private fun PlayerRow(
     val playerColor = player.color.asColorRgb()
     val circleColor = if (playerColor != Color.TRANSPARENT) ComposeColor(playerColor) else ComposeColor.Transparent
     val circleTextColor = if (playerColor != Color.TRANSPARENT) ComposeColor(playerColor.getTextColor()) else MaterialTheme.colorScheme.onSurface
-    val iconTint = colorResource(R.color.button_under_text)
+    val iconTint = MaterialTheme.colorScheme.onSurfaceVariant
     val ratingText = if (player.rating == 0.0) "" else player.rating.asBoundedRating(context, format = DecimalFormat("0.0######"))
     val scoreText = player.numericScore?.asScore(context) ?: player.score
 

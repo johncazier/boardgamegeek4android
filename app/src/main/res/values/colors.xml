@@ -11,10 +11,6 @@
 	<color name="accent">@color/orange</color>
 	<color name="info_background">@color/light_blue</color>
 
-	<color name="dialog_text">#000</color>
-	<color name="primary_text">#de000000</color>
-	<color name="secondary_text">#99000000</color>
-	<color name="disabled_text">#61000000</color>
 	<color name="inverse_text">#ffffff</color>
 	<color name="inverse_secondary_text">#b3ffffff</color>
 
@@ -29,8 +25,6 @@
 	<color name="not_recommended">#ed1C24</color>
 
 	<color name="list_divider">#1F000000</color>
-	<color name="button_under_text">#2000</color>
-
 	<color name="score_low">#f00</color>
 	<color name="score_average">#cc0</color>
 	<color name="score_average_win">#00f</color>

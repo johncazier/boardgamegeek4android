@@ -14,6 +14,7 @@ import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.significantDigits
+import com.google.android.material.color.MaterialColors
 import java.text.DecimalFormat
 import kotlin.math.ceil
 
@@ -68,12 +69,12 @@ class ScoreGraphView @JvmOverloads constructor(
 
     init {
         val isDarkTheme = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-        barPaint.color = if (isDarkTheme) Color.WHITE else Color.DKGRAY
+        barPaint.color = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOutline, if (isDarkTheme) Color.WHITE else Color.DKGRAY)
         barPaint.strokeWidth = 1f
 
         scorePaint.strokeWidth = SCORE_STROKE_WIDTH.toFloat()
 
-        textPaint.color = if (isDarkTheme) Color.LTGRAY else ContextCompat.getColor(getContext(), R.color.secondary_text)
+        textPaint.color = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant, if (isDarkTheme) Color.LTGRAY else Color.DKGRAY)
         textPaint.textSize = TypedValue.applyDimension(COMPLEX_UNIT_SP, 8f, getContext().resources.displayMetrics)
 
         scoreRadius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6f, context.resources.displayMetrics)

@@ -1,8 +1,5 @@
 package com.boardgamegeek.ui.search
 
-import android.app.SearchManager
-import android.content.Context
-import androidx.appcompat.widget.SearchView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -14,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -28,6 +27,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -39,11 +40,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.auth.Authenticator
@@ -135,7 +137,7 @@ fun SearchResultsScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    AndroidSearchView(
+                    SearchQueryField(
                         queryText = searchText,
                         onQueryChange = {
                             searchText = it
@@ -144,8 +146,7 @@ fun SearchResultsScreen(
                         onQuerySubmit = {
                             searchText = it
                             onSearchSubmit(it)
-                        },
-                        onClose = onBack
+                        }
                     )
                 },
                 navigationIcon = {
@@ -335,45 +336,35 @@ private fun SearchResultRow(
 }
 
 @Composable
-private fun AndroidSearchView(
+private fun SearchQueryField(
     queryText: String,
     onQueryChange: (String) -> Unit,
     onQuerySubmit: (String) -> Unit,
-    onClose: () -> Unit,
 ) {
-    val context = LocalContext.current
-    AndroidView(
-        factory = { ctx ->
-            SearchView(ctx).apply {
-                val searchManager = ctx.getSystemService(Context.SEARCH_SERVICE) as? SearchManager
-                setSearchableInfo(searchManager?.getSearchableInfo((ctx as? androidx.activity.ComponentActivity)?.componentName))
-                isIconified = false
-                setOnCloseListener {
-                    onClose()
-                    true
-                }
-                setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                    override fun onQueryTextSubmit(query: String?): Boolean {
-                        if (query != null && query.length > 1) {
-                            onQuerySubmit(query)
-                        }
-                        clearFocus()
-                        return true
-                    }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
-                    override fun onQueryTextChange(newText: String?): Boolean {
-                        onQueryChange(newText.orEmpty())
-                        return true
-                    }
-                })
+    TextField(
+        value = queryText,
+        onValueChange = onQueryChange,
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        textStyle = MaterialTheme.typography.bodyLarge,
+        placeholder = { Text(stringResource(R.string.menu_search)) },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(
+            onSearch = {
+                val query = queryText.trim()
+                if (query.length > 1) {
+                    onQuerySubmit(query)
+                }
+                keyboardController?.hide()
             }
-        },
-        update = { view ->
-            if (view.query.toString() != queryText) {
-                view.setQuery(queryText, false)
-            }
-        },
-        modifier = Modifier.fillMaxWidth()
+        ),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        ),
     )
 }
 

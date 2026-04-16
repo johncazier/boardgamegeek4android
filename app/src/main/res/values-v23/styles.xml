@@ -2,8 +2,8 @@
 <resources>
 
 	<style name="TextWithImage.Secondary">
-		<item name="android:drawableTint">@color/secondary_text</item>
+		<item name="android:drawableTint">?attr/colorOnSurfaceVariant</item>
 		<item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Caption</item>
-		<item name="android:textColor">@color/secondary_text</item>
+		<item name="android:textColor">?attr/colorOnSurfaceVariant</item>
 	</style>
 </resources>
