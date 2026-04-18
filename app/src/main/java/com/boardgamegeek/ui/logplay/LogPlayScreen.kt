@@ -26,6 +26,7 @@ import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
@@ -43,9 +44,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -133,6 +138,7 @@ fun LogPlayScreen(
     onScorePlayer: (Int) -> Unit,
     onRatingPlayer: (Int) -> Unit,
     onColorPlayer: (Int) -> Unit,
+    onRemovePlayer: (PlayPlayer) -> Unit,
     onToggleWin: (Int, Boolean) -> Unit,
     onToggleNew: (Int, Boolean) -> Unit,
 ) {
@@ -385,15 +391,19 @@ fun LogPlayScreen(
                             .height((players.size * 80).coerceAtLeast(80).dp),
                     ) {
                         itemsIndexed(players, key = { _, player -> player.uiId }) { index, player ->
-                            PlayerRow(
-                                player = player,
-                                onEdit = { onEditPlayer(index) },
-                                onScore = { onScorePlayer(index) },
-                                onRating = { onRatingPlayer(index) },
-                                onColor = { onColorPlayer(index) },
-                                onToggleWin = { onToggleWin(index, it) },
-                                onToggleNew = { onToggleNew(index, it) },
-                            )
+                            SwipeToRemovePlayerRow(
+                                onRemove = { onRemovePlayer(player) },
+                            ) {
+                                PlayerRow(
+                                    player = player,
+                                    onEdit = { onEditPlayer(index) },
+                                    onScore = { onScorePlayer(index) },
+                                    onRating = { onRatingPlayer(index) },
+                                    onColor = { onColorPlayer(index) },
+                                    onToggleWin = { onToggleWin(index, it) },
+                                    onToggleNew = { onToggleNew(index, it) },
+                                )
+                            }
                             HorizontalDivider()
                         }
                     }
@@ -411,6 +421,59 @@ fun LogPlayScreen(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeToRemovePlayerRow(
+    onRemove: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    val dismissState = rememberSwipeToDismissBoxState()
+
+    LaunchedEffect(dismissState.currentValue) {
+        if (dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
+            onRemove()
+        }
+    }
+
+    val backgroundColor = if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) {
+        ComposeColor.Transparent
+    } else {
+        MaterialTheme.colorScheme.errorContainer
+    }
+    val contentColor = MaterialTheme.colorScheme.onErrorContainer
+    val alignment = when (dismissState.targetValue) {
+        SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+        SwipeToDismissBoxValue.EndToStart,
+        SwipeToDismissBoxValue.Settled -> Alignment.CenterEnd
+    }
+
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(backgroundColor)
+                    .padding(horizontal = 24.dp),
+                contentAlignment = alignment,
+            ) {
+                if (dismissState.targetValue != SwipeToDismissBoxValue.Settled) {
+                    Icon(
+                        Icons.Filled.Delete,
+                        contentDescription = stringResource(R.string.remove),
+                        tint = contentColor,
+                    )
+                }
+            }
+        },
+        content = {
+            Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
+                content()
+            }
+        },
+    )
 }
 
 @Composable
@@ -491,11 +554,11 @@ private fun PlayerRow(
         IconValueButton(
             onClick = onRating,
             contentDescription = stringResource(R.string.rating),
-            icon = {
+            icon = { hasValue ->
                 Icon(
                     Icons.Filled.Star,
                     contentDescription = null,
-                    tint = iconTint,
+                    tint = iconTint.copy(alpha = if (hasValue) 0.28f else 1f),
                 )
             },
             value = ratingText,
@@ -503,11 +566,11 @@ private fun PlayerRow(
         IconValueButton(
             onClick = onScore,
             contentDescription = stringResource(R.string.score),
-            icon = {
+            icon = { hasValue ->
                 Icon(
                     Icons.Filled.EmojiEvents,
                     contentDescription = null,
-                    tint = iconTint,
+                    tint = iconTint.copy(alpha = if (hasValue) 0.28f else 1f),
                 )
             },
             value = scoreText,
@@ -546,18 +609,21 @@ private fun PlayerRow(
 private fun IconValueButton(
     onClick: () -> Unit,
     contentDescription: String,
-    icon: @Composable () -> Unit,
+    icon: @Composable (Boolean) -> Unit,
     value: String,
 ) {
     IconButton(onClick = onClick) {
         Box(contentAlignment = Alignment.Center) {
-            icon()
+            icon(value.isNotBlank())
             if (value.isNotBlank()) {
                 Text(
                     text = value,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.92f), CircleShape)
+                        .padding(horizontal = 3.dp, vertical = 1.dp),
                 )
             }
         }
