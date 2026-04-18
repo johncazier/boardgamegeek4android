@@ -357,10 +357,22 @@ private fun PlayPlayerRow(player: PlayPlayer) {
     val context = LocalContext.current
     val navigator = LocalAppNavigator.current
     val seatColor = remember(player.color) { player.color.asColorRgb() }
+    val hasSeatColor = seatColor != android.graphics.Color.TRANSPARENT
+    val hasSeat = player.seat != PlayPlayer.SEAT_UNKNOWN
+    val rowBackgroundColor = if (player.isWin) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
+    val primaryTextColor = if (player.isWin) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
+    val secondaryTextColor = if (player.isWin) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+    val seatBackgroundColor = when {
+        hasSeatColor -> Color(seatColor)
+        hasSeat -> MaterialTheme.colorScheme.surfaceVariant
+        else -> Color.Transparent
+    }
+    val seatTextColor = if (hasSeatColor) Color(seatColor.getTextColor()) else MaterialTheme.colorScheme.onSurfaceVariant
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .background(rowBackgroundColor)
             .clickable(enabled = player.username.isNotBlank()) {
                 navigator.navigate(BuddyRoute(player.username, player.name))
             }
@@ -371,14 +383,15 @@ private fun PlayPlayerRow(player: PlayPlayer) {
             modifier = Modifier
                 .size(32.dp)
                 .clip(MaterialTheme.shapes.small)
-                .background(if (seatColor == android.graphics.Color.TRANSPARENT) Color.Transparent else Color(seatColor)),
+                .background(seatBackgroundColor),
             contentAlignment = Alignment.Center,
         ) {
-            if (player.seat != PlayPlayer.SEAT_UNKNOWN) {
+            if (hasSeat) {
                 Text(
                     text = player.startingPosition,
-                    color = Color(seatColor.getTextColor()),
+                    color = seatTextColor,
                     style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
                 )
             }
         }
@@ -401,6 +414,7 @@ private fun PlayPlayerRow(player: PlayPlayer) {
             Text(
                 text = name,
                 style = MaterialTheme.typography.bodyLarge,
+                color = primaryTextColor,
                 fontWeight = if (player.isWin) FontWeight.Bold else FontWeight.Normal,
             )
 
@@ -408,15 +422,24 @@ private fun PlayPlayerRow(player: PlayPlayer) {
                 Text(
                     text = player.username,
                     style = MaterialTheme.typography.bodySmall,
+                    color = secondaryTextColor,
                 )
             }
 
-            if (seatColor == android.graphics.Color.TRANSPARENT && player.color.isNotBlank()) {
-                Text(text = player.color, style = MaterialTheme.typography.bodySmall)
+            if (!hasSeatColor && player.color.isNotBlank()) {
+                Text(
+                    text = player.color,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = secondaryTextColor,
+                )
             }
 
             if (player.seat == PlayPlayer.SEAT_UNKNOWN && player.startingPosition.isNotBlank()) {
-                Text(text = player.startingPosition, style = MaterialTheme.typography.bodySmall)
+                Text(
+                    text = player.startingPosition,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = secondaryTextColor,
+                )
             }
         }
 
@@ -424,6 +447,7 @@ private fun PlayPlayerRow(player: PlayPlayer) {
             Text(
                 text = player.rating.asPersonalRating(context),
                 style = MaterialTheme.typography.bodyMedium,
+                color = primaryTextColor,
                 modifier = Modifier.padding(start = 8.dp),
             )
         }
@@ -433,8 +457,20 @@ private fun PlayPlayerRow(player: PlayPlayer) {
             Text(
                 text = scoreText,
                 style = MaterialTheme.typography.bodyMedium,
+                color = primaryTextColor,
                 fontWeight = if (player.isWin) FontWeight.Bold else FontWeight.Normal,
                 modifier = Modifier.padding(start = 8.dp),
+            )
+        }
+
+        if (player.isWin) {
+            Icon(
+                painter = painterResource(R.drawable.ic_baseline_emoji_events_24),
+                contentDescription = stringResource(R.string.win),
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .size(20.dp),
             )
         }
     }
