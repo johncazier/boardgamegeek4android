@@ -724,6 +724,7 @@ fun LogPlayRouteScreen(
             onScorePlayer = { showScoreDialog(it) },
             onRatingPlayer = { showRatingDialog(it) },
             onColorPlayer = { showColorDialog(it) },
+            onRemovePlayer = { viewModel.removePlayer(it) },
             onToggleWin = { index, isWin -> viewModel.win(isWin, index) },
             onToggleNew = { index, isNew -> viewModel.new(isNew, index) },
         )
