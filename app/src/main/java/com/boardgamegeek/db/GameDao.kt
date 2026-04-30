@@ -124,6 +124,19 @@ interface GameDao {
     @Query("SELECT game_id, game_name FROM games WHERE (updated = 0 OR updated IS NULL) ORDER BY updated_list ASC LIMIT :gamesPerFetch")
     suspend fun loadUnupdatedGames(gamesPerFetch: Int): List<GameIdAndName>
 
+    @Query(
+        """
+        SELECT game_id, game_name, year_published
+        FROM games
+        WHERE updated > 0
+            AND (game_name LIKE :prefix || '%'
+                OR game_name LIKE '% ' || :prefix || '%')
+        ORDER BY game_sort_name COLLATE NOCASE
+        LIMIT :limit
+        """
+    )
+    suspend fun loadSearchSuggestions(prefix: String, limit: Int): List<GameSearchSuggestion>
+
     @Query("SELECT games.game_id, game_name FROM games LEFT OUTER JOIN collection ON games.game_id = collection.game_id WHERE collection_id IS NULL AND last_viewed < :sinceTimestamp ORDER BY games.updated")
     suspend fun loadNonCollectionGamesByLastViewed(sinceTimestamp: Long): List<GameIdAndName>
 

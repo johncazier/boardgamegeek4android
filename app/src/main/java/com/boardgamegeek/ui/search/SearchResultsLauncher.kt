@@ -18,12 +18,15 @@ fun SearchRouteScreen(
         SearchResultsScreen(
             viewModel = viewModel,
             initialQuery = initialQuery,
-            onQueryChange = {},
+            onQueryChange = viewModel::updateSearchSuggestions,
             onBack = { navigator.popBackStackOrFinish(context) },
             onSearchSubmit = { query ->
                 if (query.length > 1) {
                     viewModel.search(query)
                 }
+            },
+            onSuggestionOpen = { suggestion ->
+                navigator.navigate(GameRoute(gameId = suggestion.gameId, gameName = suggestion.gameName))
             },
             onGameOpen = { result ->
                 navigator.navigate(GameRoute(gameId = result.id, gameName = result.name))

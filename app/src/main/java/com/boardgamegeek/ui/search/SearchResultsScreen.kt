@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -41,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.font.FontStyle
@@ -49,11 +51,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.auth.Authenticator
+import com.boardgamegeek.db.model.GameSearchSuggestion
 import com.boardgamegeek.extensions.asYear
 import com.boardgamegeek.extensions.linkBgg
 import com.boardgamegeek.extensions.notifyLoggedPlay
 import com.boardgamegeek.extensions.shareGame
 import com.boardgamegeek.extensions.shareGames
+import com.boardgamegeek.model.Game
 import com.boardgamegeek.model.SearchResult
 import com.boardgamegeek.model.Status
 import com.boardgamegeek.ui.logplay.LogPlayLauncher
@@ -68,20 +72,35 @@ fun SearchResultsScreen(
     onQueryChange: (String) -> Unit,
     onBack: () -> Unit,
     onSearchSubmit: (String) -> Unit,
+    onSuggestionOpen: (GameSearchSuggestion) -> Unit,
     onGameOpen: (SearchResult) -> Unit,
 ) {
     val context = LocalContext.current
     val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
+    val searchSuggestions by viewModel.searchSuggestions.collectAsStateWithLifecycle()
     val queryState by viewModel.query.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val firebaseAnalytics = remember { FirebaseAnalytics.getInstance(context) }
+    val snackbarCount = if (searchResults?.status == Status.SUCCESS && queryState?.first?.isNotBlank() == true) {
+        searchResults?.data?.size ?: 0
+    } else {
+        null
+    }
+    val snackbarMessage = snackbarCount?.let { count ->
+        val query = queryState ?: return@let null
+        val messageId = if (query.second) R.plurals.search_results_exact else R.plurals.search_results
+        pluralStringResource(messageId, count, count, query.first)
+    }
+    val snackbarActionLabel = if (snackbarMessage != null && queryState?.second == true) stringResource(R.string.more) else null
     var searchText by remember { mutableStateOf(initialQuery) }
     var selectedIds by remember { mutableStateOf(emptySet<Int>()) }
     var showSelectionMenu by remember { mutableStateOf(false) }
+    var showSuggestions by remember { mutableStateOf(false) }
 
     LaunchedEffect(initialQuery) {
         if (initialQuery.isNotBlank() && searchText != initialQuery) {
             searchText = initialQuery
+            viewModel.updateSearchSuggestions(initialQuery)
         }
     }
 
@@ -99,7 +118,7 @@ fun SearchResultsScreen(
         }
     }
 
-    LaunchedEffect(searchResults, queryState) {
+    LaunchedEffect(searchResults, queryState, snackbarMessage, snackbarActionLabel) {
         val result = searchResults ?: return@LaunchedEffect
         if (result.status != Status.SUCCESS) return@LaunchedEffect
         val query = queryState ?: return@LaunchedEffect
@@ -108,14 +127,11 @@ fun SearchResultsScreen(
             return@LaunchedEffect
         }
 
-        val count = result.data?.size ?: 0
-        val messageId = if (query.second) R.plurals.search_results_exact else R.plurals.search_results
-        val message = context.resources.getQuantityString(messageId, count, count, query.first)
-        val actionLabel = if (query.second) context.getString(R.string.more) else null
+        val message = snackbarMessage ?: return@LaunchedEffect
 
         val snackbarResult = snackbarHostState.showSnackbar(
             message = message,
-            actionLabel = actionLabel,
+            actionLabel = snackbarActionLabel,
             duration = SnackbarDuration.Indefinite
         )
         if (snackbarResult == androidx.compose.material3.SnackbarResult.ActionPerformed && query.second) {
@@ -139,13 +155,26 @@ fun SearchResultsScreen(
                 title = {
                     SearchQueryField(
                         queryText = searchText,
+                        suggestions = searchSuggestions,
+                        expanded = showSuggestions && searchSuggestions.isNotEmpty(),
                         onQueryChange = {
                             searchText = it
                             onQueryChange(it)
+                            showSuggestions = it.isNotBlank()
                         },
                         onQuerySubmit = {
                             searchText = it
+                            showSuggestions = false
                             onSearchSubmit(it)
+                        },
+                        onSuggestionOpen = {
+                            showSuggestions = false
+                            searchText = it.gameName
+                            onQueryChange("")
+                            onSuggestionOpen(it)
+                        },
+                        onDismissSuggestions = {
+                            showSuggestions = false
                         }
                     )
                 },
@@ -327,7 +356,7 @@ private fun SearchResultRow(
                 style = MaterialTheme.typography.labelMedium
             )
             Text(
-                text = context.getString(R.string.id_list_text, result.id.toString()),
+                text = stringResource(R.string.id_list_text, result.id.toString()),
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.padding(start = 12.dp)
             )
@@ -338,34 +367,67 @@ private fun SearchResultRow(
 @Composable
 private fun SearchQueryField(
     queryText: String,
+    suggestions: List<GameSearchSuggestion>,
+    expanded: Boolean,
     onQueryChange: (String) -> Unit,
     onQuerySubmit: (String) -> Unit,
+    onSuggestionOpen: (GameSearchSuggestion) -> Unit,
+    onDismissSuggestions: () -> Unit,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    TextField(
-        value = queryText,
-        onValueChange = onQueryChange,
-        modifier = Modifier.fillMaxWidth(),
-        singleLine = true,
-        textStyle = MaterialTheme.typography.bodyLarge,
-        placeholder = { Text(stringResource(R.string.menu_search)) },
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-        keyboardActions = KeyboardActions(
-            onSearch = {
-                val query = queryText.trim()
-                if (query.length > 1) {
-                    onQuerySubmit(query)
+    Box(modifier = Modifier.fillMaxWidth()) {
+        TextField(
+            value = queryText,
+            onValueChange = onQueryChange,
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            textStyle = MaterialTheme.typography.bodyLarge,
+            placeholder = { Text(stringResource(R.string.menu_search)) },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    val query = queryText.trim()
+                    if (query.length > 1) {
+                        onQuerySubmit(query)
+                    }
+                    keyboardController?.hide()
                 }
-                keyboardController?.hide()
+            ),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ),
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = onDismissSuggestions,
+            modifier = Modifier.widthIn(min = 280.dp)
+        ) {
+            suggestions.forEach { suggestion ->
+                DropdownMenuItem(
+                    text = {
+                        Column {
+                            Text(
+                                text = suggestion.gameName,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Text(
+                                text = (suggestion.yearPublished ?: Game.YEAR_UNKNOWN).asYear(LocalContext.current),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                    },
+                    onClick = {
+                        keyboardController?.hide()
+                        onSuggestionOpen(suggestion)
+                    }
+                )
             }
-        ),
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        ),
-    )
+        }
+    }
 }
 
 @Composable
