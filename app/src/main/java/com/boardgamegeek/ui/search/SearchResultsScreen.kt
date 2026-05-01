@@ -48,6 +48,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.boardgamegeek.R
 import com.boardgamegeek.auth.Authenticator
@@ -403,6 +404,7 @@ private fun SearchQueryField(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = onDismissSuggestions,
+            properties = PopupProperties(focusable = false),
             modifier = Modifier.widthIn(min = 280.dp)
         ) {
             suggestions.forEach { suggestion ->
