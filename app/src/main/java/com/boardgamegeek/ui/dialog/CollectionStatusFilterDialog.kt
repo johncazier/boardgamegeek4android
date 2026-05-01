@@ -12,7 +12,10 @@ class CollectionStatusFilterDialog : CollectionFilterDialog {
     override fun createDialog(activity: FragmentActivity, filter: CollectionFilterer?) {
         val viewModel = activity.collectionFilterViewModelBridge()
         val statusEntries = activity.resources.getStringArray(R.array.collection_status_filter_entries)
-        val selectedStatuses = (filter as CollectionStatusFilterer?)?.selectedStatuses ?: BooleanArray(statusEntries.size)
+        val selectedStatuses = BooleanArray(statusEntries.size).also { values ->
+            (filter as CollectionStatusFilterer?)?.selectedStatuses
+                ?.copyInto(values, endIndex = minOf(filter.selectedStatuses.size, values.size))
+        }
 
         activity.createThemedBuilder()
             .setTitle(R.string.menu_collection_status)

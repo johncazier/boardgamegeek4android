@@ -3,6 +3,7 @@ package com.boardgamegeek.ui.collection
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
+import androidx.fragment.app.FragmentActivity
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -23,6 +24,8 @@ import com.boardgamegeek.model.CollectionView
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.AppScreen
 import com.boardgamegeek.ui.MainActivity
+import com.boardgamegeek.ui.dialog.registerCollectionFilterViewModel
+import com.boardgamegeek.ui.dialog.unregisterCollectionFilterViewModel
 import com.boardgamegeek.ui.navigation.*
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
@@ -61,6 +64,7 @@ fun CollectionRouteScreen(
 ) {
     val navigator = LocalAppNavigator.current
     val context = LocalContext.current
+    val activity = remember(context) { context as? FragmentActivity }
     val firebaseAnalytics = remember(context) { FirebaseAnalytics.getInstance(context) }
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -72,6 +76,13 @@ fun CollectionRouteScreen(
         CollectionViewPrefs.DEFAULT_DEFAULT_ID
     } else {
         route.initialViewId.takeUnless { it == 0 }
+    }
+
+    DisposableEffect(activity, viewModel) {
+        activity?.registerCollectionFilterViewModel(viewModel)
+        onDispose {
+            activity?.unregisterCollectionFilterViewModel(viewModel)
+        }
     }
 
     LaunchedEffect(route, initialViewId) {

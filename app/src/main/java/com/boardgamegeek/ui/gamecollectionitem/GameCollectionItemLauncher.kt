@@ -1,6 +1,7 @@
 package com.boardgamegeek.ui.gamecollectionitem
 
 import android.content.Context
+import android.text.format.DateUtils
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,8 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -32,6 +35,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,8 +53,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.asWishListPriority
+import com.boardgamegeek.extensions.formatDateTime
 import com.boardgamegeek.extensions.formatTimestamp
 import com.boardgamegeek.extensions.formatList
+import com.boardgamegeek.extensions.fromLocalToUtc
 import com.boardgamegeek.model.CollectionItem
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.ui.MainActivity
@@ -254,6 +260,7 @@ fun GameCollectionItemRouteScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GameCollectionItemScreen(
     item: CollectionItem,
@@ -263,6 +270,38 @@ private fun GameCollectionItemScreen(
     paddingValues: androidx.compose.foundation.layout.PaddingValues,
 ) {
     val context = LocalContext.current
+    var showAcquisitionDatePicker by remember { mutableStateOf(false) }
+
+    if (showAcquisitionDatePicker) {
+        val acquisitionDate = draft.acquisitionDate ?: 0L
+        val initialDate = if (acquisitionDate == 0L) null else acquisitionDate.fromLocalToUtc()
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDate)
+        DatePickerDialog(
+            onDismissRequest = { showAcquisitionDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDraftChange(
+                            draft.copy(
+                                acquisitionDate = datePickerState.selectedDateMillis?.fromLocalToUtc() ?: 0L
+                            )
+                        )
+                        showAcquisitionDatePicker = false
+                    },
+                ) {
+                    Text(stringResource(R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAcquisitionDatePicker = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -363,6 +402,28 @@ private fun GameCollectionItemScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth()
                 )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = (draft.acquisitionDate ?: 0L)
+                            .formatDateTime(context, 0, DateUtils.FORMAT_SHOW_DATE)
+                            .toString()
+                            .ifBlank { stringResource(R.string.acquisition_date) },
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f),
+                    )
+                    TextButton(onClick = { showAcquisitionDatePicker = true }) {
+                        Text(stringResource(R.string.acquisition_date))
+                    }
+                    if ((draft.acquisitionDate ?: 0L) != 0L) {
+                        TextButton(onClick = { onDraftChange(draft.copy(acquisitionDate = 0L)) }) {
+                            Text(stringResource(R.string.clear))
+                        }
+                    }
+                }
                 OutlinedTextField(
                     value = draft.acquiredFrom.orEmpty(),
                     onValueChange = { onDraftChange(draft.copy(acquiredFrom = it)) },

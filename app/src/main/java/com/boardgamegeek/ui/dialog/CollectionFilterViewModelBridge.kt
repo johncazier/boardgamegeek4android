@@ -5,11 +5,11 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.boardgamegeek.filterer.CollectionFilterer
-import com.boardgamegeek.ui.collection.CollectionLauncher
 import com.boardgamegeek.ui.collection.CollectionViewModel
 import com.boardgamegeek.ui.viewmodel.CollectionViewViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.util.WeakHashMap
 
 interface CollectionFilterViewModelBridge {
     fun addFilter(filter: CollectionFilterer)
@@ -21,13 +21,33 @@ interface CollectionFilterViewModelBridge {
 }
 
 fun FragmentActivity.collectionFilterViewModelBridge(): CollectionFilterViewModelBridge {
-    return if (this is CollectionLauncher) {
-        val viewModel = ViewModelProvider(this)[CollectionViewModel::class.java]
-        ComposeCollectionFilterViewModelBridge(viewModel)
-    } else {
-        val viewModel = ViewModelProvider(this)[CollectionViewViewModel::class.java]
-        LegacyCollectionFilterViewModelBridge(viewModel)
+    CollectionFilterViewModelBridgeRegistry.get(this)?.let { return ComposeCollectionFilterViewModelBridge(it) }
+    val viewModel = ViewModelProvider(this)[CollectionViewViewModel::class.java]
+    return LegacyCollectionFilterViewModelBridge(viewModel)
+}
+
+fun FragmentActivity.registerCollectionFilterViewModel(viewModel: CollectionViewModel) {
+    CollectionFilterViewModelBridgeRegistry.register(this, viewModel)
+}
+
+fun FragmentActivity.unregisterCollectionFilterViewModel(viewModel: CollectionViewModel) {
+    CollectionFilterViewModelBridgeRegistry.unregister(this, viewModel)
+}
+
+private object CollectionFilterViewModelBridgeRegistry {
+    private val viewModels = WeakHashMap<FragmentActivity, CollectionViewModel>()
+
+    fun register(activity: FragmentActivity, viewModel: CollectionViewModel) {
+        viewModels[activity] = viewModel
     }
+
+    fun unregister(activity: FragmentActivity, viewModel: CollectionViewModel) {
+        if (viewModels[activity] === viewModel) {
+            viewModels.remove(activity)
+        }
+    }
+
+    fun get(activity: FragmentActivity): CollectionViewModel? = viewModels[activity]
 }
 
 private class ComposeCollectionFilterViewModelBridge(

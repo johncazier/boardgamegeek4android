@@ -15,11 +15,11 @@ class CollectionStatusFilterer(context: Context) : CollectionFilterer(context) {
 
     override fun inflate(data: String) {
         shouldJoinWithOr = data.substringBefore(DELIMITER, "0") == "1"
-        selectedStatuses = data.substringAfter(DELIMITER).split(DELIMITER).map { it == "1" }.toBooleanArray()
+        selectedStatuses = data.substringAfter(DELIMITER, "").split(DELIMITER).filter { it.isNotEmpty() }.map { it == "1" }.toBooleanArray()
     }
 
     override fun deflate(): String {
-        return if (shouldJoinWithOr) "1" else "0" +
+        return (if (shouldJoinWithOr) "1" else "0") +
                 DELIMITER +
                 selectedStatuses.map { if (it) "1" else "0" }.joinTo(DELIMITER)
     }
