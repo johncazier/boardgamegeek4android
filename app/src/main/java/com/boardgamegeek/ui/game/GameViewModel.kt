@@ -293,7 +293,7 @@ class GameViewModel @Inject constructor(
                     .map { list ->
                         list.map { expansion ->
                             GameDetail(expansion.id, expansion.name, describeStatuses(expansion), expansion.thumbnailUrl)
-                        }
+                        }.distinctBy { it.id }
                     }
                     .flowOn(Dispatchers.Default)
             } ?: emptyFlow()
@@ -313,7 +313,7 @@ class GameViewModel @Inject constructor(
                     .map { list ->
                         list.map { baseGame ->
                             GameDetail(baseGame.id, baseGame.name, describeStatuses(baseGame), baseGame.thumbnailUrl)
-                        }
+                        }.distinctBy { it.id }
                     }
                     .flowOn(Dispatchers.Default)
             } ?: emptyFlow()
