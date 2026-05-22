@@ -2,10 +2,9 @@ package com.boardgamegeek.provider
 
 import android.content.Context
 import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import android.os.ParcelFileDescriptor
-import com.boardgamegeek.extensions.*
+import androidx.sqlite.db.SupportSQLiteDatabase
 import java.io.FileNotFoundException
 
 abstract class BaseProvider {
@@ -16,7 +15,7 @@ abstract class BaseProvider {
     }
 
     open fun query(
-        db: SQLiteDatabase,
+        db: SupportSQLiteDatabase,
         uri: Uri,
         projection: Array<String>?,
         selection: String?,
@@ -27,7 +26,7 @@ abstract class BaseProvider {
     }
 
     @Throws(FileNotFoundException::class)
-    open fun openFile(context: Context, db: SQLiteDatabase, uri: Uri, mode: String): ParcelFileDescriptor? {
+    open fun openFile(context: Context, db: SupportSQLiteDatabase, uri: Uri, mode: String): ParcelFileDescriptor? {
         throw FileNotFoundException("Unknown uri opening file: $uri")
     }
 }

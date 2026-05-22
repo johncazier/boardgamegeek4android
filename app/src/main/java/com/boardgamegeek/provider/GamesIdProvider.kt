@@ -1,12 +1,11 @@
 package com.boardgamegeek.provider
 
 import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
-import android.database.sqlite.SQLiteQueryBuilder
 import android.net.Uri
+import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.sqlite.db.SupportSQLiteQueryBuilder
 import com.boardgamegeek.provider.BggContract.Companion.PATH_GAMES
 import com.boardgamegeek.provider.BggContract.Games
-import com.boardgamegeek.provider.BggDatabase.Tables
 
 class GamesIdProvider : BaseProvider() {
     override fun getType(uri: Uri) = Games.CONTENT_ITEM_TYPE
@@ -14,7 +13,7 @@ class GamesIdProvider : BaseProvider() {
     override val path = "$PATH_GAMES/#"
 
     override fun query(
-        db: SQLiteDatabase,
+        db: SupportSQLiteDatabase,
         uri: Uri, // content://com.boardgamegeek/games/13
         projection: Array<String>?,
         selection: String?,
@@ -22,9 +21,17 @@ class GamesIdProvider : BaseProvider() {
         sortOrder: String?
     ): Cursor? {
         val gameId = Games.getGameId(uri)
-        val qb = SQLiteQueryBuilder()
-        qb.tables = Tables.GAMES
-        qb.appendWhere("${Games.Columns.GAME_ID} = $gameId")
-        return qb.query(db, projection, selection, selectionArgs, null, null, sortOrder)
+        val clauses = mutableListOf("${Games.Columns.GAME_ID} = ?")
+        val args = mutableListOf<Any>(gameId)
+        if (!selection.isNullOrBlank()) {
+            clauses += "($selection)"
+            selectionArgs?.let(args::addAll)
+        }
+        val query = SupportSQLiteQueryBuilder.builder("games")
+            .columns(projection)
+            .selection(clauses.joinToString(" AND "), args.toTypedArray())
+            .orderBy(sortOrder)
+            .create()
+        return db.query(query)
     }
 }

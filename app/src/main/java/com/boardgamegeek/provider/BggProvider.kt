@@ -7,13 +7,16 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import androidx.collection.SimpleArrayMap
+import com.boardgamegeek.db.BggDatabase
+import com.boardgamegeek.db.BggDatabaseFactory
 import java.io.FileNotFoundException
 
 class BggProvider : ContentProvider() {
-    private lateinit var openHelper: BggDatabase
+    private lateinit var database: BggDatabase
 
     override fun onCreate(): Boolean {
-        openHelper = BggDatabase(context)
+        val context = context ?: return false
+        database = BggDatabaseFactory.build(context.applicationContext)
         return true
     }
 
@@ -23,7 +26,7 @@ class BggProvider : ContentProvider() {
 
     override fun query(uri: Uri, projection: Array<String>?, selection: String?, selectionArgs: Array<String>?, sortOrder: String?): Cursor? {
         return getProvider(uri)?.query(
-            openHelper.readableDatabase,
+            database.openHelper.readableDatabase,
             uri,
             projection,
             selection,
@@ -46,7 +49,12 @@ class BggProvider : ContentProvider() {
 
     @Throws(FileNotFoundException::class)
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
-        return context?.let { getProvider(uri)?.openFile(it, openHelper.readableDatabase, uri, mode) }
+        return context?.let { getProvider(uri)?.openFile(it, database.openHelper.readableDatabase, uri, mode) }
+    }
+
+    override fun shutdown() {
+        super.shutdown()
+        if (::database.isInitialized) database.close()
     }
 
     private fun getProvider(uri: Uri): BaseProvider? {
@@ -62,7 +70,7 @@ class BggProvider : ContentProvider() {
         private val providers = buildProviderMap()
         private var uriMatchCode = 1
 
-        private fun buildProviderMap(): SimpleArrayMap<Int, BaseProvider> {
+        fun buildProviderMap(): SimpleArrayMap<Int, BaseProvider> {
             val map = SimpleArrayMap<Int, BaseProvider>()
             addProvider(map, GamesIdProvider())
             addProvider(map, GameIdThumbnailProvider())
@@ -71,7 +79,7 @@ class BggProvider : ContentProvider() {
             return map
         }
 
-        private fun addProvider(map: SimpleArrayMap<Int, BaseProvider>, provider: BaseProvider) {
+        fun addProvider(map: SimpleArrayMap<Int, BaseProvider>, provider: BaseProvider) {
             uriMatchCode++
             uriMatcher.addURI(BggContract.CONTENT_AUTHORITY, provider.path, uriMatchCode)
             map.put(uriMatchCode, provider)

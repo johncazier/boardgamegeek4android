@@ -5,12 +5,6 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import timber.log.Timber
 
 object DatabaseMigrations {
-    val MIGRATION_60_61 = object : Migration(60, 61) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-            Timber.i("Initializing Room database...")
-        }
-    }
-
     val MIGRATION_61_62 = object : Migration(61, 62) {
         override fun migrate(db: SupportSQLiteDatabase) {
             Timber.i("Adding missing indexes to the games credits tables")
@@ -63,5 +57,5 @@ object DatabaseMigrations {
         }
     }
 
-    private fun SupportSQLiteDatabase.dropTable(tableName: String) = execSQL("DROP TABLE $tableName")
+    fun SupportSQLiteDatabase.dropTable(tableName: String) = execSQL("DROP TABLE $tableName")
 }

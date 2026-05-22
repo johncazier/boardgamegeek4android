@@ -1,12 +1,11 @@
 package com.boardgamegeek.provider
 
 import android.content.Context
-import android.database.sqlite.SQLiteDatabase
-import android.database.sqlite.SQLiteQueryBuilder
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.boardgamegeek.provider.BggContract.Games
-import com.boardgamegeek.provider.BggContract.Collection
 import com.boardgamegeek.provider.BggContract.Companion.PATH_GAMES
 import com.boardgamegeek.provider.BggContract.Companion.PATH_THUMBNAILS
 import com.boardgamegeek.util.FileUtils
@@ -20,7 +19,7 @@ class GameIdThumbnailProvider : BaseProvider() {
     override val path = "$PATH_GAMES/#/$PATH_THUMBNAILS"
 
     @Throws(FileNotFoundException::class)
-    override fun openFile(context: Context, db: SQLiteDatabase, uri: Uri, mode: String): ParcelFileDescriptor? {
+    override fun openFile(context: Context, db: SupportSQLiteDatabase, uri: Uri, mode: String): ParcelFileDescriptor? {
         val file = getFile(context, db, uri)
         if (file?.exists() != true) {
             throw FileNotFoundException("Couldn't get the file at the specified path.")
@@ -33,7 +32,7 @@ class GameIdThumbnailProvider : BaseProvider() {
      * Get a `File` representing the URI. E.g. content://com.boardgamegeek/games/123456/thumbnails
      * becomes the file from /storage/emulated/0/Android/data/com.boardgamegeek/files/thumbnails/pic1115825.jpg
      */
-    private fun getFile(context: Context, db: SQLiteDatabase, uri: Uri): File? {
+    private fun getFile(context: Context, db: SupportSQLiteDatabase, uri: Uri): File? {
         val fileName = generateFileName(db, uri)
         return FileUtils.getFile(context, PATH_THUMBNAILS, fileName)
     }
@@ -42,18 +41,14 @@ class GameIdThumbnailProvider : BaseProvider() {
      * Generates a file name based on the URI. E.g. content://com.boardgamegeek/games/110308/thumbnails
      * becomes pic1115825.jpg
      */
-    private fun generateFileName(db: SQLiteDatabase, uri: Uri): String? {
+    private fun generateFileName(db: SupportSQLiteDatabase, uri: Uri): String? {
         val gameId = Games.getGameId(uri)
-        val qb = SQLiteQueryBuilder().apply { tables = BggDatabase.Tables.GAMES }
-        return qb.query(
-            db,
-            arrayOf(Games.Columns.THUMBNAIL_URL),
-            "${Collection.Columns.GAME_ID}=?",
-            arrayOf(gameId.toString()),
-            null,
-            null,
-            null
-        )?.use { cursor ->
+        return db.query(
+            SimpleSQLiteQuery(
+                "SELECT ${Games.Columns.THUMBNAIL_URL} FROM games WHERE ${Games.Columns.GAME_ID} = ?",
+                arrayOf(gameId)
+            )
+        ).use { cursor ->
             if (cursor.count == 1 && cursor.moveToFirst()) {
                 cursor.getString(0)
             } else {
@@ -65,7 +60,7 @@ class GameIdThumbnailProvider : BaseProvider() {
     companion object {
         // from Android ContentResolver.modeToMode
         @Throws(FileNotFoundException::class)
-        private fun calculateParcelMode(uri: Uri, mode: String): Int {
+        fun calculateParcelMode(uri: Uri, mode: String): Int {
             return when (mode) {
                 "r" -> ParcelFileDescriptor.MODE_READ_ONLY
                 "w", "wt" -> ParcelFileDescriptor.MODE_WRITE_ONLY or ParcelFileDescriptor.MODE_CREATE or ParcelFileDescriptor.MODE_TRUNCATE
