@@ -32,7 +32,7 @@ import com.boardgamegeek.db.model.*
         PlayEntity::class,
         UserEntity::class
     ],
-    version = 64,
+    version = 65,
 )
 @TypeConverters(DateConverter::class)
 abstract class BggDatabase : RoomDatabase() {

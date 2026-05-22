@@ -394,7 +394,6 @@ class GameViewModel @Inject constructor(
         gameId.filterNotNull()
             .flatMapLatest { id ->
                 gameCollectionRepository.loadCollectionItemsForGameFlow(id)
-                    .onEach { attemptRefreshItems(it) }
             }
             .catch {
                 Timber.w(it)

@@ -57,5 +57,11 @@ object DatabaseMigrations {
         }
     }
 
+    val MIGRATION_64_65 = object : Migration(64, 65) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_plays_object_id_date` ON `plays` (`object_id`, `date`)")
+        }
+    }
+
     private fun SupportSQLiteDatabase.dropTable(tableName: String) = execSQL("DROP TABLE $tableName")
 }

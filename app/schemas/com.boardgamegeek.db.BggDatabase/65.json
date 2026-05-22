@@ -1,0 +1,1907 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 65,
+    "identityHash": "182b4ab8c06c4751cfe95172de9ffeac",
+    "entities": [
+      {
+        "tableName": "designers",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `designer_id` INTEGER NOT NULL, `designer_name` TEXT NOT NULL, `designer_description` TEXT, `designer_image_url` TEXT, `designer_thumbnail_url` TEXT, `designer_hero_image_url` TEXT, `designer_images_updated_timestamp` INTEGER, `whitmore_score` INTEGER, `designer_stats_updated_timestamp` INTEGER, `updated` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "designerId",
+            "columnName": "designer_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "designerName",
+            "columnName": "designer_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "designerDescription",
+            "columnName": "designer_description",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "designerImageUrl",
+            "columnName": "designer_image_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "designerThumbnailUrl",
+            "columnName": "designer_thumbnail_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "designerHeroImageUrl",
+            "columnName": "designer_hero_image_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "imagesUpdatedTimestamp",
+            "columnName": "designer_images_updated_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "whitmoreScore",
+            "columnName": "whitmore_score",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "statsUpdatedTimestamp",
+            "columnName": "designer_stats_updated_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "updatedTimestamp",
+            "columnName": "updated",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_designers_designer_id",
+            "unique": true,
+            "columnNames": [
+              "designer_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_designers_designer_id` ON `${TABLE_NAME}` (`designer_id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "artists",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `artist_id` INTEGER NOT NULL, `artist_name` TEXT NOT NULL, `artist_description` TEXT, `artist_image_url` TEXT, `artist_thumbnail_url` TEXT, `artist_hero_image_url` TEXT, `artist_images_updated_timestamp` INTEGER, `whitmore_score` INTEGER, `artist_stats_updated_timestamp` INTEGER, `updated` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "artistId",
+            "columnName": "artist_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "artistName",
+            "columnName": "artist_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "artistDescription",
+            "columnName": "artist_description",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "artistImageUrl",
+            "columnName": "artist_image_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "artistThumbnailUrl",
+            "columnName": "artist_thumbnail_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "artistHeroImageUrl",
+            "columnName": "artist_hero_image_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "imagesUpdatedTimestamp",
+            "columnName": "artist_images_updated_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "whitmoreScore",
+            "columnName": "whitmore_score",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "statsUpdatedTimestamp",
+            "columnName": "artist_stats_updated_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "updatedTimestamp",
+            "columnName": "updated",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_artists_artist_id",
+            "unique": true,
+            "columnNames": [
+              "artist_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_artists_artist_id` ON `${TABLE_NAME}` (`artist_id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "publishers",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `publisher_id` INTEGER NOT NULL, `publisher_name` TEXT NOT NULL, `publisher_sort_name` TEXT, `publisher_description` TEXT, `publisher_image_url` TEXT, `publisher_thumbnail_url` TEXT, `publisher_hero_image_url` TEXT, `whitmore_score` INTEGER, `publisher_stats_updated_timestamp` INTEGER, `updated` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "publisherId",
+            "columnName": "publisher_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "publisherName",
+            "columnName": "publisher_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "publisherSortName",
+            "columnName": "publisher_sort_name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "publisherDescription",
+            "columnName": "publisher_description",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "publisherImageUrl",
+            "columnName": "publisher_image_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "publisherThumbnailUrl",
+            "columnName": "publisher_thumbnail_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "publisherHeroImageUrl",
+            "columnName": "publisher_hero_image_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "whitmoreScore",
+            "columnName": "whitmore_score",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "statsUpdatedTimestamp",
+            "columnName": "publisher_stats_updated_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "updatedTimestamp",
+            "columnName": "updated",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_publishers_publisher_id",
+            "unique": true,
+            "columnNames": [
+              "publisher_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_publishers_publisher_id` ON `${TABLE_NAME}` (`publisher_id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "categories",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `category_id` INTEGER NOT NULL, `category_name` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoryId",
+            "columnName": "category_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoryName",
+            "columnName": "category_name",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_categories_category_id",
+            "unique": true,
+            "columnNames": [
+              "category_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_categories_category_id` ON `${TABLE_NAME}` (`category_id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "mechanics",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `mechanic_id` INTEGER NOT NULL, `mechanic_name` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mechanicId",
+            "columnName": "mechanic_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mechanicName",
+            "columnName": "mechanic_name",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mechanics_mechanic_id",
+            "unique": true,
+            "columnNames": [
+              "mechanic_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mechanics_mechanic_id` ON `${TABLE_NAME}` (`mechanic_id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "collection_filters",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT, `starred` INTEGER, `sort_type` INTEGER, `selected_count` INTEGER, `selected_timestamp` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "starred",
+            "columnName": "starred",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "sortType",
+            "columnName": "sort_type",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "selectedCount",
+            "columnName": "selected_count",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "selectedTimestamp",
+            "columnName": "selected_timestamp",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        }
+      },
+      {
+        "tableName": "collection_filters_details",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `filter_id` INTEGER NOT NULL, `type` INTEGER, `data` TEXT, FOREIGN KEY(`filter_id`) REFERENCES `collection_filters`(`_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "viewId",
+            "columnName": "filter_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "data",
+            "columnName": "data",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_collection_filters_details_filter_id",
+            "unique": false,
+            "columnNames": [
+              "filter_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_collection_filters_details_filter_id` ON `${TABLE_NAME}` (`filter_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "collection_filters",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "filter_id"
+            ],
+            "referencedColumns": [
+              "_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "games",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `updated` INTEGER, `updated_list` INTEGER NOT NULL, `game_id` INTEGER NOT NULL, `game_name` TEXT NOT NULL, `game_sort_name` TEXT NOT NULL, `year_published` INTEGER, `image_url` TEXT, `thumbnail_url` TEXT, `min_players` INTEGER, `max_players` INTEGER, `playing_time` INTEGER, `min_playing_time` INTEGER, `max_playing_time` INTEGER, `num_of_plays` INTEGER NOT NULL DEFAULT 0, `age` INTEGER, `description` TEXT, `subtype` TEXT, `usersrated` INTEGER, `average` REAL, `bayes_average` REAL, `standard_deviation` REAL, `median` REAL, `number_owned` INTEGER, `number_trading` INTEGER, `number_wanting` INTEGER, `number_wishing` INTEGER, `number_commenting` INTEGER, `number_weighting` INTEGER, `average_weight` REAL, `last_viewed` INTEGER, `starred` INTEGER, `updated_plays` INTEGER, `custom_player_sort` INTEGER, `game_rank` INTEGER, `suggested_player_count_poll_vote_total` INTEGER, `hero_image_url` TEXT, `ICON_COLOR` INTEGER, `DARK_COLOR` INTEGER, `WINS_COLOR` INTEGER, `WINNABLE_PLAYS_COLOR` INTEGER, `ALL_PLAYS_COLOR` INTEGER, `player_counts_best` TEXT, `player_counts_recommended` TEXT, `player_count_nots_recommended` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updated",
+            "columnName": "updated",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "updatedList",
+            "columnName": "updated_list",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameId",
+            "columnName": "game_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameName",
+            "columnName": "game_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameSortName",
+            "columnName": "game_sort_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "yearPublished",
+            "columnName": "year_published",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "imageUrl",
+            "columnName": "image_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "thumbnailUrl",
+            "columnName": "thumbnail_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "minPlayers",
+            "columnName": "min_players",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "maxPlayers",
+            "columnName": "max_players",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "playingTime",
+            "columnName": "playing_time",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "minPlayingTime",
+            "columnName": "min_playing_time",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "maxPlayingTime",
+            "columnName": "max_playing_time",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "numberOfPlays",
+            "columnName": "num_of_plays",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "minimumAge",
+            "columnName": "age",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "subtype",
+            "columnName": "subtype",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "numberOfRatings",
+            "columnName": "usersrated",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "average",
+            "columnName": "average",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "bayesAverage",
+            "columnName": "bayes_average",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "standardDeviation",
+            "columnName": "standard_deviation",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "median",
+            "columnName": "median",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "numberOfUsersOwned",
+            "columnName": "number_owned",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "numberOfUsersTrading",
+            "columnName": "number_trading",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "numberOfUsersWanting",
+            "columnName": "number_wanting",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "numberOfUsersWishListing",
+            "columnName": "number_wishing",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "numberOfComments",
+            "columnName": "number_commenting",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "numberOfUsersWeighting",
+            "columnName": "number_weighting",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "averageWeight",
+            "columnName": "average_weight",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "lastViewedTimestamp",
+            "columnName": "last_viewed",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "isStarred",
+            "columnName": "starred",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "updatedPlays",
+            "columnName": "updated_plays",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "customPlayerSort",
+            "columnName": "custom_player_sort",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "gameRank",
+            "columnName": "game_rank",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "suggestedPlayerCountPollVoteTotal",
+            "columnName": "suggested_player_count_poll_vote_total",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "heroImageUrl",
+            "columnName": "hero_image_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "iconColor",
+            "columnName": "ICON_COLOR",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "darkColor",
+            "columnName": "DARK_COLOR",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "winsColor",
+            "columnName": "WINS_COLOR",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "winnablePlaysColor",
+            "columnName": "WINNABLE_PLAYS_COLOR",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "allPlaysColor",
+            "columnName": "ALL_PLAYS_COLOR",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "playerCountsBest",
+            "columnName": "player_counts_best",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "playerCountsRecommended",
+            "columnName": "player_counts_recommended",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "playerCountsNotRecommended",
+            "columnName": "player_count_nots_recommended",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_games_game_id",
+            "unique": true,
+            "columnNames": [
+              "game_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_games_game_id` ON `${TABLE_NAME}` (`game_id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "game_colors",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_id` INTEGER NOT NULL, `color` TEXT NOT NULL, FOREIGN KEY(`game_id`) REFERENCES `games`(`game_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameId",
+            "columnName": "game_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "color",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_game_colors_game_id",
+            "unique": false,
+            "columnNames": [
+              "game_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_game_colors_game_id` ON `${TABLE_NAME}` (`game_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "games",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "game_id"
+            ],
+            "referencedColumns": [
+              "game_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "game_ranks",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_id` INTEGER NOT NULL, `gamerank_id` INTEGER NOT NULL, `gamerank_type` TEXT NOT NULL, `gamerank_name` TEXT NOT NULL, `gamerank_friendly_name` TEXT NOT NULL, `gamerank_value` INTEGER NOT NULL, `gamerank_bayes_average` REAL NOT NULL, FOREIGN KEY(`game_id`) REFERENCES `games`(`game_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameId",
+            "columnName": "game_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameRankId",
+            "columnName": "gamerank_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameRankType",
+            "columnName": "gamerank_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameRankName",
+            "columnName": "gamerank_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameRankFriendlyName",
+            "columnName": "gamerank_friendly_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameRankValue",
+            "columnName": "gamerank_value",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameRankBayesAverage",
+            "columnName": "gamerank_bayes_average",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_game_ranks_game_id",
+            "unique": false,
+            "columnNames": [
+              "game_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_game_ranks_game_id` ON `${TABLE_NAME}` (`game_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "games",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "game_id"
+            ],
+            "referencedColumns": [
+              "game_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "game_poll_age_results",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`game_id` INTEGER NOT NULL, `value` INTEGER NOT NULL, `votes` INTEGER NOT NULL, PRIMARY KEY(`game_id`, `value`), FOREIGN KEY(`game_id`) REFERENCES `games`(`game_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "gameId",
+            "columnName": "game_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value",
+            "columnName": "value",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "votes",
+            "columnName": "votes",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "game_id",
+            "value"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_game_poll_age_results_game_id",
+            "unique": false,
+            "columnNames": [
+              "game_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_game_poll_age_results_game_id` ON `${TABLE_NAME}` (`game_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "games",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "game_id"
+            ],
+            "referencedColumns": [
+              "game_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "game_poll_language_results",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`game_id` INTEGER NOT NULL, `level` INTEGER NOT NULL, `votes` INTEGER NOT NULL, PRIMARY KEY(`game_id`, `level`), FOREIGN KEY(`game_id`) REFERENCES `games`(`game_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "gameId",
+            "columnName": "game_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "level",
+            "columnName": "level",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "votes",
+            "columnName": "votes",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "game_id",
+            "level"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_game_poll_language_results_game_id",
+            "unique": false,
+            "columnNames": [
+              "game_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_game_poll_language_results_game_id` ON `${TABLE_NAME}` (`game_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "games",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "game_id"
+            ],
+            "referencedColumns": [
+              "game_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "game_suggested_player_count_poll_results",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_id` INTEGER NOT NULL, `player_count` TEXT NOT NULL, `sort_index` INTEGER, `best_vote_count` INTEGER, `recommended_vote_count` INTEGER, `not_recommended_vote_count` INTEGER, `recommendation` INTEGER, FOREIGN KEY(`game_id`) REFERENCES `games`(`game_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameId",
+            "columnName": "game_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playerCount",
+            "columnName": "player_count",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sortIndex",
+            "columnName": "sort_index",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "bestVoteCount",
+            "columnName": "best_vote_count",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "recommendedVoteCount",
+            "columnName": "recommended_vote_count",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "notRecommendedVoteCount",
+            "columnName": "not_recommended_vote_count",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "recommendation",
+            "columnName": "recommendation",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_game_suggested_player_count_poll_results_game_id",
+            "unique": false,
+            "columnNames": [
+              "game_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_game_suggested_player_count_poll_results_game_id` ON `${TABLE_NAME}` (`game_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "games",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "game_id"
+            ],
+            "referencedColumns": [
+              "game_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "games_artists",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_id` INTEGER NOT NULL, `artist_id` INTEGER NOT NULL, FOREIGN KEY(`game_id`) REFERENCES `games`(`game_id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`artist_id`) REFERENCES `artists`(`artist_id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameId",
+            "columnName": "game_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "artistId",
+            "columnName": "artist_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_games_artists_game_id",
+            "unique": false,
+            "columnNames": [
+              "game_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_games_artists_game_id` ON `${TABLE_NAME}` (`game_id`)"
+          },
+          {
+            "name": "index_games_artists_artist_id",
+            "unique": false,
+            "columnNames": [
+              "artist_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_games_artists_artist_id` ON `${TABLE_NAME}` (`artist_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "games",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "game_id"
+            ],
+            "referencedColumns": [
+              "game_id"
+            ]
+          },
+          {
+            "table": "artists",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "artist_id"
+            ],
+            "referencedColumns": [
+              "artist_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "games_categories",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_id` INTEGER NOT NULL, `category_id` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameId",
+            "columnName": "game_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoryId",
+            "columnName": "category_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_games_categories_game_id",
+            "unique": false,
+            "columnNames": [
+              "game_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_games_categories_game_id` ON `${TABLE_NAME}` (`game_id`)"
+          },
+          {
+            "name": "index_games_categories_category_id",
+            "unique": false,
+            "columnNames": [
+              "category_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_games_categories_category_id` ON `${TABLE_NAME}` (`category_id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "games_designers",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_id` INTEGER NOT NULL, `designer_id` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameId",
+            "columnName": "game_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "designerId",
+            "columnName": "designer_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_games_designers_game_id",
+            "unique": false,
+            "columnNames": [
+              "game_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_games_designers_game_id` ON `${TABLE_NAME}` (`game_id`)"
+          },
+          {
+            "name": "index_games_designers_designer_id",
+            "unique": false,
+            "columnNames": [
+              "designer_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_games_designers_designer_id` ON `${TABLE_NAME}` (`designer_id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "games_expansions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_id` INTEGER NOT NULL, `expansion_id` INTEGER NOT NULL, `expansion_name` TEXT NOT NULL, `inbound` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameId",
+            "columnName": "game_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "expansionId",
+            "columnName": "expansion_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "expansionName",
+            "columnName": "expansion_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "inbound",
+            "columnName": "inbound",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        }
+      },
+      {
+        "tableName": "games_mechanics",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_id` INTEGER NOT NULL, `mechanic_id` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameId",
+            "columnName": "game_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mechanicId",
+            "columnName": "mechanic_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_games_mechanics_game_id",
+            "unique": false,
+            "columnNames": [
+              "game_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_games_mechanics_game_id` ON `${TABLE_NAME}` (`game_id`)"
+          },
+          {
+            "name": "index_games_mechanics_mechanic_id",
+            "unique": false,
+            "columnNames": [
+              "mechanic_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_games_mechanics_mechanic_id` ON `${TABLE_NAME}` (`mechanic_id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "games_publishers",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_id` INTEGER NOT NULL, `publisher_id` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameId",
+            "columnName": "game_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "publisherId",
+            "columnName": "publisher_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_games_publishers_game_id",
+            "unique": false,
+            "columnNames": [
+              "game_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_games_publishers_game_id` ON `${TABLE_NAME}` (`game_id`)"
+          },
+          {
+            "name": "index_games_publishers_publisher_id",
+            "unique": false,
+            "columnNames": [
+              "publisher_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_games_publishers_publisher_id` ON `${TABLE_NAME}` (`publisher_id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "collection",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `updated` INTEGER, `updated_list` INTEGER, `game_id` INTEGER NOT NULL, `collection_id` INTEGER NOT NULL, `collection_name` TEXT NOT NULL, `collection_sort_name` TEXT NOT NULL, `own` INTEGER NOT NULL, `previously_owned` INTEGER NOT NULL, `for_trade` INTEGER NOT NULL, `want` INTEGER NOT NULL, `want_to_play` INTEGER NOT NULL, `want_to_buy` INTEGER NOT NULL, `wishlist` INTEGER NOT NULL, `wishlist_priority` INTEGER, `preordered` INTEGER NOT NULL, `comment` TEXT, `last_modified` INTEGER, `price_paid_currency` TEXT, `price_paid` REAL, `current_value_currency` TEXT, `current_value` REAL, `quantity` INTEGER, `acquisition_date` TEXT, `acquired_from` TEXT, `private_comment` TEXT, `conditiontext` TEXT, `wantpartslist` TEXT, `haspartslist` TEXT, `wishlistcomment` TEXT, `collection_year_published` INTEGER, `rating` REAL, `collection_thumbnail_url` TEXT, `collection_image_url` TEXT, `status_dirty_timestamp` INTEGER, `rating_dirty_timestamp` INTEGER, `comment_dirty_timestamp` INTEGER, `private_info_dirty_timestamp` INTEGER, `collection_dirty_timestamp` INTEGER, `collection_delete_timestamp` INTEGER, `wishlist_comment_dirty_timestamp` INTEGER, `trade_condition_dirty_timestamp` INTEGER, `want_parts_dirty_timestamp` INTEGER, `has_parts_dirty_timestamp` INTEGER, `collection_hero_image_url` TEXT, `inventory_location` TEXT, FOREIGN KEY(`game_id`) REFERENCES `games`(`game_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedTimestamp",
+            "columnName": "updated",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "updatedListTimestamp",
+            "columnName": "updated_list",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "gameId",
+            "columnName": "game_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "collectionId",
+            "columnName": "collection_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "collectionName",
+            "columnName": "collection_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "collectionSortName",
+            "columnName": "collection_sort_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statusOwn",
+            "columnName": "own",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statusPreviouslyOwned",
+            "columnName": "previously_owned",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statusForTrade",
+            "columnName": "for_trade",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statusWant",
+            "columnName": "want",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statusWantToPlay",
+            "columnName": "want_to_play",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statusWantToBuy",
+            "columnName": "want_to_buy",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statusWishlist",
+            "columnName": "wishlist",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statusWishlistPriority",
+            "columnName": "wishlist_priority",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "statusPreordered",
+            "columnName": "preordered",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "comment",
+            "columnName": "comment",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastModified",
+            "columnName": "last_modified",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "privateInfoPricePaidCurrency",
+            "columnName": "price_paid_currency",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "privateInfoPricePaid",
+            "columnName": "price_paid",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "privateInfoCurrentValueCurrency",
+            "columnName": "current_value_currency",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "privateInfoCurrentValue",
+            "columnName": "current_value",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "privateInfoQuantity",
+            "columnName": "quantity",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "privateInfoAcquisitionDate",
+            "columnName": "acquisition_date",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "privateInfoAcquiredFrom",
+            "columnName": "acquired_from",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "privateInfoComment",
+            "columnName": "private_comment",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "condition",
+            "columnName": "conditiontext",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "wantpartsList",
+            "columnName": "wantpartslist",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "haspartsList",
+            "columnName": "haspartslist",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "wishlistComment",
+            "columnName": "wishlistcomment",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "collectionYearPublished",
+            "columnName": "collection_year_published",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "collectionThumbnailUrl",
+            "columnName": "collection_thumbnail_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "collectionImageUrl",
+            "columnName": "collection_image_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "statusDirtyTimestamp",
+            "columnName": "status_dirty_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "ratingDirtyTimestamp",
+            "columnName": "rating_dirty_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "commentDirtyTimestamp",
+            "columnName": "comment_dirty_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "privateInfoDirtyTimestamp",
+            "columnName": "private_info_dirty_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "collectionDirtyTimestamp",
+            "columnName": "collection_dirty_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "collectionDeleteTimestamp",
+            "columnName": "collection_delete_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "wishlistCommentDirtyTimestamp",
+            "columnName": "wishlist_comment_dirty_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "tradeConditionDirtyTimestamp",
+            "columnName": "trade_condition_dirty_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "wantPartsDirtyTimestamp",
+            "columnName": "want_parts_dirty_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "hasPartsDirtyTimestamp",
+            "columnName": "has_parts_dirty_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "collectionHeroImageUrl",
+            "columnName": "collection_hero_image_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "privateInfoInventoryLocation",
+            "columnName": "inventory_location",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_collection_game_id",
+            "unique": false,
+            "columnNames": [
+              "game_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_collection_game_id` ON `${TABLE_NAME}` (`game_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "games",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "game_id"
+            ],
+            "referencedColumns": [
+              "game_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "play_players",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `_play_id` INTEGER NOT NULL, `user_name` TEXT, `user_id` INTEGER, `name` TEXT, `start_position` TEXT, `color` TEXT, `score` TEXT, `new` INTEGER, `rating` REAL, `win` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "internalPlayId",
+            "columnName": "_play_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "username",
+            "columnName": "user_name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "user_id",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "startingPosition",
+            "columnName": "start_position",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "color",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "score",
+            "columnName": "score",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isNew",
+            "columnName": "new",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "isWin",
+            "columnName": "win",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        }
+      },
+      {
+        "tableName": "player_colors",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `player_type` INTEGER NOT NULL, `player_name` TEXT NOT NULL, `player_color` TEXT NOT NULL, `player_color_sort` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playerType",
+            "columnName": "player_type",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playerName",
+            "columnName": "player_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playerColor",
+            "columnName": "player_color",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playerColorSortOrder",
+            "columnName": "player_color_sort",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        }
+      },
+      {
+        "tableName": "plays",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `updated_list` INTEGER NOT NULL, `play_id` INTEGER, `date` TEXT NOT NULL, `quantity` INTEGER NOT NULL, `length` INTEGER NOT NULL, `incomplete` INTEGER NOT NULL, `no_win_stats` INTEGER NOT NULL, `location` TEXT, `comments` TEXT, `start_time` INTEGER, `player_count` INTEGER, `sync_hash_code` INTEGER, `item_name` TEXT NOT NULL, `object_id` INTEGER NOT NULL, `delete_timestamp` INTEGER, `update_timestamp` INTEGER, `dirty_timestamp` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "internalId",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncTimestamp",
+            "columnName": "updated_list",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playId",
+            "columnName": "play_id",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "quantity",
+            "columnName": "quantity",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "length",
+            "columnName": "length",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "incomplete",
+            "columnName": "incomplete",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "noWinStats",
+            "columnName": "no_win_stats",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "location",
+            "columnName": "location",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "comments",
+            "columnName": "comments",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "startTime",
+            "columnName": "start_time",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "playerCount",
+            "columnName": "player_count",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "syncHashCode",
+            "columnName": "sync_hash_code",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "itemName",
+            "columnName": "item_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "objectId",
+            "columnName": "object_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deleteTimestamp",
+            "columnName": "delete_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "updateTimestamp",
+            "columnName": "update_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dirtyTimestamp",
+            "columnName": "dirty_timestamp",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_plays_object_id_date",
+            "unique": false,
+            "columnNames": [
+              "object_id",
+              "date"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_plays_object_id_date` ON `${TABLE_NAME}` (`object_id`, `date`)"
+          }
+        ]
+      },
+      {
+        "tableName": "users",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`username` TEXT NOT NULL, `first_name` TEXT, `last_name` TEXT, `avatar_url` TEXT, `play_nickname` TEXT, `buddy_flag` INTEGER, `sync_hash_code` INTEGER, `updated_list_timestamp` INTEGER, `updated_detail_timestamp` INTEGER, PRIMARY KEY(`username`))",
+        "fields": [
+          {
+            "fieldPath": "username",
+            "columnName": "username",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "firstName",
+            "columnName": "first_name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastName",
+            "columnName": "last_name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "avatarUrl",
+            "columnName": "avatar_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "playNickname",
+            "columnName": "play_nickname",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "buddyFlag",
+            "columnName": "buddy_flag",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "syncHashCode",
+            "columnName": "sync_hash_code",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "updatedListDate",
+            "columnName": "updated_list_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "updatedDetailDate",
+            "columnName": "updated_detail_timestamp",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "username"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '182b4ab8c06c4751cfe95172de9ffeac')"
+    ]
+  }
+}

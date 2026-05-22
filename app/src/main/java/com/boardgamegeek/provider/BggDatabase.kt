@@ -117,6 +117,7 @@ class BggDatabase(private val context: Context?) : SQLiteOpenHelper(context, DAT
                 buildCollectionViewFiltersTable().create(it)
 
                 createIndices(db)
+                createPlayIndices(db)
             }
         } catch (e: Exception) {
             Timber.e(e)
@@ -384,6 +385,9 @@ class BggDatabase(private val context: Context?) : SQLiteOpenHelper(context, DAT
                     }
                     VER_INDICES -> {
                         createIndices(db)
+                    }
+                    VER_PLAYS_OBJECT_DATE_INDEX -> {
+                        createPlayIndices(db)
                     }
                 }
             }
@@ -886,6 +890,10 @@ class BggDatabase(private val context: Context?) : SQLiteOpenHelper(context, DAT
         db.execSQL("CREATE UNIQUE INDEX index_mechanics_mechanic_id ON mechanics(mechanic_id)")
     }
 
+    private fun createPlayIndices(db: SQLiteDatabase) {
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_plays_object_id_date ON plays(object_id, date)")
+    }
+
     private fun recreateDatabase(db: SQLiteDatabase?) {
         if (db == null) return
         db.dropTable(Tables.DESIGNERS)
@@ -986,6 +994,7 @@ class BggDatabase(private val context: Context?) : SQLiteOpenHelper(context, DAT
         private const val VER_USERS_TABLE = 58
         private const val VER_NOT_NULL_INTERNAL_ID = 59
         private const val VER_INDICES = 60
-        private const val DATABASE_VERSION = 64
+        private const val VER_PLAYS_OBJECT_DATE_INDEX = 65
+        private const val DATABASE_VERSION = 65
     }
 }

@@ -2,9 +2,15 @@ package com.boardgamegeek.db.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "plays")
+@Entity(
+    tableName = "plays",
+    indices = [
+        Index(value = ["object_id", "date"]),
+    ],
+)
 data class PlayEntity(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "_id")
