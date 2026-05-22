@@ -24,10 +24,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemKey
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.BggColors
 import com.boardgamegeek.extensions.asPersonalRating
+import com.boardgamegeek.extensions.getTextColor
 import com.boardgamegeek.extensions.toColor
 import com.boardgamegeek.model.GameComment
 import com.boardgamegeek.ui.components.BggHtmlText
@@ -65,7 +65,7 @@ fun CommentsScreen(
                     ) {
                         items(
                             count = lazyPagingItems.itemCount,
-                            key = lazyPagingItems.itemKey { it.username }
+                            key = { index -> "game-comment-$index" }
                         ) { index ->
                             val comment = lazyPagingItems[index]
                             if (comment != null) {
@@ -108,7 +108,13 @@ private fun GameCommentRow(
 ) {
     val context = LocalContext.current
     val ratingText = comment.rating.asPersonalRating(context)
-    val ratingColor = Color(comment.rating.toColor(BggColors.ratingColors))
+    val ratingColorInt = comment.rating.toColor(BggColors.ratingColors)
+    val ratingColor = Color(ratingColorInt)
+    val ratingContentColor = if (ratingColorInt == android.graphics.Color.TRANSPARENT) {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    } else {
+        Color(ratingColorInt.getTextColor())
+    }
     val html = remember(comment.comment) { markupConverter.toHtml(comment.comment) }
 
     Column(
@@ -127,6 +133,7 @@ private fun GameCommentRow(
             )
             Text(
                 text = ratingText,
+                color = ratingContentColor,
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier
                     .background(ratingColor, RoundedCornerShape(4.dp))
