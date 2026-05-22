@@ -56,8 +56,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.BggColors
@@ -773,7 +773,7 @@ fun GameLinksTab(viewModel: GameViewModel) {
 fun GameForumsTab(gameId: Int, gameName: String) {
     val context = LocalContext.current
     val navigator = LocalAppNavigator.current
-    val viewModel: ForumsViewModel = viewModel()
+    val viewModel: ForumsViewModel = hiltViewModel()
     val forumsState by viewModel.forums.collectAsStateWithLifecycle()
     val numberFormat = remember { NumberFormat.getNumberInstance() }
 
