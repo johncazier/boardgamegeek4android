@@ -271,6 +271,7 @@ private fun GameCollectionItemScreen(
 ) {
     val context = LocalContext.current
     var showAcquisitionDatePicker by remember { mutableStateOf(false) }
+    var ratingText by remember(item.internalId, isEditMode) { mutableStateOf(draft.rating.toRatingInputText()) }
 
     if (showAcquisitionDatePicker) {
         val acquisitionDate = draft.acquisitionDate ?: 0L
@@ -333,8 +334,13 @@ private fun GameCollectionItemScreen(
         Section("Rating & Comment") {
             if (isEditMode) {
                 OutlinedTextField(
-                    value = if (draft.rating <= 0.0) "" else draft.rating.toString(),
-                    onValueChange = { onDraftChange(draft.copy(rating = it.toDoubleOrNull() ?: 0.0)) },
+                    value = ratingText,
+                    onValueChange = { input ->
+                        if (input.isRatingInput()) {
+                            ratingText = input
+                            onDraftChange(draft.copy(rating = input.toDoubleOrNull() ?: 0.0))
+                        }
+                    },
                     label = { Text(stringResource(R.string.rating)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth()
@@ -540,6 +546,16 @@ private fun getStatusDescription(context: Context, item: CollectionItem): String
     if (item.preOrdered) statuses += context.getString(R.string.collection_status_preordered)
     return if (statuses.isEmpty() && item.numberOfPlays > 0) context.getString(R.string.played) else statuses.formatList()
 }
+
+private fun String.isRatingInput(): Boolean {
+    return isEmpty() || matches(RatingInputRegex)
+}
+
+private fun Double.toRatingInputText(): String {
+    return if (this <= 0.0) "" else toString()
+}
+
+private val RatingInputRegex = Regex("""\d{0,2}(\.\d*)?""")
 
 private fun CollectionItem.toDraft() = CollectionItemDraft(
     own = own,
