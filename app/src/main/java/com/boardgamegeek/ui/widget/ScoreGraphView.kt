@@ -98,28 +98,38 @@ class ScoreGraphView @JvmOverloads constructor(
 
         // ticks
         val scoreSpread = highScore - lowScore
-        val tickSpacing = when {
-            scoreSpread <= 20 -> 1
-            scoreSpread <= 50 -> 5
-            scoreSpread <= 200 -> 10
-            scoreSpread <= 500 -> 20
-            else -> (ceil(scoreSpread / 100) * 10).toInt().significantDigits(2)
-        }
-        var tickScore = ceil(lowScore / tickSpacing) * tickSpacing
-        while (tickScore <= highScore) {
-            val x = ((tickScore - lowScore) / scoreSpread * (right - left) + left).toFloat()
-            val tickHeight: Float
-            if (tickScore % (5 * tickSpacing) == 0.0) {
-                tickHeight = largeTickHeight
-                val label = SCORE_FORMAT.format(tickScore)
-                val labelWidth = textPaint.measureText(label)
-                val labelLeft = (x - labelWidth / 2).coerceIn(0f, width - labelWidth)
-                canvas.drawText(label, labelLeft, height.toFloat(), textPaint)
-            } else {
-                tickHeight = smallTickHeight
+        if (!scoreSpread.isFinite() || scoreSpread < 0.0) return
+        if (scoreSpread == 0.0) {
+            val x = (left + right) / 2
+            val label = SCORE_FORMAT.format(lowScore)
+            val labelWidth = textPaint.measureText(label)
+            val labelLeft = (x - labelWidth / 2).coerceIn(0f, width - labelWidth)
+            canvas.drawText(label, labelLeft, height.toFloat(), textPaint)
+            canvas.drawLine(x, y - largeTickHeight, x, y + largeTickHeight, barPaint)
+        } else {
+            val tickSpacing = when {
+                scoreSpread <= 20 -> 1
+                scoreSpread <= 50 -> 5
+                scoreSpread <= 200 -> 10
+                scoreSpread <= 500 -> 20
+                else -> (ceil(scoreSpread / 100) * 10).toInt().significantDigits(2)
             }
-            canvas.drawLine(x, y - tickHeight, x, y + tickHeight, barPaint)
-            tickScore += tickSpacing.toDouble()
+            var tickScore = ceil(lowScore / tickSpacing) * tickSpacing
+            while (tickScore <= highScore) {
+                val x = ((tickScore - lowScore) / scoreSpread * (right - left) + left).toFloat()
+                val tickHeight: Float
+                if (tickScore % (5 * tickSpacing) == 0.0) {
+                    tickHeight = largeTickHeight
+                    val label = SCORE_FORMAT.format(tickScore)
+                    val labelWidth = textPaint.measureText(label)
+                    val labelLeft = (x - labelWidth / 2).coerceIn(0f, width - labelWidth)
+                    canvas.drawText(label, labelLeft, height.toFloat(), textPaint)
+                } else {
+                    tickHeight = smallTickHeight
+                }
+                canvas.drawLine(x, y - tickHeight, x, y + tickHeight, barPaint)
+                tickScore += tickSpacing.toDouble()
+            }
         }
 
         // score dots
@@ -139,8 +149,14 @@ class ScoreGraphView @JvmOverloads constructor(
     }
 
     private fun drawScore(canvas: Canvas, y: Float, left: Float, right: Float, score: Double, @ColorInt color: Int) {
+        if (!score.isFinite() || score < lowScore || score > highScore) return
         scorePaint.color = color
-        val x = ((score - lowScore) / (highScore - lowScore) * (right - left) + left).toFloat()
+        val scoreSpread = highScore - lowScore
+        val x = if (scoreSpread == 0.0) {
+            (left + right) / 2
+        } else {
+            ((score - lowScore) / scoreSpread * (right - left) + left).toFloat()
+        }
         canvas.drawCircle(x, y, scoreRadius, scorePaint)
     }
 

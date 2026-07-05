@@ -116,13 +116,14 @@ fun GamePlayStatsScreen(
     }
 
     val publishedPlayingTime = collectionItems?.firstOrNull()?.playingTime ?: 0
-    val personalRating = collectionItems
-        ?.filter { item -> item.rating > 0.0 }
+    val ratedItems = collectionItems?.filter { item -> item.rating > 0.0 }
+    val personalRating = ratedItems
+        ?.takeIf { it.isNotEmpty() }
         ?.map { item -> item.rating }
         ?.average() ?: Game.UNRATED
     val isGameOwned = collectionItems?.any { item -> item.own } == true
-    val modifiedWhitmoreScore = collectionItems
-        ?.filter { item -> item.rating > 0.0 }
+    val modifiedWhitmoreScore = ratedItems
+        ?.takeIf { it.isNotEmpty() }
         ?.map { item -> item.modifiedWhitmoreScore }
         ?.average() ?: 0.0
 
@@ -158,9 +159,13 @@ fun GamePlayStatsScreen(
         prefs[PlayStatPrefs.KEY_GAME_H_INDEX, 0] ?: 0
     }
 
+    val visiblePlays = remember(plays, includeIncomplete) {
+        plays?.filter { play -> includeIncomplete || !play.incomplete }
+    }
+
     val statsState by produceState<Stats?>(
         initialValue = null,
-        plays,
+        visiblePlays,
         players,
         publishedPlayingTime,
         personalRating,
@@ -168,7 +173,7 @@ fun GamePlayStatsScreen(
         includeIncomplete,
         hIndex
     ) {
-        val playsValue = plays
+        val playsValue = visiblePlays
         val playersValue = players
         if (playsValue == null || playersValue == null || playsValue.isEmpty()) {
             value = null
@@ -176,7 +181,7 @@ fun GamePlayStatsScreen(
         }
         value = withContext(Dispatchers.Default) {
             Stats(
-                playsValue.filter { play -> includeIncomplete || !play.incomplete },
+                playsValue,
                 playersValue,
                 publishedPlayingTime,
                 personalRating,
@@ -195,7 +200,7 @@ fun GamePlayStatsScreen(
         playsValue == null || playersValue == null -> {
             LoadingContent(contentPadding)
         }
-        playsValue.isEmpty() -> {
+        visiblePlays.isNullOrEmpty() -> {
             EmptyContent(contentPadding)
         }
         stats == null -> {
@@ -459,15 +464,15 @@ private fun ScoresCard(
         onHeaderTrailingClick = { showScoreHelp = true }
     ) {
         ScoreSummaryRow(
-            low = SCORE_FORMAT.format(stats.lowScore),
-            average = SCORE_FORMAT.format(stats.averageScore),
-            averageWin = SCORE_FORMAT.format(stats.averageWinningScore),
-            high = SCORE_FORMAT.format(stats.highScore),
+            low = formatScore(stats.lowScore),
+            average = formatScore(stats.averageScore),
+            averageWin = formatScore(stats.averageWinningScore),
+            high = formatScore(stats.highScore),
             onLowClick = { showLowScorers = true },
             onHighClick = { showHighScorers = true }
         )
 
-        if (stats.highScore != INVALID_SCORE && stats.lowScore != INVALID_SCORE && stats.highScore > stats.lowScore) {
+        if (stats.highScore != INVALID_SCORE && stats.lowScore != INVALID_SCORE && stats.highScore >= stats.lowScore) {
             ScoreGraph(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -999,6 +1004,8 @@ private fun ScoreGraph(
     personalAverageWin: Double?,
     personalHigh: Double?,
 ) {
+    if (lowScore == INVALID_SCORE || highScore == INVALID_SCORE || highScore < lowScore) return
+
     AndroidView(
         modifier = modifier,
         factory = { context ->
@@ -1228,10 +1235,12 @@ private class Stats(
     fun getMonthsPlayed() = plays.map { it.yearAndMonth }.toSet().size
 
     private fun calculateFlash(): Long {
+        if (sortedPlays.isEmpty()) return 1
         return daysBetweenDates(sortedPlays.first().dateInMillis, sortedPlays.last().dateInMillis)
     }
 
     private fun calculateLag(): Long {
+        if (sortedPlays.isEmpty()) return 1
         return daysBetweenDates(sortedPlays.last().dateInMillis)
     }
 
@@ -1281,9 +1290,15 @@ private class Stats(
 
     val highScore: Double get() = filteredPlayers.mapNotNull { it.second.numericScore }.maxOrNull() ?: INVALID_SCORE
 
-    val averageScore: Double get() = filteredPlayers.mapNotNull { it.second.numericScore }.average()
+    val averageScore: Double
+        get() = filteredPlayers.mapNotNull { it.second.numericScore }.let {
+            if (it.isEmpty()) INVALID_SCORE else it.average()
+        }
 
-    val averageWinningScore: Double get() = filteredPlayers.filter { it.second.isWin }.mapNotNull { it.second.numericScore }.average()
+    val averageWinningScore: Double
+        get() = filteredPlayers.filter { it.second.isWin }.mapNotNull { it.second.numericScore }.let {
+            if (it.isEmpty()) INVALID_SCORE else it.average()
+        }
 
     val lowScorers: String
         get() = if (lowScore == INVALID_SCORE) "" else
@@ -1297,7 +1312,11 @@ private class Stats(
         get() = playCountByLocation.entries.toList().sortedBy { it.key }.sortedByDescending { it.value }
 
     val playsPerMonth: Double
-        get() = (((playCountSince() * 365.25) / calculateFlash()) / 12).coerceAtMost(playCountSince().toDouble())
+        get() {
+            val playCount = playCountSince()
+            if (playCount == 0) return 0.0
+            return (((playCount * 365.25) / calculateFlash()) / 12).coerceAtMost(playCount.toDouble())
+        }
 
     fun calculateUtilization(): Double {
         return playCountSince().toDouble().cdf(lambda)
@@ -1339,7 +1358,9 @@ private class Stats(
 
     fun calculateGrayHotness(sinceDateInMillis: Long): Double {
         val intervalPlayCount = playCountSince(sinceDateInMillis)
-        val s = 1 + (intervalPlayCount.toDouble() / playCountSince())
+        val totalPlayCount = playCountSince()
+        if (totalPlayCount == 0) return 0.0
+        val s = 1 + (intervalPlayCount.toDouble() / totalPlayCount)
         return s * s * sqrt(intervalPlayCount.toDouble()) * calculateHuberHappinessMetricSince(sinceDateInMillis)
     }
 
@@ -1450,3 +1471,7 @@ private val SCORE_FORMAT = DecimalFormat("0.##")
 private val DOUBLE_FORMAT = DecimalFormat("0.00")
 private const val INVALID_SCORE = Int.MIN_VALUE.toDouble()
 private const val WILSON_Z = 1.96
+
+private fun formatScore(score: Double): String {
+    return if (score == INVALID_SCORE) "-" else SCORE_FORMAT.format(score)
+}
