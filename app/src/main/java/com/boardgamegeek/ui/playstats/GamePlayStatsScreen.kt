@@ -1446,8 +1446,11 @@ private class PlayerStats(val plays: List<Pair<Play, PlayPlayer>>) {
     val winSkill: Int
         get() = when (numberOfWinnablePlays) {
             0 -> 0
-            else -> (wilsonLowerBound(numberOfWinnablePlaysWon, numberOfWinnablePlays) / expectedWinRate * 100).roundToInt()
+            else -> (wilsonLowerBound(numberOfWinnablePlaysWon, numberOfWinnablePlays) / expectedWinRate * 100 * winSkillConfidence).roundToInt()
         }
+
+    private val winSkillConfidence: Double
+        get() = numberOfWinnablePlays.toDouble() / (numberOfWinnablePlays + WIN_SKILL_CONFIDENCE_PRIOR_PLAYS)
 
     val winPercentage: Int
         get() = when {
@@ -1471,6 +1474,7 @@ private val SCORE_FORMAT = DecimalFormat("0.##")
 private val DOUBLE_FORMAT = DecimalFormat("0.00")
 private const val INVALID_SCORE = Int.MIN_VALUE.toDouble()
 private const val WILSON_Z = 1.96
+private const val WIN_SKILL_CONFIDENCE_PRIOR_PLAYS = 1.0
 
 private fun formatScore(score: Double): String {
     return if (score == INVALID_SCORE) "-" else SCORE_FORMAT.format(score)

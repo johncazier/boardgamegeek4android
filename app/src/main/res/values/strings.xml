@@ -620,7 +620,7 @@
 	<string name="play_stat_cfm_info">Similar to the friendless metric, it is an average number of plays with no cheating.\n\nhttps://extstats.drfriendless.com/</string>
 	<string name="game_h_index_prefix">Game H-Index <b>%s</b></string>
 	<string name="title_players_skill">Skill Formula</string>
-	<string name="player_skill_info">Measures wins against expected wins, adjusted for sample size:\n\nSkill = 100 * WilsonLowerBound(wins, winnable games) / ExpectedWinRate\n\nExpectedWinRate = average(1 / # players)</string>
+	<string name="player_skill_info">Measures wins against expected wins, adjusted for sample size:\n\nSkill = 100 * WilsonLowerBound(wins, winnable games) / ExpectedWinRate * Confidence\n\nExpectedWinRate = average(1 / # players)\nConfidence = winnable games / (winnable games + 1)</string>
 	<string name="play_stat_fhm">Friendless Happiness</string>
 	<string name="play_stat_fhm_info">The Friendless Happiness Metric (FHM) is a measure of the happiness this game has provided, as defined by Friendless.\n\nSee his awesome site for Extended Stats: https://extstats.drfriendless.com/\n\nrating * 5 + plays + months played * 4 + hours played</string>
 	<string name="play_stat_hhm">Huber Happiness</string>
