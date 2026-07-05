@@ -93,6 +93,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import kotlin.math.ln
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -1414,10 +1415,19 @@ private class PlayerStats(val plays: List<Pair<Play, PlayPlayer>>) {
         return plays.filter { it.first.isWinnable && it.first.playerCount == playerCount }.sumOf { it.first.quantity }
     }
 
+    private val rawWinSkill: Double
+        get() = when (numberOfWinnablePlays) {
+            0 -> 0.0
+            else -> plays.filter { it.second.isWin }.sumOf { it.first.quantity * it.first.playerCount }
+                .toDouble() / numberOfWinnablePlays * 100
+        }
+
     val winSkill: Int
-        get() = ((plays.filter { it.second.isWin }.sumOf { it.first.quantity * it.first.playerCount }
-            .toDouble() / plays.filter { it.first.isWinnable }
-            .sumOf { it.first.quantity }) * 100).toInt()
+        get() = when (numberOfWinnablePlays) {
+            0 -> 0
+            else -> ((rawWinSkill * numberOfWinnablePlays + PRIOR_WIN_SKILL * PRIOR_WIN_SKILL_PLAY_COUNT) /
+                (numberOfWinnablePlays + PRIOR_WIN_SKILL_PLAY_COUNT)).roundToInt()
+        }
 
     val winPercentage: Int
         get() = when {
@@ -1430,3 +1440,5 @@ private class PlayerStats(val plays: List<Pair<Play, PlayPlayer>>) {
 private val SCORE_FORMAT = DecimalFormat("0.##")
 private val DOUBLE_FORMAT = DecimalFormat("0.00")
 private const val INVALID_SCORE = Int.MIN_VALUE.toDouble()
+private const val PRIOR_WIN_SKILL = 100.0
+private const val PRIOR_WIN_SKILL_PLAY_COUNT = 10
