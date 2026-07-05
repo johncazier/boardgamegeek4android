@@ -518,7 +518,7 @@
 	<string name="play_stat_cfm_info">Podobnie jak Wskaźnik Friendlessa, stanowi średnią liczbę rozgrywek (ale bez ulg dla gier niezagranych).\n\nhttps://extstats.drfriendless.com/</string>
 	<string name="game_h_index_prefix">Wskaźnik H-index dla gier<b>%s</b></string>
 	<string name="title_players_skill">Wzór na Biegłość</string>
-	<string name="player_skill_info">Mierzy ważone zwycięstwa względem oczekiwanych zwycięstw, z korektą dla liczby rozgrywek:\n\nBiegłość surowa = 100 × WagaWygranych / gry \"Do wygrania\"\n\nBiegłość = (Biegłość surowa × gry \"Do wygrania\" + 100 × 10) / (gry \"Do wygrania\" + 10)\n\nWagaWygranych = \u2211(l_wygranych × l_graczy_w_grze)</string>
+	<string name="player_skill_info">Mierzy zwycięstwa względem oczekiwanych zwycięstw, z korektą dla liczby rozgrywek:\n\nBiegłość = 100 × DolnaGranicaWilsona(wygrane, gry \"Do wygrania\") / OczekiwanyWspółczynnikWygranych\n\nOczekiwanyWspółczynnikWygranych = średnia(1 / l_graczy)</string>
 	<string name="play_stat_fhm">Friendlessa Szczęście</string>
 	<string name="play_stat_fhm_info">Friendlessa Wskaźnik Szczęścia (FHM, ang. Friendless Happiness Metric) jest miarą radości jaką ta gra wywołała, wg definicji Friendlessa.\n\nSprawdź więcej rozszerzonych statystyk na jego genialnej stronie: https://extstats.drfriendless.com/\n\nocena × 5 + rozgrywki + l_miesięcy_z_rozgrywkami × 4 + czas_gry_w_godz</string>
 	<string name="play_stat_hhm">Hubera Szczęście</string>

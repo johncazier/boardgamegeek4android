@@ -1379,6 +1379,9 @@ private class PlayerStats(val plays: List<Pair<Play, PlayPlayer>>) {
     val numberOfPlaysWon: Int
         get() = plays.filter { it.second.isWin }.sumOf { it.first.quantity }
 
+    private val numberOfWinnablePlaysWon: Int
+        get() = plays.filter { it.first.isWinnable && it.second.isWin }.sumOf { it.first.quantity }
+
     val lowScore: Double
         get() = plays.mapNotNull { it.second.numericScore }.minOrNull() ?: INVALID_SCORE
 
@@ -1415,18 +1418,14 @@ private class PlayerStats(val plays: List<Pair<Play, PlayPlayer>>) {
         return plays.filter { it.first.isWinnable && it.first.playerCount == playerCount }.sumOf { it.first.quantity }
     }
 
-    private val rawWinSkill: Double
-        get() = when (numberOfWinnablePlays) {
-            0 -> 0.0
-            else -> plays.filter { it.second.isWin }.sumOf { it.first.quantity * it.first.playerCount }
-                .toDouble() / numberOfWinnablePlays * 100
-        }
+    private val expectedWinRate: Double
+        get() = plays.filter { it.first.isWinnable }
+            .sumOf { it.first.quantity.toDouble() / it.first.playerCount } / numberOfWinnablePlays
 
     val winSkill: Int
         get() = when (numberOfWinnablePlays) {
             0 -> 0
-            else -> ((rawWinSkill * numberOfWinnablePlays + PRIOR_WIN_SKILL * PRIOR_WIN_SKILL_PLAY_COUNT) /
-                (numberOfWinnablePlays + PRIOR_WIN_SKILL_PLAY_COUNT)).roundToInt()
+            else -> (wilsonLowerBound(numberOfWinnablePlaysWon, numberOfWinnablePlays) / expectedWinRate * 100).roundToInt()
         }
 
     val winPercentage: Int
@@ -1437,8 +1436,17 @@ private class PlayerStats(val plays: List<Pair<Play, PlayPlayer>>) {
         }
 }
 
+private fun wilsonLowerBound(successes: Int, total: Int): Double {
+    if (total <= 0) return 0.0
+    val p = successes.toDouble() / total
+    val zSquared = WILSON_Z * WILSON_Z
+    val denominator = 1 + zSquared / total
+    val center = p + zSquared / (2 * total)
+    val margin = WILSON_Z * sqrt((p * (1 - p) + zSquared / (4 * total)) / total)
+    return ((center - margin) / denominator).coerceAtLeast(0.0)
+}
+
 private val SCORE_FORMAT = DecimalFormat("0.##")
 private val DOUBLE_FORMAT = DecimalFormat("0.00")
 private const val INVALID_SCORE = Int.MIN_VALUE.toDouble()
-private const val PRIOR_WIN_SKILL = 100.0
-private const val PRIOR_WIN_SKILL_PLAY_COUNT = 10
+private const val WILSON_Z = 1.96
