@@ -500,13 +500,17 @@ private fun PlayerRow(
     val playerColor = player.color.asColorRgb()
     val circleColor = if (playerColor != Color.TRANSPARENT) ComposeColor(playerColor) else ComposeColor.Transparent
     val circleTextColor = if (playerColor != Color.TRANSPARENT) ComposeColor(playerColor.getTextColor()) else MaterialTheme.colorScheme.onSurface
-    val iconTint = MaterialTheme.colorScheme.onSurfaceVariant
+    val rowBackgroundColor = if (player.isWin) MaterialTheme.colorScheme.secondaryContainer else ComposeColor.Transparent
+    val primaryTextColor = if (player.isWin) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
+    val secondaryTextColor = if (player.isWin) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+    val iconTint = secondaryTextColor
     val ratingText = if (player.rating == 0.0) "" else player.rating.asBoundedRating(context, format = DecimalFormat("0.0######"))
     val scoreText = player.numericScore?.asScore(context) ?: player.score
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .background(rowBackgroundColor)
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -537,18 +541,37 @@ private fun PlayerRow(
                     fontWeight = if (player.isWin) FontWeight.Bold else FontWeight.Normal,
                     fontStyle = if (player.isNew) FontStyle.Italic else FontStyle.Normal,
                 ),
+                color = primaryTextColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             if (subtitle.isNotBlank()) {
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
+                    color = secondaryTextColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
             if (player.color.isNotBlank() && playerColor == Color.TRANSPARENT) {
-                Text(text = player.color, style = MaterialTheme.typography.bodySmall)
+                Text(
+                    text = player.color,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = secondaryTextColor,
+                )
             }
+        }
+
+        if (player.isWin) {
+            Icon(
+                imageVector = Icons.Filled.EmojiEvents,
+                contentDescription = stringResource(R.string.win),
+                tint = primaryTextColor,
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .size(20.dp),
+            )
         }
 
         IconValueButton(
