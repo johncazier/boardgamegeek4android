@@ -185,13 +185,13 @@ interface GameDao {
     @Query("DELETE FROM games WHERE game_id = :gameId")
     suspend fun delete(gameId: Int): Int
 
-    @Query("SELECT games_expansions.*, games.thumbnail_url AS thumbnailUrl FROM games_expansions LEFT OUTER JOIN games ON games.game_id = games_expansions.expansion_id WHERE inbound=0 AND games_expansions.game_id = :gameId")
+    @Query("SELECT games_expansions.*, games.thumbnail_url AS thumbnailUrl, games.average AS averageRating FROM games_expansions LEFT OUTER JOIN games ON games.game_id = games_expansions.expansion_id WHERE inbound=0 AND games_expansions.game_id = :gameId")
     suspend fun loadExpansionsForGame(gameId: Int): List<GameExpansionWithGame>
 
-    @Query("SELECT games_expansions.*, games.thumbnail_url AS thumbnailUrl FROM games_expansions LEFT OUTER JOIN games ON games.game_id = games_expansions.expansion_id WHERE inbound=0 AND games_expansions.game_id = :gameId")
+    @Query("SELECT games_expansions.*, games.thumbnail_url AS thumbnailUrl, games.average AS averageRating FROM games_expansions LEFT OUTER JOIN games ON games.game_id = games_expansions.expansion_id WHERE inbound=0 AND games_expansions.game_id = :gameId")
     fun loadExpansionsForGameFlow(gameId: Int): Flow<List<GameExpansionWithGame>>
 
-    @Query("SELECT games_expansions.*, games.thumbnail_url AS thumbnailUrl FROM games_expansions LEFT OUTER JOIN games ON games.game_id = games_expansions.expansion_id WHERE inbound=1 AND games_expansions.game_id = :gameId")
+    @Query("SELECT games_expansions.*, games.thumbnail_url AS thumbnailUrl, games.average AS averageRating FROM games_expansions LEFT OUTER JOIN games ON games.game_id = games_expansions.expansion_id WHERE inbound=1 AND games_expansions.game_id = :gameId")
     fun loadBaseGamesForGameFlow(gameId: Int): Flow<List<GameExpansionWithGame>>
 
     @Query("SELECT designers.* FROM designers LEFT OUTER JOIN games_designers ON designers.designer_id = games_designers.designer_id  WHERE game_id = :gameId")

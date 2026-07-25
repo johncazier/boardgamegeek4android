@@ -15,6 +15,7 @@ data class GameExpansion(
     val wishListPriority: Int = WISHLIST_PRIORITY_UNKNOWN,
     val numberOfPlays: Int = 0,
     val rating: Double = UNRATED,
+    val averageRating: Double = UNRATED,
     val comment: String = "",
 ) {
     companion object {

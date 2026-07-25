@@ -53,6 +53,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -85,6 +86,7 @@ class GameViewModel @Inject constructor(
     private val areDesignerImagesRefreshing = AtomicBoolean(false)
     private val areArtistImagesRefreshing = AtomicBoolean(false)
     private val arePublisherImagesRefreshing = AtomicBoolean(false)
+    private val areExpansionDetailsRefreshing = AtomicBoolean(false)
     private val forceItemsRefresh = AtomicBoolean(false)
     private val arePlaysRefreshing = AtomicBoolean(false)
     private val forcePlaysRefresh = AtomicBoolean(false)
@@ -107,6 +109,9 @@ class GameViewModel @Inject constructor(
 
     private val _producerType = MutableStateFlow(ProducerType.UNKNOWN)
     val producerType: StateFlow<ProducerType> = _producerType.asStateFlow()
+
+    private val _producerSort = MutableStateFlow(ProducerSort.NAME)
+    val producerSort: StateFlow<ProducerSort> = _producerSort.asStateFlow()
 
     private val _errorMessage = MutableStateFlow<Event<String>?>(null)
     val errorMessage: StateFlow<Event<String>?> = _errorMessage.asStateFlow()
@@ -139,6 +144,11 @@ class GameViewModel @Inject constructor(
         BASE_GAME,
     }
 
+    enum class ProducerSort {
+        NAME,
+        RATING,
+    }
+
     fun setId(gameId: Int) {
         if (_gameId.value != gameId) {
             viewModelScope.launch {
@@ -150,6 +160,10 @@ class GameViewModel @Inject constructor(
 
     fun setProducerType(type: ProducerType) {
         if (_producerType.value != type) _producerType.value = type
+    }
+
+    fun setProducerSort(sort: ProducerSort) {
+        if (_producerSort.value != sort) _producerSort.value = sort
     }
 
     val game: StateFlow<Game?> =
@@ -292,7 +306,13 @@ class GameViewModel @Inject constructor(
                 gameRepository.getExpansionsFlow(it.id)
                     .map { list ->
                         list.map { expansion ->
-                            GameDetail(expansion.id, expansion.name, describeStatuses(expansion), expansion.thumbnailUrl)
+                            GameDetail(
+                                id = expansion.id,
+                                name = expansion.name,
+                                description = describeStatuses(expansion),
+                                thumbnailUrl = expansion.thumbnailUrl,
+                                averageRating = expansion.averageRating,
+                            )
                         }.distinctBy { it.id }
                     }
                     .flowOn(Dispatchers.Default)
@@ -312,7 +332,13 @@ class GameViewModel @Inject constructor(
                 gameRepository.getBaseGamesFlow(it.id)
                     .map { list ->
                         list.map { baseGame ->
-                            GameDetail(baseGame.id, baseGame.name, describeStatuses(baseGame), baseGame.thumbnailUrl)
+                            GameDetail(
+                                id = baseGame.id,
+                                name = baseGame.name,
+                                description = describeStatuses(baseGame),
+                                thumbnailUrl = baseGame.thumbnailUrl,
+                                averageRating = baseGame.averageRating,
+                            )
                         }.distinctBy { it.id }
                     }
                     .flowOn(Dispatchers.Default)
@@ -359,6 +385,23 @@ class GameViewModel @Inject constructor(
         }
     }
 
+    fun refreshMissingExpansionDetails() {
+        gameId.value?.let { id ->
+            if (areExpansionDetailsRefreshing.compareAndSet(false, true)) {
+                viewModelScope.launch {
+                    try {
+                        val result = gameRepository.refreshMissingExpansionDetails(id)
+                        result.exceptionOrNull()?.let { emitError(it) }
+                    } catch (e: Exception) {
+                        emitError(e)
+                    } finally {
+                        areExpansionDetailsRefreshing.set(false)
+                    }
+                }
+            }
+        }
+    }
+
     private fun describeStatuses(expansion: GameExpansion): String {
         val ctx = getApplication<BggApplication>()
         val statuses = mutableListOf<String>()
@@ -377,18 +420,29 @@ class GameViewModel @Inject constructor(
     }
 
     val producers: StateFlow<List<GameDetail>> =
-        producerType.flatMapLatest { type ->
-            when (type) {
-                ProducerType.DESIGNER -> designers
-                ProducerType.ARTIST -> artists
-                ProducerType.PUBLISHER -> publishers
-                ProducerType.CATEGORY -> categories
-                ProducerType.MECHANIC -> mechanics
-                ProducerType.EXPANSION -> expansions
-                ProducerType.BASE_GAME -> baseGames
-                else -> MutableStateFlow(emptyList())
+        combine(producerType, producerSort) { type, sort -> type to sort }
+            .flatMapLatest { (type, sort) ->
+                when (type) {
+                    ProducerType.DESIGNER -> designers
+                    ProducerType.ARTIST -> artists
+                    ProducerType.PUBLISHER -> publishers
+                    ProducerType.CATEGORY -> categories
+                    ProducerType.MECHANIC -> mechanics
+                    ProducerType.EXPANSION -> expansions
+                    ProducerType.BASE_GAME -> baseGames
+                    else -> MutableStateFlow(emptyList())
+                }.map { items ->
+                    when {
+                        type != ProducerType.EXPANSION -> items
+                        sort == ProducerSort.NAME -> items.sortedBy { it.name.lowercase() }
+                        else -> items.sortedWith(
+                            compareByDescending<GameDetail> { it.averageRating }
+                                .thenBy { it.name.lowercase() }
+                        )
+                    }
+                }
             }
-        }.stateInWhileSubscribed(viewModelScope, emptyList())
+            .stateInWhileSubscribed(viewModelScope, emptyList())
 
     val collectionItems: StateFlow<List<CollectionItem>> =
         gameId.filterNotNull()

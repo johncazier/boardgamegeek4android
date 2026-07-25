@@ -5,4 +5,5 @@ data class GameDetail(
     val name: String,
     val description: String = "",
     val thumbnailUrl: String = "",
+    val averageRating: Double = Game.UNRATED,
 )

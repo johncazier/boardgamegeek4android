@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -31,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.boardgamegeek.R
+import com.boardgamegeek.extensions.asPersonalRating
 import com.boardgamegeek.model.GameDetail
 import com.boardgamegeek.ui.game.GameViewModel
 import com.boardgamegeek.ui.game.GameViewModel.ProducerType
@@ -95,6 +97,7 @@ private fun GameDetailRow(
     item: GameDetail,
     onClick: () -> Unit,
 ) {
+    val context = LocalContext.current
     val showAvatar = type != ProducerType.UNKNOWN
     val avatarSize = dimensionResource(R.dimen.thumbnail_list_size_small)
     val placeholderRes = when (type) {
@@ -141,6 +144,19 @@ private fun GameDetailRow(
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+        if (type == ProducerType.EXPANSION) {
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = stringResource(R.string.average_rating),
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                Text(
+                    text = item.averageRating.asPersonalRating(context, R.string.unrated),
+                    style = MaterialTheme.typography.titleMedium,
                 )
             }
         }

@@ -6,6 +6,7 @@ import androidx.room.Entity
 @Entity(tableName = "games_expansions")
 data class GameExpansionWithGame(
     val thumbnailUrl: String?,
+    val averageRating: Double?,
     @Embedded
     val gameExpansionEntity: GameExpansionEntity,
 )

@@ -339,7 +339,9 @@ class GameCollectionRepository(
         var deleteCount = 0
         val items = collectionDao.loadForGame(gameId)
         items.forEach { item ->
-            if (!protectedCollectionIds.contains(item.item.collectionId)) {
+            if (item.item.collectionId == INVALID_ID && item.item.updatedTimestamp == null) {
+                Timber.i("Preserving local collection item ${item.item.collectionName} while it awaits a server collection ID")
+            } else if (!protectedCollectionIds.contains(item.item.collectionId)) {
                 deleteCount += collectionDao.delete(item.item.internalId)
                 Timber.i("Deleted collection item ${item.item.collectionName} [${item.item.collectionId}]")
             }

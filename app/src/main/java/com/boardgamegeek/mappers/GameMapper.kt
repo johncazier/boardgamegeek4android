@@ -152,6 +152,7 @@ fun GameExpansionWithGame.mapToModel(items: List<CollectionItem>) = GameExpansio
     wishListPriority = if (items.isEmpty()) GameExpansion.WISHLIST_PRIORITY_UNKNOWN else items.minOf { it.wishListPriority },
     numberOfPlays = items.firstOrNull()?.numberOfPlays ?: 0,
     rating = if (items.isEmpty()) GameExpansion.UNRATED else items.maxOf { it.rating },
+    averageRating = averageRating ?: GameExpansion.UNRATED,
     comment = items.firstOrNull()?.comment.orEmpty(),
 )
 

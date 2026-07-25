@@ -72,7 +72,7 @@ class GameRepository @Inject constructor(
             if (gameId.size == 1) {
                 api.thing(gameId.first(), 1)
             } else {
-                api.things(gameId.joinToString(), 1)
+                api.things(gameId.joinToString(separator = ","), 1)
             }
         }
         if (result.isSuccess) {
@@ -99,11 +99,26 @@ class GameRepository @Inject constructor(
         }
     }
 
+    suspend fun refreshMissingExpansionDetails(gameId: Int): Result<Int> {
+        val missingGameIds = gameDao.loadExpansionsForGame(gameId)
+            .filter { it.averageRating == null }
+            .map { it.gameExpansionEntity.expansionId }
+            .distinct()
+
+        var refreshedCount = 0
+        missingGameIds.chunked(MAX_THINGS_PER_FETCH).forEach { gameIds ->
+            val result = refreshGame(*gameIds.toIntArray())
+            if (result.isFailure) return result
+            refreshedCount += result.getOrDefault(0)
+        }
+        return Result.success(refreshedCount)
+    }
+
     suspend fun fetchGameThumbnail(vararg gameId: Int): String? = withContext(Dispatchers.IO) {
         val response = if (gameId.size == 1) {
             api.thing(gameId.first(), 1)
         } else {
-            api.things(gameId.joinToString(), 1)
+            api.things(gameId.joinToString(separator = ","), 1)
         }
         response.games?.firstOrNull()?.thumbnail
     }
@@ -263,4 +278,8 @@ class GameRepository @Inject constructor(
     }
 
     suspend fun deleteAll() = gameDao.deleteAll()
+
+    private companion object {
+        const val MAX_THINGS_PER_FETCH = 20
+    }
 }
