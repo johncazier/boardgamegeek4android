@@ -110,6 +110,7 @@ import com.boardgamegeek.ui.navigation.GameDetailRoute
 import com.boardgamegeek.ui.navigation.GamePlayStatsRoute
 import com.boardgamegeek.ui.navigation.GamePlaysRoute
 import com.boardgamegeek.ui.navigation.GameRoute
+import com.boardgamegeek.ui.navigation.GeekBuddyAnalysisRoute
 import com.boardgamegeek.ui.navigation.LocalAppNavigator
 import com.boardgamegeek.ui.navigation.PersonRoute
 import com.boardgamegeek.ui.navigation.PlayRoute
@@ -692,6 +693,7 @@ fun GameLinkedItemsTab(viewModel: GameViewModel) {
 @Composable
 fun GameLinksTab(viewModel: GameViewModel) {
     val context = LocalContext.current
+    val navigator = LocalAppNavigator.current
     val game by viewModel.game.collectAsStateWithLifecycle()
     val iconColor = rememberGameIconTint(game?.iconColor ?: 0)
 
@@ -709,7 +711,7 @@ fun GameLinksTab(viewModel: GameViewModel) {
                 iconRes = R.drawable.ic_baseline_person_24,
                 title = stringResource(R.string.link_geekbuddy_analysis),
                 iconTint = iconColor,
-                onClick = { context.linkToBgg("geekbuddy/analyze/thing", game!!.id) }
+                onClick = { navigator.navigate(GeekBuddyAnalysisRoute(game!!.id, game!!.name)) }
             )
             HorizontalDivider()
         }

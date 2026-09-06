@@ -32,6 +32,7 @@ import com.boardgamegeek.ui.gamecolors.GameColorsRouteScreen
 import com.boardgamegeek.ui.gamedetail.GameDetailRouteScreen
 import com.boardgamegeek.ui.geeklist.GeekListRouteScreen
 import com.boardgamegeek.ui.geeklists.GeekListsRouteScreen
+import com.boardgamegeek.ui.geekbuddyanalysis.GeekBuddyAnalysisRouteScreen
 import com.boardgamegeek.ui.geeklistitem.GeekListItemRouteScreen
 import com.boardgamegeek.ui.hotness.HotnessRouteScreen
 import com.boardgamegeek.ui.image.ImageRouteScreen
@@ -67,6 +68,7 @@ import com.boardgamegeek.ui.navigation.GamePlaysRoute
 import com.boardgamegeek.ui.navigation.GeekListItemRoute
 import com.boardgamegeek.ui.navigation.GeekListRoute
 import com.boardgamegeek.ui.navigation.GeekListsRoute
+import com.boardgamegeek.ui.navigation.GeekBuddyAnalysisRoute
 import com.boardgamegeek.ui.navigation.HotnessRoute
 import com.boardgamegeek.ui.navigation.ImageRoute
 import com.boardgamegeek.ui.navigation.LoginRoute
@@ -176,6 +178,9 @@ fun BggApp(
         }
         entry<GameRoute> {
             GameRouteScreen(route = it)
+        }
+        entry<GeekBuddyAnalysisRoute> {
+            GeekBuddyAnalysisRouteScreen(route = it)
         }
         entry<MechanicRoute> {
             MechanicRouteScreen(route = it)

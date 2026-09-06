@@ -62,6 +62,12 @@ data class GameRoute(
 ) : AppRoute
 
 @Serializable
+data class GeekBuddyAnalysisRoute(
+    val gameId: Int,
+    val gameName: String = "",
+) : AppRoute
+
+@Serializable
 data class PersonRoute(
     val personId: Int,
     val personName: String = "",
