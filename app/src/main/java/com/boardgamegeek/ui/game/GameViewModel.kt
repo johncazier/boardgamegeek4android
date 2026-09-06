@@ -110,7 +110,7 @@ class GameViewModel @Inject constructor(
     private val _producerType = MutableStateFlow(ProducerType.UNKNOWN)
     val producerType: StateFlow<ProducerType> = _producerType.asStateFlow()
 
-    private val _producerSort = MutableStateFlow(ProducerSort.NAME)
+    private val _producerSort = MutableStateFlow(ProducerSort.RATING)
     val producerSort: StateFlow<ProducerSort> = _producerSort.asStateFlow()
 
     private val _errorMessage = MutableStateFlow<Event<String>?>(null)
